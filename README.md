@@ -1,7 +1,7 @@
-# 1.2. Database Setup and Mongoose Model Definition
+# 1.3. Setup GraphQL Server with Express.js
 
 ## Description:
-Get your MongoDB database ready by installing and configuring a local instance. Then, integrate Mongoose into your Node.js project to simplify database interactions, and define the Mongoose schemas for the User, Student, and School models, including their field types and the one-to-many relationship between students and schools. This involves installing MongoDB, installing Mongoose, establishing a database connection in your application, and creating the schema files for each model.
+Implement the foundational GraphQL server by setting up Apollo Server and integrating it with your existing Express.js application. This task also includes defining the GraphQL type definitions (typeDefs) for your User, Student, and School models, mirroring their Mongoose schemas, which are a prerequisite for the server.
 
 ## Acceptance Criteria:
-MongoDB is installed and running, Mongoose is connected to the database, and User, Student, and School Mongoose schemas are correctly defined with all specified fields and relationships.
+Apollo Server is successfully integrated with Express.js, and all necessary GraphQL type definitions are defined and loaded.
