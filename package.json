@@ -2,7 +2,7 @@
   "name": "zettacamp-eagle-be-anita",
   "version": "1.0.0",
   "description": "Set up the fundamental Node.js project, initialize version control, connect to a remote GitHub repository, configure a .gitignore file to exclude unnecessary files like node_modules, and integrate Express.js to establish the core HTTP server foundation for your API. This involves running npm init -y, git init, connecting your local repository to a new GitHub repository, creating a .gitignore file, and installing and setting up a basic Express application.",
-  "main": "index.js",
+  "main": "core/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,6 +19,7 @@
   "homepage": "https://github.com/zettacamp-anita-kusumasari/zettacamp-eagle-be-anita#readme",
   "dependencies": {
     "dotenv": "^16.5.0",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "mongoose": "^8.15.1"
   }
 }
