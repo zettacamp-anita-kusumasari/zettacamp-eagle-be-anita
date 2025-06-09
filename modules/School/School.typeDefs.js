@@ -49,8 +49,8 @@ const typeDefs = gql`
   }
 
   type Mutation {
-    createSchool(name: String!, address: String): School
-    updateSchool(id: ID!, name: String, address: String): School
+    createSchool(id: ID!, name: String!, address: String!, students: String!): School
+    updateSchool(id: ID!, name: String!, address: String!, students: String!): School
     deleteSchool(id: ID!): School
   }
 `;
