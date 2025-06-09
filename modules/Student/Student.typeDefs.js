@@ -64,7 +64,7 @@ const typeDefs = gql`
   }
 
   type Mutation {
-    createStudent(firstName: String!, lastName: String!, email: String!, dateOfBirth: Date, schoolId: ID!): Student
+    createStudent(firstName: String!, lastName: String!, email: String!, dateOfBirth: Date, password: String!, schoolId: ID!): Student
     updateStudent(id: ID!, firstName: String, lastName: String, email: String, dateOfBirth: Date, schoolId: ID): Student
     deleteStudent(id: ID!): Student
   }
