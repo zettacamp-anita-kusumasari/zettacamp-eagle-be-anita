@@ -10,7 +10,7 @@ const schoolSchema = new mongoose.Schema({
     // School's address for identification
     address: {
         type: String,
-        default: '',
+        default: 'null',
     },
     // Reference to the Students (one-to-many relationship)
     students: {
