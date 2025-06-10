@@ -40,7 +40,7 @@ const typeDefs = gql`
     id: ID!
     name: String!
     address: String
-    students: [Student]
+    students: Student
   }
 
   type Query {
@@ -49,8 +49,8 @@ const typeDefs = gql`
   }
 
   type Mutation {
-    createSchool(id: ID!, name: String!, address: String!, students: String!): School
-    updateSchool(id: ID!, name: String!, address: String!, students: String!): School
+    createSchool(name: String!, address: String!): School
+    updateSchool(id: ID!, name: String, address: String): School
     deleteSchool(id: ID!): School
   }
 `;
