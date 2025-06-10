@@ -16,7 +16,7 @@ const schoolSchema = new mongoose.Schema({
     students: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Student',
-        required: true,
+        default: null,
     },
     // Soft delete field
     deletedAt: {
