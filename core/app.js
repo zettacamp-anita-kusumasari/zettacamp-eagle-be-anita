@@ -10,6 +10,10 @@ const userTypeDefs = require('../modules/User/User.typeDefs.js');
 const schoolResolvers = require('../modules/School/School.resolvers.js');
 const studentResolvers = require('../modules/Student/Student.resolvers.js');
 const userResolvers = require('../modules/User/User.resolvers.js');
+const DataLoader = require('dataloader');
+const batchUsers = require('../modules/User/User.loader.js');
+const batchSchools = require('../modules/School/School.loader.js');
+const batchStudents = require('../modules/Student/Student.loader.js');
 
 // *************** Get the MONGODB_URI value from environment
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -25,6 +29,11 @@ async function startApolloServer() {
   const server = new ApolloServer({
     typeDefs: [schoolTypeDefs, studentTypeDefs, userTypeDefs],
     resolvers: [schoolResolvers, studentResolvers, userResolvers],
+    context: () => ({
+      userLoader: new DataLoader(batchUsers),
+      schoolLoader: new DataLoader(batchSchools),
+      studentLoader: new DataLoader(batchStudents),
+    }),
   });
 
   // *************** Start the Apollo server
