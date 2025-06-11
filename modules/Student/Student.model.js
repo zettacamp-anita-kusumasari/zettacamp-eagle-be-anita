@@ -21,17 +21,24 @@ const studentSchema = new mongoose.Schema({
     // Student's date of birth for additional data
     dateOfBirth: {
         type: Date,
-        default: null,
+        required: true,
     },
     // Reference to the School the student belongs to
     schoolId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'School', 
-        required: true,
+        default: null,
     },
-    // Soft delete field
-    deleteAt: {
-        type: Date,
+    // Reference to the person who create the student data
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User', 
+        default: null,
+    },
+    // Reference to the person who delete the student data
+    deleteBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User', 
         default: null,
     },
 },{

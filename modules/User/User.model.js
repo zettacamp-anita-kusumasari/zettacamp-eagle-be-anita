@@ -18,20 +18,15 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
-    // Password for authentication
-    password: {
-        type: String,
-        required: true,
-    },
     // Role of the user
     role: {
         type: String,
         required: true,
     },
-    // Soft delete field
-    deletedAt: {
-        type: Date,
-        default: null,
+    // Password for authentication
+    password: {
+        type: String,
+        required: true,
     },
 },{
     // Automatically adds createdAt and updatedAt fields

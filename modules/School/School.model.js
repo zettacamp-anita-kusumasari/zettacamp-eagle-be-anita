@@ -7,10 +7,30 @@ const schoolSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    // School's initial name for identification
+    initial_name: {
+        type: String,
+        required: true,
+    },
     // School's address for identification
     address: {
         type: String,
-        default: 'null',
+        default: null,
+    },
+    // School's city for identification
+    city: {
+        type: String,
+        required: true,
+    },
+    // School's country for identification
+    state: {
+        type: String,
+        required: true,
+    },
+    // School's postal code for identification
+    postal_code: {
+        type: String,
+        required: true,
     },
     // Reference to the Students (one-to-many relationship)
     students: {
@@ -18,9 +38,16 @@ const schoolSchema = new mongoose.Schema({
         ref: 'Student',
         default: null,
     },
-    // Soft delete field
-    deletedAt: {
-        type: Date,
+    // Reference to the person who create the school data
+    CreatedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null,
+    },
+    // Reference to the person who delete the school data
+    deletedBy: {
+         type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         default: null,
     },
 },{
