@@ -15,7 +15,7 @@ const batchUsers = require('../modules/User/User.loader.js');
 const batchSchools = require('../modules/School/School.loader.js');
 const batchStudents = require('../modules/Student/Student.loader.js');
 
-// *************** Get the MONGODB_URI value from environment
+// *************** Get the MONGODB_URI (Uniform Resource Identifier) value from environment
 const MONGODB_URI = process.env.MONGODB_URI;
 
 // *************** Setup PORT Value from Environment
@@ -48,5 +48,5 @@ async function startApolloServer() {
   });
 }
 
-// *************** Invoke the function to launch server
+// *************** Call the function to launch server
 startApolloServer();
