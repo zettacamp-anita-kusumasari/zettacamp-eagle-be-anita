@@ -1,11 +1,13 @@
 // *************** IMPORT CORE ***************
 const Joi = require('joi');
 
-// *************** export school input schema for validation 
+// *************** Define and export the validation schema for student input data 
 exports.studentInputSchema = Joi.object({
-  firstName: Joi.string().required(),
-  lastName: Joi.string().required(),
-  email: Joi.string().required(),
-  dateOfBirth: Joi.date().optional(),
-  schoolId: Joi.date().required()
+  firstName: Joi.string().min(3).max(100).required(),
+  lastName: Joi.string().min(3).max(100).required(),
+  email: Joi.string().min(5).max(50).required(),
+  dateOfBirth: Joi.date().required(),
 });
+
+// *************** EXPORT MODULE ***************
+module.exports = studentInputSchema;
