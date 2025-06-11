@@ -52,20 +52,35 @@ const typeDefs = gql`
     firstName: String!
     lastName: String!
     email: String!
+    dateOfBirth: Date!
+    school: [School]
+    schoolId: ID
+    createdBy: [User]
+    deletedBy: [User] 
+  }
+
+  input Mutation_CreateStudent {
+    firstName: String!
+    lastName: String!
+    email: String!
+    dateOfBirth: Date!
+  }
+
+  input Mutation_UpdateStudent {
+    firstName: String
+    lastName: String
+    email: String
     dateOfBirth: Date
-    school: School
-    schoolId: ID!
-    deletedAt: Date
   }
 
   type Query {
-    students: [Student]
-    student(id: ID!): Student
+    GetAllStudents: [Student]
+    GetOneStudent(id: ID!): Student
   }
 
   type Mutation {
-    createStudent(firstName: String!, lastName: String!, email: String!, dateOfBirth: Date, schoolId: ID!): Student
-    updateStudent(id: ID!, firstName: String, lastName: String, email: String, dateOfBirth: Date, schoolId: ID): Student
+    createStudent(input: Mutation_CreateStudent): Student
+    updateStudent(id: ID!, input: Mutation_UpdateStudent): Student
     deleteStudent(id: ID!): Student
   }
 `;

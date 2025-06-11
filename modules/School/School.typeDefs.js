@@ -39,18 +39,42 @@ const typeDefs = gql`
   type School {
     id: ID!
     name: String!
+    initial_name: String!
     address: String
-    students: Student
+    city: String!
+    country: String!
+    postal_code: String!
+    students: [Student]
+    createdBy: [User]
+    deletedBy: [User]
+  }
+
+  input Mutation_CreateSchool {
+    name: String!
+    initial_name: String!
+    address: String
+    city: String!
+    country: String!
+    postal_code: String!
+  }
+
+  input Mutation_UpdateSchool {
+    name: String
+    initial_name: String
+    address: String
+    city: String
+    country: String
+    postal_code: String
   }
 
   type Query {
-    schools: [School]
-    school(id: ID!): School
+    GetAllSchools: [School]
+    GetOneSchool(id: ID!): School
   }
 
   type Mutation {
-    createSchool(name: String!, address: String!): School
-    updateSchool(id: ID!, name: String, address: String): School
+    createSchool(input: Mutation_CreateSchool): School
+    updateSchool(id: ID!, input: Mutation_UpdateSchool): School
     deleteSchool(id: ID!): School
   }
 `;

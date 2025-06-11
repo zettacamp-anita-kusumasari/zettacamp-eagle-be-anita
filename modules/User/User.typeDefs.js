@@ -50,17 +50,32 @@ const typeDefs = gql`
     email: String!
     role: String!
     password: String!
-    deletedAt: Date
+  }
+
+  input Mutation_CreateUser {
+    firstName: String!
+    lastName: String!
+    email: String!
+    role: String!
+    password: String!
+  }
+
+  input Mutation_UpdateUser {
+    firstName: String
+    lastName: String
+    email: String
+    role: String
+    password: String
   }
 
   type Query {
-    users: [User]
-    user(id: ID!): User
+    GetAllUsers: [User]
+    GetOneUser(id: ID!): User
   }
 
   type Mutation {
-    createUser(firstName: String!, lastName: String!, email: String!, role: String!, password: String!): User
-    updateUser(id: ID!, firstName: String, lastName: String, email: String, role: String, password: String): User
+    createUser(input: Mutation_CreateUser): User
+    updateUser(id: ID!, input: Mutation_UpdateUser): User
     deleteUser(id: ID!): User
   }
 `;
