@@ -7,36 +7,44 @@ const { gql } = require('apollo-server-express');
  * Scalars:
  * @scalar Date - Custom scalar type to represent date values.
  *
- * Types:
  * @type User
  * @property {ID!} id - Unique identifier for the user.
  * @property {String!} firstName - First name of the user.
  * @property {String!} lastName - Last name of the user.
  * @property {String!} email - Email address of the user.
  * @property {String!} role - Role assigned to the user (e.g., admin, teacher).
- * @property {Date} deletedAt - Timestamp for soft delete (null if not deleted).
+ * @property {String!} password - Hashed password of the user.
+ *
+ * Inputs:
+ * @input Mutation_CreateUser - Input type for creating a user.
+ *   @field {String!} firstName
+ *   @field {String!} lastName
+ *   @field {String!} email
+ *   @field {String!} role
+ *   @field {String!} password
+ *
+ * @input Mutation_UpdateUser - Input type for updating a user.
+ *   @field {String} firstName
+ *   @field {String} lastName
+ *   @field {String} email
+ *   @field {String} role
+ *   @field {String} password
  *
  * Queries:
- * @query users - Retrieve all users.
- * @query user(id: ID!) - Retrieve a user by ID.
+ * @query GetAllUsers - Retrieve all users.
+ * @query GetOneUser(id: ID!) - Retrieve a user by ID.
  *
  * Mutations:
  * @mutation createUser - Create a new user.
- *   @param {String!} firstName - First name of the user.
- *   @param {String!} lastName - Last name of the user.
- *   @param {String!} email - Email address of the user.
- *   @param {String!} role - Role of the user.
+ *   @param {Mutation_CreateUser} input - User creation fields.
  *   @returns {User}
  *
- * @mutation updateUser - Update an existing user by ID.
+ * @mutation updateUser - Update an existing user.
  *   @param {ID!} id - ID of the user to update.
- *   @param {String} firstName - New first name (optional).
- *   @param {String} lastName - New last name (optional).
- *   @param {String} email - New email (optional).
- *   @param {String} role - New role (optional).
+ *   @param {Mutation_UpdateUser} input - Fields to update.
  *   @returns {User}
  *
- * @mutation deleteUser - Soft delete a user by ID.
+ * @mutation deleteUser - Delete a user by ID.
  *   @param {ID!} id - ID of the user to delete.
  *   @returns {User}
  */

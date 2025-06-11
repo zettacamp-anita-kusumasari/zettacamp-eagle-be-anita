@@ -7,40 +7,45 @@ const { gql } = require('apollo-server-express');
  * Scalars:
  * @scalar Date - Custom scalar type to represent date values.
  *
- * Types:
  * @type Student
  * @property {ID!} id - Unique identifier for the student.
  * @property {String!} firstName - First name of the student.
  * @property {String!} lastName - Last name of the student.
  * @property {String!} email - Email address of the student.
- * @property {Date} dateOfBirth - Birth date of the student.
- * @property {School} school - Associated school object.
- * @property {ID!} schoolId - ID of the associated school.
- * @property {Date} deletedAt - Timestamp for soft delete (null if not deleted).
+ * @property {Date!} dateOfBirth - Date of birth of the student.
+ * @property {[School]} school - Schools the student is enrolled in.
+ * @property {ID} schoolId - Identifier of the related school (optional).
+ * @property {[User]} createdBy - Users who created the student record.
+ * @property {[User]} deletedBy - Users who deleted the student record.
+ *
+ * Inputs:
+ * @input Mutation_CreateStudent - Input type for creating a student.
+ *   @field {String!} firstName
+ *   @field {String!} lastName
+ *   @field {String!} email
+ *   @field {Date!} dateOfBirth
+ *
+ * @input Mutation_UpdateStudent - Input type for updating a student.
+ *   @field {String} firstName
+ *   @field {String} lastName
+ *   @field {String} email
+ *   @field {Date} dateOfBirth
  *
  * Queries:
- * @query students - Retrieve all students.
- * @query student(id: ID!) - Retrieve a student by ID.
+ * @query GetAllStudents - Retrieve all students.
+ * @query GetOneStudent(id: ID!) - Retrieve a student by ID.
  *
  * Mutations:
  * @mutation createStudent - Create a new student.
- *   @param {String!} firstName - First name of the student.
- *   @param {String!} lastName - Last name of the student.
- *   @param {String!} email - Email address of the student.
- *   @param {Date} dateOfBirth - Date of birth of the student.
- *   @param {ID!} schoolId - ID of the school the student belongs to.
+ *   @param {Mutation_CreateStudent} input - Student creation fields.
  *   @returns {Student}
  *
- * @mutation updateStudent - Update an existing student by ID.
+ * @mutation updateStudent - Update an existing student.
  *   @param {ID!} id - ID of the student to update.
- *   @param {String} firstName - New first name (optional).
- *   @param {String} lastName - New last name (optional).
- *   @param {String} email - New email (optional).
- *   @param {Date} dateOfBirth - New date of birth (optional).
- *   @param {ID} schoolId - New school ID (optional).
+ *   @param {Mutation_UpdateStudent} input - Fields to update.
  *   @returns {Student}
  *
- * @mutation deleteStudent - Soft delete a student by ID.
+ * @mutation deleteStudent - Delete a student by ID.
  *   @param {ID!} id - ID of the student to delete.
  *   @returns {Student}
  */
