@@ -1,38 +1,25 @@
-// *************** IMPORT CORE ***************
-const Student = require('./Student.model');
+// *************** IMPORT HELPER FUNCTION ***************
+const getAllStudents = require('./Student.helper.js');
+const getOneStudent = require('./Student.helper.js');
+const createStudent = require('./Student.helper.js');
+const updateStudent = require('./Student.helper.js');
+const deleteStudent = require('./Student.helper.js');
+const school = require('./Student.helper.js');
 
 const resolvers = {
+  // *************** QUERY ***************
   Query: {
-    // *************** To fetch all the students
-    GetAllStudents: async () => await Student.find({}),
-
-    // *************** To fetch a single student by ID
-    GetOneStudent: async (_, { id }) => await Student.findById(id),
+    getAllStudents, getOneStudent
   },
-
+  
+  // *************** MUTATION ***************
   Mutation: {
-    // *************** Create a new student with provided args (arguments/parameters)
-    createStudent: async (_, args) => {
-      const student = new Student(args);
-      return await student.save();
-    },
-
-    // *************** Update student by ID, returning the updated document
-    updateStudent: async (_, { id, ...updates }) => {
-      return await Student.findByIdAndUpdate(id, updates, { new: true });
-    },
-
-    // *************** Soft delete a student by setting deletedAt to current date
-    deleteStudent: async (_, { id }) => {
-      return await Student.findByIdAndUpdate(id, { deletedAt: new Date() }, { new: true });
-    },
+    createStudent, updateStudent, deleteStudent
   },
 
+  // *************** Helper for resolve the school field for a student
   Student: {
-    // *************** Resolve the school field for a student by finding school with student.schoolId
-    school: async (student) => {
-      return await School.findById(student.schoolId);
-    },
+    school
   },
 };
 

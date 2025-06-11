@@ -1,31 +1,19 @@
-// *************** IMPORT CORE ***************
-const User = require('./User.model');
+// *************** IMPORT HELPER FUNCTION ***************
+const getAllUsers = require('./User.helper.js');
+const getOneUser = require('./User.helper.js');
+const createUser = require('./User.helper.js');
+const updateUser = require('./User.helper.js');
+const deleteUser = require('./User.helper.js');
 
 const resolvers = {
+  // *************** QUERY ***************
   Query: {
-    // *************** To fetch all users
-    GetAllUsers: async () => await User.find({}),
-
-    // *************** To fetch a single user by ID
-    GetOneUser: async (_, { id }) => await User.findById(id),
+    getAllUsers, getOneUser,
   },
 
+  // *************** MUTATION ***************
   Mutation: {
-    // *************** Create a new user with provided args (arguments/parameters)
-    createUser: async (_, args) => {
-      const user = new User(args);
-      return await user.save();
-    },
-
-    // *************** Update user by ID, returning the updated document
-    updateUser: async (_, { id, ...updates }) => {
-      return await User.findByIdAndUpdate(id, updates, { new: true });
-    },
-
-    // *************** Soft delete a user by setting deletedAt to current date
-    deleteUser: async (_, { id }) => {
-      return await User.findByIdAndUpdate(id, { deletedAt: new Date() }, { new: true });
-    },
+    createUser, updateUser, deleteUser,
   },
 };
 
