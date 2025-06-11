@@ -4,14 +4,14 @@ const School = require('./School.model');
 const resolvers = {
   Query: {
     // *************** To fetch all the schools
-    schools: async () => await School.find({}),
+    GetAllSchools: async () => await School.find({}),
 
     // *************** To fetch a single school by ID
-    school: async (_, { id }) => await School.findById(id),
+    GetOneSchool: async (_, { id }) => await School.findById(id),
   },
 
   Mutation: {
-    // *************** Create a new school with provided args (arguments/parameters)
+    // *************** Create a new school with provided args (arguments | parameters)
     createSchool: async (_, args) => {
       const school = new School(args);
       return await school.save();

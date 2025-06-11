@@ -4,14 +4,10 @@ const User = require('./User.model');
 const resolvers = {
   Query: {
     // *************** To fetch all users
-    users: async () => await User.find({}),
+    GetAllUsers: async () => await User.find({}),
 
     // *************** To fetch a single user by ID
-    user: async (_, { id }) => await User.findById(id),
-    // *************** To load the data using dataloader
-    user: (_, { id }) => userLoader.load(id),
-    // *************** To load many data using dataloader
-    users: (_, { ids }) => userLoader.loadMany(ids),
+    GetOneUser: async (_, { id }) => await User.findById(id),
   },
 
   Mutation: {

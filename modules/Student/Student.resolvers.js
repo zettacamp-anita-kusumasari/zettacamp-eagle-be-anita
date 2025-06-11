@@ -4,10 +4,10 @@ const Student = require('./Student.model');
 const resolvers = {
   Query: {
     // *************** To fetch all the students
-    students: async () => await Student.find({}),
+    GetAllStudents: async () => await Student.find({}),
 
     // *************** To fetch a single student by ID
-    student: async (_, { id }) => await Student.findById(id),
+    GetOneStudent: async (_, { id }) => await Student.findById(id),
   },
 
   Mutation: {
