@@ -10,6 +10,8 @@ const userTypeDefs = require('../modules/User/User.typeDefs.js');
 const schoolResolvers = require('../modules/School/School.resolvers.js');
 const studentResolvers = require('../modules/Student/Student.resolvers.js');
 const userResolvers = require('../modules/User/User.resolvers.js');
+
+// *************** LOADER ***************
 const DataLoader = require('dataloader');
 const batchUsers = require('../modules/User/User.loader.js');
 const batchSchools = require('../modules/School/School.loader.js');
