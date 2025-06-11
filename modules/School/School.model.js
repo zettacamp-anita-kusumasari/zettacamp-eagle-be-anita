@@ -23,7 +23,7 @@ const schoolSchema = new mongoose.Schema({
         required: true,
     },
     // School's country for identification
-    state: {
+    country: {
         type: String,
         required: true,
     },
