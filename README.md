@@ -1,7 +1,7 @@
-# 1.6. Implement CRUD Resolvers for School Model
+# 1.7. Implement DataLoader for School-Student Relationship
 
 ## Description:
-Develop the GraphQL resolver functions for the School model to handle all Create, Read, Update, and Soft Delete (CRUD) operations. This includes implementing resolvers for queries to fetch lists of schools and individual schools by ID, and mutations to create, update, and soft delete school records, ensuring all interactions persist data using Mongoose and MongoDB.
+Optimize data fetching for the one-to-many relationship between School and Student models by implementing DataLoader. This task focuses on preventing the N+1 query problem by ensuring efficient data retrieval for related entities in both directions: when resolving students for a given school, and when resolving the associated school for a given student.
 
 ## Acceptance Criteria:
-GraphQL queries (GetAllSchools, GetOneSchool(id: ID!)) and mutations (CreateSchool, UpdateSchool, DeleteSchool) for the School model are fully functional and correctly interact with the database.
+DataLoader is correctly implemented and integrated into the resolvers for both School to Student and Student to School relationships, leading to optimized database queries.
