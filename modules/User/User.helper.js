@@ -1,7 +1,14 @@
 // *************** IMPORT CORE ***************
 const User = require('./User.model.js');
 
-// *************** To fetch all users
+/**
+ * Retrieves all users from the database.
+ *
+ * @async
+ * @function getAllUsers
+ * @returns {Promise<Array<Object>>} A promise that resolves to an array of user objects.
+ * @throws {Error} Throws an error if there is a problem fetching the users.
+ */
 async function getAllUsers() {
   try {
     const users = await User.find({});
@@ -12,7 +19,17 @@ async function getAllUsers() {
   }
 }
 
-// *************** To fetch a single user by ID
+/**
+ * Retrieves a single user by their ID.
+ *
+ * @async
+ * @function getOneUser
+ * @param {Object} _ - Unused first argument (commonly used in GraphQL resolvers).
+ * @param {Object} params - The parameters object.
+ * @param {string} params.id - The ID of the user to retrieve.
+ * @returns {Promise<Object|null>} A promise that resolves to the user object if found, or null if not found.
+ * @throws {Error} Throws an error if there is a problem fetching the user.
+ */
 async function getOneUser(_, { id }) {
   try {
     const user = await User.findById(id);
@@ -23,7 +40,16 @@ async function getOneUser(_, { id }) {
   }
 }
 
-// *************** Create a new user with provided arguments
+/**
+ * Creates a new user using the provided arguments.
+ *
+ * @async
+ * @function createUser
+ * @param {Object} _ - Unused first argument (commonly used in GraphQL resolvers).
+ * @param {Object} args - The arguments containing user data (e.g., name, email, password, etc.).
+ * @returns {Promise<Object>} A promise that resolves to the newly created user object.
+ * @throws {Error} Throws an error if the user creation fails.
+ */
 async function createUser (_, args) {
   try {
     const user = new User(args);
@@ -34,7 +60,18 @@ async function createUser (_, args) {
   }
 }
 
-// *************** Update user by ID, returning the updated document
+/**
+ * Updates an existing user by their ID with the provided update fields.
+ *
+ * @async
+ * @function updateUser
+ * @param {Object} _ - Unused first argument (commonly used in GraphQL resolvers).
+ * @param {Object} params - The parameters object.
+ * @param {string} params.id - The ID of the user to update.
+ * @param {Object} params.updates - An object containing the fields to update in the user document.
+ * @returns {Promise<Object>} A promise that resolves to the updated user object.
+ * @throws {Error} Throws an error if the user is not found or if the update operation fails.
+ */
 async function updateUser(_, { id, ...updates }) {
   try {
     const updatedUser = await User.findByIdAndUpdate(id, updates, { new: true });
@@ -48,7 +85,17 @@ async function updateUser(_, { id, ...updates }) {
   }
 }
 
-// *************** Soft delete a user by setting deletedAt to current date
+/**
+ * Soft deletes a user by setting the `deletedAt` timestamp.
+ *
+ * @async
+ * @function deleteUser
+ * @param {Object} _ - Unused first argument (commonly used in GraphQL resolvers).
+ * @param {Object} params - The parameters object.
+ * @param {string} params.id - The ID of the user to be soft deleted.
+ * @returns {Promise<Object>} A promise that resolves to the updated (soft-deleted) user object.
+ * @throws {Error} Throws an error if the user is not found or the delete operation fails.
+ */
 async function deleteUser(_, { id }) {
   try {
     const deletedUser = await User.findByIdAndUpdate(
