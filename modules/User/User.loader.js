@@ -1,6 +1,6 @@
 // *************** IMPORT CORE ***************
 const DataLoader = require('dataloader');
-const db = require('../../core/database');
+const database = require('../../core/database');
 
 /**
  * Fetches a list of user data based on given IDs.
@@ -21,7 +21,7 @@ const db = require('../../core/database');
  * // [ { id: 1, name: "User A" }, undefined, { id: 3, name: "User C" } ]
  */
 const batchUsers = async (ids) => {
-  const users = await db.getUsersByIds(ids);
+  const users = await database.getUsersByIds(ids);
   const userMap = new Map(users.map(user => [user.id, user]));
   return ids.map(id => userMap.get(id));
 };

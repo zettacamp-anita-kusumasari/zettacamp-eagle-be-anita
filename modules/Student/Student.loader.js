@@ -1,6 +1,6 @@
 // *************** IMPORT CORE ***************
 const DataLoader = require('dataloader');
-const db = require('../../core/database');
+const database = require('../../core/database');
 
 /**
  * Fetches a list of school data based on given IDs.
@@ -21,7 +21,7 @@ const db = require('../../core/database');
  * // [ { id: 1, name: "Student A" }, undefined, { id: 3, name: "Student C" } ]
  */
 const batchStudents = async (ids) => {
-  const students = await db.getStudentsByIds(ids);
+  const students = await database.getStudentsByIds(ids);
   const studentMap = new Map(students.map(student => [student.id, student]));
   return ids.map(id => studentMap.get(id));
 };
