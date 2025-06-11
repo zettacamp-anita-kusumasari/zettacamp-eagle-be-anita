@@ -39,7 +39,7 @@ const schoolSchema = new mongoose.Schema({
         default: null,
     },
     // Reference to the person who create the school data
-    CreatedBy: {
+    createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         default: null,
