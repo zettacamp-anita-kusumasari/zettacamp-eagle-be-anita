@@ -1,28 +1,37 @@
 // *************** IMPORT CORE ***************
-const DataLoader = require('dataloader');
 const database = require('../../core/database');
 
+// *************** IMPORT VALIDATOR ***************
+const { validateStudent } = require('./Student.validator.js');
+
+// *************** LOADER ***************
+const DataLoader = require('dataloader');
+
 /**
- * Fetches a list of school data based on given IDs.
- * This function makes sure the result is in the same order as the input IDs.
- * If a student is not found for an ID, it will return `undefined` in that position.
+ * Batches and retrieves student data by an array of IDs, validates each student,
+ * and returns them in the same order as the input IDs.
  *
- * This is useful when used with DataLoader to avoid multiple database calls.
+ * For each student, the function:
+ * - Fetches the student from the database.
+ * - Validates the student using `validateStudent`.
+ * - Logs an error and returns `undefined` if validation fails.
  *
  * @async
  * @function batchStudents
- * @param {Array<string|number>} ids - An array of school IDs to look up.
- * @returns {Promise<Array<Object|undefined>>} - A Promise that resolves to an array of school objects.
- * The order matches the input IDs. If a student is not found, the result will include `undefined` for that ID.
- *
- * @example
- * const results = await batchStudents([1, 2, 3]);
- * // Output might look like:
- * // [ { id: 1, name: "Student A" }, undefined, { id: 3, name: "Student C" } ]
+ * @param {Array<string|number>} ids - An array of student IDs to fetch.
+ * @returns {Promise<Array<Object|undefined>>} A promise that resolves to an array of validated student objects.
+ * The order of the array matches the input `ids`. If a student's data is invalid, `undefined` is returned for that ID.
  */
 const batchStudents = async (ids) => {
   const students = await database.getStudentsByIds(ids);
-  const studentMap = new Map(students.map(student => [student.id, student]));
+  const studentMap = new Map(students.map(student => {
+    try {
+      return [student.id, validateStudent(student)];
+    } catch (err) {
+      console.error(`Invalid student data: ${err.message}`);
+      return [student.id, undefined];
+    }
+  }));
   return ids.map(id => studentMap.get(id));
 };
 

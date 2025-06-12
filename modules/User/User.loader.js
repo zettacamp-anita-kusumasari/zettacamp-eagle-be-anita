@@ -1,28 +1,37 @@
 // *************** IMPORT CORE ***************
-const DataLoader = require('dataloader');
 const database = require('../../core/database');
 
+// *************** IMPORT VALIDATOR ***************
+const { validateUser } = require('./User.validator');
+
+// *************** LOADER ***************
+const DataLoader = require('dataloader');
+
 /**
- * Fetches a list of user data based on given IDs.
- * This function makes sure the result is in the same order as the input IDs.
- * If a user is not found for an ID, it will return `undefined` in that position.
+ * Batches and retrieves user data by an array of IDs, validates each user,
+ * and returns them in the same order as the input IDs.
  *
- * This is useful when used with DataLoader to avoid multiple database calls.
+ * For each user:
+ * - Fetches the user from the database.
+ * - Validates the user using `validateUser`.
+ * - Logs an error and assigns `undefined` if validation fails.
  *
  * @async
  * @function batchUsers
- * @param {Array<string|number>} ids - An array of school IDs to look up.
- * @returns {Promise<Array<Object|undefined>>} - A Promise that resolves to an array of user objects.
- * The order matches the input IDs. If a student is not found, the result will include `undefined` for that ID.
- *
- * @example
- * const results = await batchUsers([1, 2, 3]);
- * // Output might look like:
- * // [ { id: 1, name: "User A" }, undefined, { id: 3, name: "User C" } ]
+ * @param {Array<string|number>} ids - An array of user IDs to fetch.
+ * @returns {Promise<Array<Object|undefined>>} A promise that resolves to an array of validated user objects.
+ * The order of the array matches the input `ids`. If a user's data is invalid, `undefined` is returned for that ID.
  */
 const batchUsers = async (ids) => {
   const users = await database.getUsersByIds(ids);
-  const userMap = new Map(users.map(user => [user.id, user]));
+  const userMap = new Map(users.map(user => {
+    try {
+      return [user.id, validateStudent(user)];
+    } catch (err) {
+      console.error(`Invalid user data: ${err.message}`);
+      return [user.id, undefined];
+    }
+  }));
   return ids.map(id => userMap.get(id));
 };
 
