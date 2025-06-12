@@ -17,7 +17,7 @@ const resolvers = {
     createSchool, updateSchool, deleteSchool
   },
 
-  // *************** Helper for resolve the students field for a school
+  // *************** For resolve the students field for a school
   School: {
     students
   },
