@@ -26,7 +26,22 @@ const PORT = process.env.PORT || 4000;
 // ****************** Calling the connectDB to connect the app with the MongoDB database
 connectDB(MONGODB_URI);
 
-// *************** Async function to start Apollo Server and integrate it with Express app
+/**
+ * Asynchronously starts an Apollo Server instance and integrates it with the Express application.
+ *
+ * This function initializes the Apollo Server with the defined GraphQL type definitions and resolvers
+ * for schools, students, and users. It also sets up the context with DataLoaders for batching and caching
+ * database requests efficiently.
+ *
+ * The `context` provides:
+ * - `userLoader`: A DataLoader for batching user data requests.
+ * - `schoolLoader`: A DataLoader for batching school data requests.
+ * - `studentLoader`: A DataLoader for batching student data requests.
+ *
+ * @async
+ * @function startApolloServer
+ * @returns {Promise<void>} A promise that resolves once the Apollo Server is successfully started.
+ */
 async function startApolloServer() {
   const server = new ApolloServer({
     typeDefs: [schoolTypeDefs, studentTypeDefs, userTypeDefs],
