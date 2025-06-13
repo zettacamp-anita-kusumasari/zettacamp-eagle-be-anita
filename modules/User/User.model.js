@@ -30,7 +30,10 @@ const userSchema = new mongoose.Schema({
     },
 },{
     // Automatically adds createdAt and updatedAt fields
-    timestamps: true,
+    timestamps: {
+        createdAt: 'createdAt',
+        updatedAt: 'updatedAt'
+    }
 });
 
 // *************** EXPORT MODULE ***************

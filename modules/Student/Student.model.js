@@ -5,45 +5,45 @@ const studentSchema = new mongoose.Schema({
     // Student's first name for identification
     firstName: {
         type: String,
-        required: true,
+        required: true
     },
     // Student's last name for identification
     lastName: {
         type: String,
-        required: true,
+        required: true
     },
     // Student's email for identification
     email: {
         type: String,
         required: true,
-        unique: true,
+        unique: true
     },
     // Student's date of birth for additional data
     dateOfBirth: {
         type: Date,
-        required: true,
+        required: true
     },
     // Reference to the School the student belongs to
     schoolId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'School', 
-        default: null,
+        ref: 'School' 
     },
     // Reference to the person who create the student data
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', 
-        default: null,
+        ref: 'User' 
     },
     // Reference to the person who delete the student data
     deleteBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', 
-        default: null,
+        ref: 'User' 
     },
 },{
     // Automatically adds createdAt and updateAt fields
-    timestamps: true,
+    timestamps: {
+        createdAt: 'createdAt',
+        updatedAt: 'updatedAt'
+    }
 });
 
 // *************** EXPORT MODULE ***************
