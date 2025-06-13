@@ -1,32 +1,52 @@
-// *************** IMPORT CORE ***************
-const database = require('../../core/database');
-
-// *************** IMPORT VALIDATOR ***************
-const { validateSchool } = require('./School.validator.js');
-
-// *************** LOADER ***************
+// *************** IMPORT LIBRARY ***************
 const DataLoader = require('dataloader');
 
+// *************** IMPORT MODULE ***************
+const SchoolModel = require('./School.model.js');
+
+// *************** IMPORT VALIDATOR ***************
+const validateSchool = require('./School.validator.js');
+
 /**
- * Batches and retrieves school data by an array of IDs, validates each school,
- * and maps the result in the same order as the input IDs.
- *
- * @param {Array<string|number>} ids - An array of school IDs to fetch.
- * @returns {Promise<Array<Object|undefined>>} A promise that resolves to an array of validated school objects,
- * in the same order as the input IDs. If validation fails for a school, `undefined` is returned for that ID.
+ * Batch loads and validates a list of schools based on an array of school IDs.
+ * 
+ * This function retrieves schools from the database whose `_id` matches any in the `ids` array.
+ * Each school is validated using `validateSchool`, and the results are returned in the same order as the input IDs.
+ * If validation fails for a specific school, `undefined` is returned in its place.
+ * 
+ * @async
+ * @function
+ * @param {Array<string>} ids - An array of MongoDB ObjectId strings representing school IDs to be fetched.
+ * @returns {Promise<Array<Object|undefined>>} A Promise that resolves to an array of validated school objects
+ *   (or `undefined` for entries that failed validation), in the same order as the input `ids`.
  */
-const batchSchools = async (ids) => {
-  const schools = await database.getSchoolsByIds(ids);
-  const schoolMap = new Map(schools.map(school => {
+async function batchSchools(ids) {
+  // *************** Fetch all schools from the database whose IDs are in the input array
+  const schools = await SchoolModel.find({ _id: { $in: ids } });
+  // *************** Map from ID to validated school
+  const schoolMap = new Map();
+  // *************** Iterate through each retrieved school document
+  for (const school of schools) {
     try {
-      return [school.id, validateSchool(school)];
-    } catch (err) {
-      console.error(`Invalid school data: ${err.message}`);
-      return [school.id, undefined];
+      // *************** Convert Mongoose document to plain object and validate it
+      const validated = validateSchool(school.toObject());
+      // *************** Store the validated school in the map using its ID as the key
+      schoolMap.set(String(school._id), validated);
+    } catch (error) {
+      // *************** Log an error if validation fails
+      console.error(`Validation failed for school ${school._id}:`, error.message);
+      // *************** Store undefined for failed validations to preserve order
+      schoolMap.set(String(school._id), undefined);
     }
-  }));
-  return ids.map(id => schoolMap.get(id));
-};
+  }
+  // Return the results in the same order as the input IDs
+  return ids.map(id => schoolMap.get(String(id)));
+}
+
+// *************** Creates a DataLoader instance for schools
+function createSchoolLoader() {
+  return new DataLoader(batchSchools);
+}
 
 // *************** EXPORT MODULE ***************
-module.exports = batchSchools;
+module.exports = createSchoolLoader;
