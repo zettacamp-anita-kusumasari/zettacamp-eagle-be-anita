@@ -15,8 +15,8 @@ const Joi = require('joi');
  * @property {string} email - Required. The user's email address (5–50 characters).
  * @property {string} role - Required. The user's role or access level (3–50 characters).
  * @property {string} password - Required. The user's password (5–50 characters).
- * @property {Date} [createdAt] - Optional. Timestamp for when the user was created.
- * @property {Date} [updatedAt] - Optional. Timestamp for when the user was last updated.
+ * @property {Date} [created_at] - Optional. Timestamp for when the user was created.
+ * @property {Date} [updated_at] - Optional. Timestamp for when the user was last updated.
  */
 const userSchema = Joi.object({
   firstName: Joi.string().min(3).max(100).required(),
@@ -24,7 +24,7 @@ const userSchema = Joi.object({
   email: Joi.string().min(5).max(50).required(),
   role: Joi.string().min(3).max(50).required(),
   password: Joi.string().min(5).max(50).required(),
-  createdAt: Joi.date().optional(),
+  created_at: Joi.date().optional(),
   updatedAt: Joi.date().optional()
 });
 

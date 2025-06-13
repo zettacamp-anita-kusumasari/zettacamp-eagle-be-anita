@@ -8,7 +8,7 @@ const Joi = require('joi');
  * before it is created or updated in the database.
  * It enforces constraints such as required fields, string lengths, object ID formats,
  * and optional date fields. It also supports flexible formats for related object references
- * (e.g., `students`, `createdBy`, `deletedBy`) allowing either an ObjectId string or full object.
+ * (e.g., `students`, `created_by`, `deleted_by`) allowing either an ObjectId string or full object.
  *
  * @constant
  * @type {Joi.ObjectSchema}
@@ -20,11 +20,11 @@ const Joi = require('joi');
  * @property {string} country - Required. Country name. Min 2, max 100 characters.
  * @property {string} postal_code - Required. Postal code. Min 3, max 15 characters.
  * @property {string|Object} [students] - Optional. A single student ID (24-char hex string) or object.
- * @property {string|Object} [createdBy] - Optional. User ID (24-char hex string) or user object.
- * @property {string|Object} [deletedBy] - Optional. User ID (24-char hex string) or user object.
- * @property {Date} [createdAt] - Optional. Date when the school was created.
- * @property {Date} [updatedAt] - Optional. Date when the school was last updated.
- * @property {Date} [deletedAt] - Optional. Date when the school was deleted.
+ * @property {string|Object} [created_by] - Optional. User ID (24-char hex string) or user object.
+ * @property {string|Object} [deleted_by] - Optional. User ID (24-char hex string) or user object.
+ * @property {Date} [created_at] - Optional. Date when the school was created.
+ * @property {Date} [updated_at] - Optional. Date when the school was last updated.
+ * @property {Date} [deleted_at] - Optional. Date when the school was deleted.
  */
 const schoolSchema = Joi.object({
   name: Joi.string().min(2).max(100).required(),
@@ -34,10 +34,10 @@ const schoolSchema = Joi.object({
   country: Joi.string().min(2).max(100).required(),
   postal_code: Joi.string().min(3).max(15).required(),
   students: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
-  createdBy: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
-  deletedBy: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
-  createdAt: Joi.date().optional(),
-  updatedAt: Joi.date().optional(),
+  created_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
+  deleted_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
+  created_at: Joi.date().optional(),
+  updated_at: Joi.date().optional(),
   deletedAt: Joi.date().optional()
 });
 
