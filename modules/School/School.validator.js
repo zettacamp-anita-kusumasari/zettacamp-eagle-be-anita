@@ -1,51 +1,69 @@
-// *************** IMPORT CORE ***************
+// *************** IMPORT LIBRARY ***************
 const Joi = require('joi');
 
 /**
- * Defines the validation schema for school input using Joi.
+ * Joi validation schema for a School object.
  *
- * This schema ensures that input data for creating or updating a school
- * meets the expected structure and constraints:
- * - `name` must be a non-empty string (3–100 characters).
- * - `address` is optional but must be 3–200 characters if provided.
- * - `city`, `country`, and `postal_code` are required strings with 3–50 characters.
+ * This schema is used to validate the structure and data types of a school object
+ * before it is created or updated in the database.
+ * It enforces constraints such as required fields, string lengths, object ID formats,
+ * and optional date fields. It also supports flexible formats for related object references
+ * (e.g., `students`, `createdBy`, `deletedBy`) allowing either an ObjectId string or full object.
  *
  * @constant
  * @type {Joi.ObjectSchema}
- * @name schoolInputSchema
+ *
+ * @property {string} name - Required. School's full name. Min 2, max 100 characters.
+ * @property {string} initial_name - Required. Shortened or initial name. Min 1, max 20 characters.
+ * @property {string} address - Required. Full address. Min 5, max 200 characters.
+ * @property {string} city - Required. City name. Min 2, max 100 characters.
+ * @property {string} country - Required. Country name. Min 2, max 100 characters.
+ * @property {string} postal_code - Required. Postal code. Min 3, max 15 characters.
+ * @property {string|Object} [students] - Optional. A single student ID (24-char hex string) or object.
+ * @property {string|Object} [createdBy] - Optional. User ID (24-char hex string) or user object.
+ * @property {string|Object} [deletedBy] - Optional. User ID (24-char hex string) or user object.
+ * @property {Date} [createdAt] - Optional. Date when the school was created.
+ * @property {Date} [updatedAt] - Optional. Date when the school was last updated.
+ * @property {Date} [deletedAt] - Optional. Date when the school was deleted.
  */
-const schoolInputSchema = Joi.object({
-  name: Joi.string().min(3).max(100).required(),
-  address: Joi.string().min(3).max(200).optional(),
-  city: Joi.string().min(3).max(50).required(),
-  country: Joi.string().min(3).max(50).required(),
-  postal_code: Joi.string().min(3).max(50).required()
+const schoolSchema = Joi.object({
+  name: Joi.string().min(2).max(100).required(),
+  initial_name: Joi.string().min(1).max(20).required(),
+  address: Joi.string().min(5).max(200).required(),
+  city: Joi.string().min(2).max(100).required(),
+  country: Joi.string().min(2).max(100).required(),
+  postal_code: Joi.string().min(3).max(15).required(),
+  students: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
+  createdBy: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
+  deletedBy: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
+  createdAt: Joi.date().optional(),
+  updatedAt: Joi.date().optional(),
+  deletedAt: Joi.date().optional()
 });
 
 /**
- * Validates a school input object against the `schoolInputSchema`.
+ * Validates input data against the school schema.
  *
- * This function checks whether the provided data adheres to the required structure
- * and value constraints defined for a school input. If the validation fails,
- * it throws an error with a descriptive message.
+ * This function uses the predefined `schoolSchema` (a Joi schema) to validate
+ * the structure and values of a school object. If the input is valid,
+ * the sanitized and validated value is returned. Otherwise, it throws an error
+ * describing the validation failure.
  *
- * @function validateSchool
- * @param {Object} data - The school input data to validate.
- * @param {string} data.name - The name of the school (3–100 characters).
- * @param {string} [data.address] - The optional address of the school (3–200 characters).
- * @param {string} data.city - The city where the school is located (3–50 characters).
- * @param {string} data.country - The country where the school is located (3–50 characters).
- * @param {string} data.postal_code - The postal or ZIP code (3–50 characters).
- * @throws {Error} If validation fails, an error is thrown with a message indicating the reason.
- * @returns {Object} The validated and possibly transformed school data.
+ * @function
+ * @param {Object} input - The input object representing a school to be validated.
+ * @returns {Object} - The validated and possibly transformed school object.
+ * @throws {Error} - Throws an error if validation fails with details from Joi.
  */
-const validateSchool = (data) => {
-  const { error, value } = schoolInputSchema.validate(data);
+function validateSchool(input) {
+  // *************** Perform validation using the predefined schoolSchema
+  const { error, value } = schoolSchema.validate(input);
+  // *************** If validation fails, throw an error with the validation message
   if (error) {
-    throw new Error(`Validation error: ${error.message}`);
+    throw new Error(`School validation failed: ${error.message}`);
   }
+  // *************** If validation succeeds, return the validated and possibly transformed value
   return value;
-};
+}
 
 // *************** EXPORT MODULE ***************
 module.exports = validateSchool;

@@ -1,50 +1,66 @@
 // *************** IMPORT CORE ***************
 const Joi = require('joi');
+const mongoose = require('mongoose');
 
 /**
- * Joi schema for validating student input data.
+ * Joi validation schema for a Student input object.
  *
- * This schema enforces the structure and constraints for a student object:
- * - `id`: required, must be a number or string.
- * - `firstName`: required, string between 3–100 characters.
- * - `lastName`: required, string between 3–100 characters.
- * - `email`: required, string between 5–50 characters.
- * - `dateOfBirth`: required, valid date object.
+ * This schema is used to validate the structure and constraints of student input data
+ * before creating or updating a student record. It ensures required fields are present,
+ * and that they conform to the expected format and length. Additionally, `schoolId` is
+ * validated as a proper MongoDB ObjectId using a custom validator.
  *
  * @constant
  * @type {Joi.ObjectSchema}
+ *
+ * @property {string} firstName - Required. First name of the student. Minimum 3, maximum 100 characters.
+ * @property {string} lastName - Required. Last name of the student. Minimum 3, maximum 100 characters.
+ * @property {string} email - Required. Email address of the student. Must be a valid email format and max 100 characters.
+ * @property {Date} dateOfBirth - Required. Birth date of the student.
+ * @property {string} [schoolId] - Optional. Must be a valid MongoDB ObjectId if provided.
  */
 const studentInputSchema = Joi.object({
-  id: Joi.alternatives().try(Joi.number(), Joi.string()).required(),
   firstName: Joi.string().min(3).max(100).required(),
   lastName: Joi.string().min(3).max(100).required(),
-  email: Joi.string().min(5).max(50).required(),
+  email: Joi.string().email().max(100).required(),
   dateOfBirth: Joi.date().required(),
+  schoolId: Joi.string().custom(function (value, helpers) {
+    // *************** Check if the string is a valid ObjectId using Mongoose's validation
+    if (!mongoose.Types.ObjectId.isValid(value)) {
+      return helpers.error('any.invalid');
+    }
+    // *************** If valid, return the original value to be used in the validated result
+    return value;
+  }, 'ObjectId validation').optional(),
 });
 
 /**
- * Validates a student input object using the `studentInputSchema`.
+ * Validates student input data against the defined Joi schema.
  *
- * Ensures the provided data meets the structure and constraints defined for a student.
- * Throws an error if the validation fails.
+ * This function ensures that the provided student data matches the expected format and constraints
+ * as defined in `studentInputSchema`. If the input is valid, it returns the validated and possibly
+ * transformed data. If invalid, it throws an error describing the validation issue.
  *
- * @function validateStudent
- * @param {Object} data - The student data to validate.
- * @param {string|number} data.id - Unique identifier for the student (string or number).
- * @param {string} data.firstName - Student's first name (3–100 characters).
- * @param {string} data.lastName - Student's last name (3–100 characters).
- * @param {string} data.email - Student's email address (5–50 characters).
- * @param {Date|string} data.dateOfBirth - Student's date of birth (valid date).
- * @throws {Error} Throws an error with a descriptive message if validation fails.
- * @returns {Object} The validated and possibly transformed student data.
+ * @function
+ * @param {Object} data - The raw student input data to validate.
+ * @param {string} data.firstName - Student's first name (required, 3–100 characters).
+ * @param {string} data.lastName - Student's last name (required, 3–100 characters).
+ * @param {string} data.email - Student's email address (required, valid email format).
+ * @param {Date|string} data.dateOfBirth - Student's birth date (required).
+ * @param {string} [data.schoolId] - Optional MongoDB ObjectId string for the related school.
+ * @returns {Object} - The validated and sanitized student data.
+ * @throws {Error} - Throws an error if validation fails with details from Joi.
  */
-const validateStudent = (data) => {
+function validateStudent(data) {
+  // *************** Destructure the result of validation into error and value
   const { error, value } = studentInputSchema.validate(data);
+  // *************** If validation fails, throw an error with the validation message
   if (error) {
     throw new Error(`Student validation error: ${error.message}`);
   }
+  // *************** If validation succeeds, return the validated and possibly transformed value
   return value;
-};
+}
 
 // *************** EXPORT MODULE ***************
 module.exports = validateStudent;
