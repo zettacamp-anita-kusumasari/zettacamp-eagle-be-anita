@@ -1,4 +1,4 @@
-// *************** IMPORT CORE ***************
+// *************** IMPORT LIBRARY ***************
 const mongoose = require('mongoose');
 
 /**
@@ -13,16 +13,20 @@ const mongoose = require('mongoose');
  * @returns {Promise<void>} A promise that resolves when the connection is successful,
  * or the process exits on failure.
  */
-const connectDB = async () => {
+async function connectDB(){
   try {
+    // *************** Get the MongoDB URI from environment variables
     const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/zettacamp';
+    // *************** Attempt to connect to MongoDB using Mongoose
     const conn = await mongoose.connect(mongoURI);
+    // *************** Log successful connection details (host and database name)
     console.log(`MongoDB Connected: ${conn.connection.host}/${conn.connection.name}`);
   } catch (error) {
+    // *************** Log connection error message and exit the process with failure code
     console.error('MongoDB connection failed:', error.message);
     process.exit(1);
   }
-};
+}
 
 // *************** EXPORT MODULE ***************
 module.exports = connectDB;
