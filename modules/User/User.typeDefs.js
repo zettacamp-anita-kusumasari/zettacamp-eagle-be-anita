@@ -11,6 +11,8 @@ const typeDefs = gql`
     email: String!
     role: String!
     password: String!
+    createdAt: Date!
+    updatedAt: Date!
   }
 
   input CreateUserInput {

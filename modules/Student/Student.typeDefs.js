@@ -10,10 +10,12 @@ const typeDefs = gql`
     lastName: String!
     email: String!
     dateOfBirth: Date!
-    school: [School]
+    school: School
     schoolId: ID
-    createdBy: [User]
-    deletedBy: [User] 
+    createdBy: User
+    deletedBy: User
+    createdAt: Date
+    updatedAt: Date
   }
 
   input CreateStudentInput {
@@ -21,6 +23,7 @@ const typeDefs = gql`
     lastName: String!
     email: String!
     dateOfBirth: Date!
+    schoolId: ID
   }
 
   input UpdateStudentInput {
@@ -28,6 +31,7 @@ const typeDefs = gql`
     lastName: String
     email: String
     dateOfBirth: Date
+    schoolId: ID
   }
 
   type Query {

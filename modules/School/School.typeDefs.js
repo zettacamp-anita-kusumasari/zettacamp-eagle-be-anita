@@ -5,46 +5,39 @@ const typeDefs = gql`
   scalar Date
   
   type School {
-    id: ID!
-    name: String!
-    initial_name: String!
-    address: String
-    city: String!
-    country: String!
-    postal_code: String!
-    students: [Student]
-    createdBy: [User]
-    deletedBy: [User]
-  }
+  id: ID!
+  name: String!
+  initial_name: String!
+  address: String!
+  city: String!
+  country: String!
+  postal_code: String!
+  students: Student
+  createdBy: User
+  deletedBy: User
+  createdAt: String
+  updatedAt: String
+}
 
-  input CreateSchoolInput {
-    name: String!
-    initial_name: String!
-    address: String
-    city: String!
-    country: String!
-    postal_code: String!
-  }
+type Query {
+  getAllSchools: [School!]!
+  getOneSchool(id: ID!): School
+}
 
-  input UpdateSchoolInput {
-    name: String
-    initial_name: String
-    address: String
-    city: String
-    country: String
-    postal_code: String
-  }
+input SchoolInput {
+  name: String!
+  initial_name: String!
+  address: String!
+  city: String!
+  country: String!
+  postal_code: String!
+}
 
-  type Query {
-    getAllSchools: [School]
-    getOneSchool(id: ID!): School
-  }
-
-  type Mutation {
-    createSchool(input: CreateSchoolInput): School
-    updateSchool(id: ID!, input: UpdateSchoolInput): School
-    deleteSchool(id: ID!): School
-  }
+type Mutation {
+  createSchool(input: SchoolInput!): School
+  updateSchool(id: ID!, input: SchoolInput!): School
+  deleteSchool(id: ID!): School
+}
 `;
 
 // *************** EXPORT MODULE ***************
