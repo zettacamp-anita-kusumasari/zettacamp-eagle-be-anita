@@ -12,10 +12,10 @@ const typeDefs = gql`
     dateOfBirth: Date!
     school: School
     schoolId: ID
-    createdBy: User
-    deletedBy: User
-    createdAt: Date
-    updatedAt: Date
+    created_by: User
+    deleted_by: User
+    created_at: Date
+    updated_at: Date
   }
 
   input CreateStudentInput {
@@ -35,14 +35,14 @@ const typeDefs = gql`
   }
 
   type Query {
-    getAllStudents: [Student]
-    getOneStudent(id: ID!): Student
+    GetAllStudents: [Student]
+    GetOneStudent(id: ID!): Student
   }
 
   type Mutation {
-    createStudent(input: CreateStudentInput): Student
-    updateStudent(id: ID!, input: UpdateStudentInput): Student
-    deleteStudent(id: ID!): Student
+    CreateStudent(input: CreateStudentInput): Student
+    UpdateStudent(id: ID!, input: UpdateStudentInput): Student
+    DeleteStudent(id: ID!): Student
   }
 `;
 
