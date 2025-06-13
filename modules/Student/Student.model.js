@@ -29,7 +29,7 @@ const studentSchema = new mongoose.Schema({
         ref: 'School' 
     },
     // Reference to the person who create the student data
-    createdBy: {
+    created_by: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User' 
     },
@@ -39,10 +39,10 @@ const studentSchema = new mongoose.Schema({
         ref: 'User' 
     },
 },{
-    // Automatically adds createdAt and updateAt fields
+    // Automatically adds created_at and updateAt fields
     timestamps: {
-        createdAt: 'createdAt',
-        updatedAt: 'updatedAt'
+        created_at: 'created_at',
+        updated_at: 'updated_at'
     }
 });
 
