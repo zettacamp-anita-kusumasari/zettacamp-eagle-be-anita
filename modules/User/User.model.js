@@ -3,12 +3,12 @@ const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
     // User's first name for identification
-    firstName: {
+    first_name: {
         type: String,
         required: true,
     },
     // User's last name for identification
-    lastName: {
+    last_name: {
         type: String,
         required: true,
     },
