@@ -1,14 +1,14 @@
-// *************** IMPORT CORE ***************
+// *************** IMPORT LIBRARY ***************
 const mongoose = require('mongoose');
 
 const studentSchema = new mongoose.Schema({
     // Student's first name for identification
-    firstName: {
+    first_name: {
         type: String,
         required: true
     },
     // Student's last name for identification
-    lastName: {
+    last_name: {
         type: String,
         required: true
     },
@@ -19,12 +19,12 @@ const studentSchema = new mongoose.Schema({
         unique: true
     },
     // Student's date of birth for additional data
-    dateOfBirth: {
+    date_of_birth: {
         type: Date,
         required: true
     },
     // Reference to the School the student belongs to
-    schoolId: {
+    school_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'School' 
     },
@@ -34,7 +34,7 @@ const studentSchema = new mongoose.Schema({
         ref: 'User' 
     },
     // Reference to the person who delete the student data
-    deleteBy: {
+    delete_by: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User' 
     },

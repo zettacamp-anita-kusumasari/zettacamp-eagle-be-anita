@@ -1,4 +1,4 @@
-// *************** IMPORT CORE ***************
+// *************** IMPORT LIBRARY ***************
 const mongoose = require('mongoose')
 
 const schoolSchema = new mongoose.Schema({
@@ -33,10 +33,10 @@ const schoolSchema = new mongoose.Schema({
         required: true
     },
     // Reference to the Students (one-to-many relationship)
-    students: {
+    students: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Student'
-    },
+    }],
     // Reference to the person who create the school data
     created_by: {
         type: mongoose.Schema.Types.ObjectId,
