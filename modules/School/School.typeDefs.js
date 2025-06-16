@@ -12,19 +12,14 @@ const typeDefs = gql`
   city: String!
   country: String!
   postal_code: String!
-  students: Student
+  students: [Student]
   created_by: User
   deleted_by: User
   created_at: String
   updated_at: String
 }
 
-type Query {
-  GetAllSchools: [School!]!
-  GetOneSchool(id: ID!): School
-}
-
-input SchoolInput {
+input CreateSchoolInput {
   name: String!
   initial_name: String!
   address: String!
@@ -33,9 +28,23 @@ input SchoolInput {
   postal_code: String!
 }
 
+input UpdateSchoolInput {
+  name: String!
+  initial_name: String!
+  address: String!
+  city: String!
+  country: String!
+  postal_code: String!
+}
+
+type Query {
+  GetAllSchools: [School!]!
+  GetOneSchool(id: ID!): School
+}
+
 type Mutation {
-  CreateSchool(input: SchoolInput!): School
-  UpdateSchool(id: ID!, input: SchoolInput!): School
+  CreateSchool(input: CreateSchoolInput!): School
+  UpdateSchool(id: ID!, input: UpdateSchoolInput!): School
   DeleteSchool(id: ID!): School
 }
 `;

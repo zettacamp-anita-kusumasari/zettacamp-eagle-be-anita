@@ -6,8 +6,8 @@ const typeDefs = gql`
 
   type User {
     id: ID!
-    firstName: String!
-    lastName: String!
+    first_name: String!
+    last_name: String!
     email: String!
     role: String!
     password: String!
@@ -16,8 +16,8 @@ const typeDefs = gql`
   }
 
   input CreateUserInput {
-    firstName: String!
-    lastName: String!
+    first_name: String!
+    last_name: String!
     email: String!
     role: String!
     password: String!
@@ -32,7 +32,7 @@ const typeDefs = gql`
   }
 
   type Query {
-    GetAllUsers: [User]
+    GetAllUsers: [User!]!
     GetOneUser(id: ID!): User
   }
 

@@ -6,12 +6,12 @@ const typeDefs = gql`
 
   type Student {
     id: ID!
-    firstName: String!
-    lastName: String!
+    first_name: String!
+    last_name: String!
     email: String!
-    dateOfBirth: Date!
+    date_of_birth: Date!
     school: School
-    schoolId: ID
+    school_id: ID
     created_by: User
     deleted_by: User
     created_at: Date
@@ -19,23 +19,23 @@ const typeDefs = gql`
   }
 
   input CreateStudentInput {
-    firstName: String!
-    lastName: String!
+    first_name: String!
+    last_name: String!
     email: String!
-    dateOfBirth: Date!
-    schoolId: ID
+    date_of_birth: Date!
+    school_id: ID
   }
 
   input UpdateStudentInput {
-    firstName: String
-    lastName: String
+    first_name: String
+    last_name: String
     email: String
-    dateOfBirth: Date
-    schoolId: ID
+    date_of_birth: Date
+    school_id: ID
   }
 
   type Query {
-    GetAllStudents: [Student]
+    GetAllStudents: [Student!]!
     GetOneStudent(id: ID!): Student
   }
 
