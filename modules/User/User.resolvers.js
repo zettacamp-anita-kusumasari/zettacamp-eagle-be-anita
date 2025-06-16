@@ -1,9 +1,9 @@
 // *************** IMPORT MODULE ***************
-const userModel = require('./User.model');
+const UserModel = require('./User.model');
 
 // *************** IMPORT LIBRARY ***************
 const { ApolloError } = require('apollo-server-express');
-const mongoose = require('mongoose');
+const Mongoose = require('mongoose');
 
 // *************** IMPORT VALIDATOR ***************
 const ValidateUser = require('./User.validator');
@@ -23,7 +23,7 @@ const ValidateUser = require('./User.validator');
 async function GetAllUsers() {
   try {
     // *************** Define an asynchronous function to retrieve all users from the database
-    return await userModel.find({});
+    return await UserModel.find({});
   } catch (error) {
     // *************** If an error occurs during the fetch, throw a formatted ApolloError for GraphQL error handling
     throw new ApolloError(`Failed to fetch users: ${error.message}`, "INTERNAL_SERVER_ERROR");
@@ -31,7 +31,7 @@ async function GetAllUsers() {
 }
 
 /**
- * Retrieves a single user by their ID using DataLoader for optimized access.
+ * Retrieves a single user by their ID
  *
  * This function is used in a GraphQL query resolver to fetch one user based on the provided ID.
  * It first validates the ID format using Mongoose's ObjectId check.
@@ -49,12 +49,12 @@ async function GetAllUsers() {
  */
 async function GetOneUser(_, { id }, context) {
   // *************** If invalid, throw an ApolloError with a 'BAD USER INPUT' code
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+  if (!Mongoose.Types.ObjectId.isValid(id)) {
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
   }
   try {
-    // *************** Use DataLoader to fetch the user with the given ID from the database
-    const user = await context.userLoader.load(id);
+    // *************** Find the user data by its MongoDB ObjectId
+    const user = await UserModel.findById(id);
     // *************** If no user is found with that ID, throw a 'NOT FOUND' error
     if (!user) {
       throw new ApolloError("User not found", "NOT_FOUND");
@@ -72,7 +72,7 @@ async function GetOneUser(_, { id }, context) {
  *
  * This function is typically used in a GraphQL mutation resolver to handle user creation.
  * It validates the incoming input using a `ValidateUser` function (e.g., Joi schema),
- * then constructs a new `userModel` instance and saves it to the database.
+ * then constructs a new `UserModel` instance and saves it to the database.
  * If any step fails (validation or saving), an ApolloError is thrown.
  *
  * @async
@@ -88,7 +88,7 @@ async function CreateUser(_, { input }) {
     // *************** Validate the input object using a custom validation function
     const validatedInput = ValidateUser(input);
     // *************** Create a new Mongoose user instance using the validated input data
-    const newUser = new userModel(validatedInput);
+    const newUser = new UserModel(validatedInput);
     // *************** Save the new user to the database and return the saved document
     return await newUser.save();
   } catch (error) {
@@ -117,7 +117,7 @@ async function CreateUser(_, { input }) {
  */
 async function UpdateUser(_, { id, input }) {
   // *************** Validate if the provided ID is a valid MongoDB ObjectId
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+  if (!Mongoose.Types.ObjectId.isValid(id)) {
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
   }
   try {
@@ -126,7 +126,7 @@ async function UpdateUser(_, { id, input }) {
     // *************** Add a timestamp to mark when the user was last updated
     validatedInput.updated_at = Date.now();
     // *************** Attempt to find the user by ID and update their data in the database
-    const updatedUser = await userModel.findByIdAndUpdate(id, validatedInput, { new: true });
+    const updatedUser = await UserModel.findByIdAndUpdate(id, validatedInput, { new: true });
     // *************** If no user is found with the given ID, throw a "NOT FOUND" error
     if (!updatedUser) {
       throw new ApolloError("User not found", "NOT_FOUND");
@@ -157,12 +157,12 @@ async function UpdateUser(_, { id, input }) {
  */
 async function DeleteUser(_, { id }) {
   // *************** Check if the provided ID is a valid MongoDB ObjectId
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+  if (!Mongoose.Types.ObjectId.isValid(id)) {
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
   }
   try {
     // *************** Attempt to find and delete the user with the specified ID from the database
-    const deletedUser = await userModel.findByIdAndDelete(id);
+    const deletedUser = await UserModel.findByIdAndDelete(id);
     // *************** If no user is found with the given ID, throw a "NOT FOUND" error
     if (!deletedUser) {
       throw new ApolloError("User not found", "NOT_FOUND");

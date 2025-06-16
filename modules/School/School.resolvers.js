@@ -1,9 +1,9 @@
 // *************** IMPORT MODULE ***************
-const schoolModel = require('./School.model');
+const SchoolModel = require('./School.model');
 
 // *************** IMPORT LIBRARY ***************
 const { ApolloError } = require('apollo-server-express');
-const mongoose = require('mongoose');
+const Mongoose = require('mongoose');
 
 // *************** LOADER ***************
 const CreateSchoolLoader = require('./School.loader');
@@ -15,7 +15,7 @@ const ValidateSchool = require('./School.validator');
 /**
  * Retrieves all school documents from the database.
  *
- * This function queries the `schoolModel` to fetch all existing school records.
+ * This function queries the `SchoolModel` to fetch all existing school records.
  * If an error occurs during the database operation, it throws an `ApolloError`
  * with a relevant error message and a status code.
  *
@@ -27,7 +27,7 @@ const ValidateSchool = require('./School.validator');
 async function GetAllSchools() {
   try {
     // *************** Attempt to find and return all school documents from the database
-    return await schoolModel.find({});
+    return await SchoolModel.find({});
   } catch (error) {
     // *************** If an error occurs, throw an ApolloError with a message and error code
     throw new ApolloError(`Failed to fetch schools: ${error.message}`, "INTERNAL_SERVER_ERROR");
@@ -54,12 +54,12 @@ async function GetAllSchools() {
  */
 async function GetOneSchool(parent, { id }, context) {
   // *************** Check if the given ID is a valid MongoDB ObjectId
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+  if (!Mongoose.Types.ObjectId.isValid(id)) {
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
   }
   try {
-    // *************** Use DataLoader to load the school from the database (efficient batching & caching)
-    const school = await context.schoolLoader.load(id);
+    // *************** Find the school data by its MongoDB ObjectId
+    const school = await SchoolModel.findById(id);
     // *************** If no school is found, throw a NOT FOUND error
     if (!school) {
       throw new ApolloError("School not found", "NOT_FOUND");
@@ -97,7 +97,7 @@ async function CreateSchool(parent, { input }) {
     // *************** Validate the input using a predefined Joi (or similar) schema
     const validatedInput = ValidateSchool(input);
     // *************** Temporarily hard-code the user ID who created this school (should be dynamic via auth)
-    const newSchool = new schoolModel(validatedInput);
+    const newSchool = new SchoolModel(validatedInput);
     // *************** Save the document to the database and return it
     return await newSchool.save();
   } catch (error) {
@@ -134,14 +134,14 @@ async function CreateSchool(parent, { input }) {
  */
 async function UpdateSchool(parent, { id, input }) {
   // *************** Check if the provided ID is a valid MongoDB ObjectId
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+  if (!Mongoose.Types.ObjectId.isValid(id)) {
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
   }
   try {
     // *************** Validate the incoming input using a custom schema (e.g., Joi)
     const validatedInput = ValidateSchool(input);
     // *************** Attempt to update the school by ID, property { new: true } is returning the new (updated) document
-    const updatedSchool = await schoolModel.findByIdAndUpdate(id, validatedInput, { new: true });
+    const updatedSchool = await SchoolModel.findByIdAndUpdate(id, validatedInput, { new: true });
     // *************** If no matching document is found, throw a NOT FOUND error
     if (!updatedSchool) {
       throw new ApolloError("School not found", "NOT_FOUND");
@@ -176,7 +176,7 @@ async function UpdateSchool(parent, { id, input }) {
  */
 async function DeleteSchool(parent, { id }) {
   // *************** Check if the given ID is a valid MongoDB ObjectId
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+  if (!Mongoose.Types.ObjectId.isValid(id)) {
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
   }
 
@@ -184,7 +184,7 @@ async function DeleteSchool(parent, { id }) {
     // *************** ID of the user performing the deletion (should be replaced with authenticated user's ID)
     const deleted_by = '6846e5769e5502fce150eb67';
     // *************** Attempt to update the school document to mark it as deleted
-    const deletedSchool = await schoolModel.findByIdAndUpdate(
+    const deletedSchool = await SchoolModel.findByIdAndUpdate(
       id,
       { deleted_by, deleted_at: Date.now() },
       { new: true }

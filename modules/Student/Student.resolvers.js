@@ -1,9 +1,9 @@
 // *************** IMPORT MODULE ***************
-const studentModel = require('./Student.model');
+const StudentModel = require('./Student.model');
 
 // *************** IMPORT LIBRARY ***************
 const { ApolloError } = require('apollo-server-express');
-const mongoose = require('mongoose');
+const Mongoose = require('mongoose');
 
 // *************** LOADER ***************
 const CreateStudentLoader = require('./Student.loader');
@@ -15,7 +15,7 @@ const ValidateStudent = require('./Student.validator');
 /**
  * Retrieves all student documents from the database.
  *
- * - Uses Mongoose's `find()` method to fetch all records from the `studentModel` collection.
+ * - Uses Mongoose's `find()` method to fetch all records from the `StudentModel` collection.
  * - If the operation fails, an `ApolloError` is thrown to return a GraphQL-friendly error.
  *
  * @async
@@ -26,7 +26,7 @@ const ValidateStudent = require('./Student.validator');
 async function GetAllStudents() {
   try {
     // *************** Fetch all students from the database
-    return await studentModel.find({});
+    return await StudentModel.find({});
   } catch (error) {
     // *************** If fetching fails, throw a descriptive GraphQL error
     throw new ApolloError(`Failed to fetch students: ${error.message}`, "INTERNAL_SERVER_ERROR");
@@ -52,12 +52,12 @@ async function GetAllStudents() {
  */
 async function GetOneStudent(parent, { id }, context) {
   // *************** Validate if the provided ID is a valid MongoDB ObjectId
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+  if (!Mongoose.Types.ObjectId.isValid(id)) {
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
   }
   try {
-    // *************** Try to load the student using DataLoader for performance optimization
-    const student = await context.studentLoader.load(id);
+    // *************** Find the student data by its MongoDB ObjectId
+    const student = await StudentModel.findById(id);
     // *************** If student not found, throw a GraphQL-friendly NOT FOUND error
     if (!student) {
       throw new ApolloError("Student not found", "NOT_FOUND");
@@ -76,7 +76,7 @@ async function GetOneStudent(parent, { id }, context) {
  *
  * - Validates the input using `ValidateStudent`.
  * - Assigns a `created_by` field (placeholder should be replaced with the authenticated user's ID).
- * - Saves the new student to the database using `studentModel`.
+ * - Saves the new student to the database using `StudentModel`.
  * - Returns the saved student object on success.
  *
  * @async
@@ -94,7 +94,7 @@ async function CreateStudent(parent, { input }) {
     // *************** Assign the creator's ID (should be dynamic based on the authenticated user)
     validatedInput.created_by = '6846e5769e5502fce150eb67'; // Replace with auth user ID
     // *************** Create a new student instance using the validated data
-    const newStudent = new studentModel(validatedInput);
+    const newStudent = new StudentModel(validatedInput);
     // *************** Save the student to the database and return the result
     return await newStudent.save();
   } catch (error) {
@@ -120,7 +120,7 @@ async function CreateStudent(parent, { input }) {
  */
 async function UpdateStudent(parent, { id, input }) {
   // *************** Check if the provided ID is a valid MongoDB ObjectId
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+  if (!Mongoose.Types.ObjectId.isValid(id)) {
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
   }
   try {
@@ -129,7 +129,7 @@ async function UpdateStudent(parent, { id, input }) {
     // *************** Add/update the timestamp to track when the document was last modified
     validatedInput.updated_at = Date.now();
     // *************** The 'new: true' option returns the updated document
-    const updatedStudent = await studentModel.findByIdAndUpdate(id, validatedInput, { new: true });
+    const updatedStudent = await StudentModel.findByIdAndUpdate(id, validatedInput, { new: true });
     // *************** If no student is found with the given ID, throw a 'NOT FOUND' error
     if (!updatedStudent) {
       throw new ApolloError("Student not found", "NOT_FOUND");
@@ -155,14 +155,14 @@ async function UpdateStudent(parent, { id, input }) {
  */
 async function DeleteStudent(parent, { id }) {
   // *************** Check if the provided ID is a valid MongoDB ObjectId
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+  if (!Mongoose.Types.ObjectId.isValid(id)) {
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
   }
   try {
     // *************** Assign a hardcoded user ID to represent the user who deleted the student
     const deleted_by = '6847af632c3aafcd7ad64244';
     // *************** This includes setting 'deleted_by' and a timestamp in 'deleted_at'
-    const deletedStudent = await studentModel.findByIdAndUpdate(
+    const deletedStudent = await StudentModel.findByIdAndUpdate(
       id,
       { deleted_by, deleted_at: Date.now() },
       { new: true }
@@ -249,6 +249,21 @@ async function DeletedByLoader(parent, _, context) {
   }
 }
 
+/**
+ * Custom resolver to format the `date_of_birth` field as "YYYY-MM-DD".
+ *
+ * @param {Object} parent - The parent Student object.
+ * @returns {string|null} - The formatted date string or null.
+ */
+function FormatDateOfBirth(parent) {
+  // *************** Check if the `date_of_birth` field exists on the parent object
+  return parent.date_of_birth
+    // *************** If it exists, convert to ISO string and extract the date portion only
+    ? parent.date_of_birth.toISOString().split('T')[0]
+    // *************** If not, return null to indicate absence of value
+    : null;
+}
+
 // *************** EXPORT MODULE ***************
 module.exports = {
   Query: { GetAllStudents, GetOneStudent },
@@ -256,6 +271,7 @@ module.exports = {
   Student: {
     school_id: SchoolLoader,
     created_by: CreatedByLoader,
-    deleted_by: DeletedByLoader
+    deleted_by: DeletedByLoader,
+    date_of_birth: FormatDateOfBirth
   }
 };
