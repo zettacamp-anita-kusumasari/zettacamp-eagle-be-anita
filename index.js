@@ -1,13 +1,9 @@
 // *************** IMPORT CORE ***************
-const connectDB = require('./core/database.js');
+const ConnectDB = require('./core/database.js');
 
 // *************** IMPORT MODULE ***************
-const schoolTypeDefs = require('./modules/School/School.typeDefs.js');
-const studentTypeDefs = require('./modules/Student/Student.typeDefs.js');
-const userTypeDefs = require('./modules/User/User.typeDefs.js');
-const schoolResolvers = require('./modules/School/School.resolvers.js');
-const studentResolvers = require('./modules/Student/Student.resolvers.js');
-const userResolvers = require('./modules/User/User.resolvers.js');
+const Resolvers = require('./core/resolvers.js');
+const TypeDefs = require('./core/typeDefs.js');
 
 // *************** IMPORT LIBRARY ***************
 const express = require('express');
@@ -15,9 +11,7 @@ const dotenv = require('dotenv');
 const { ApolloServer } = require('apollo-server-express');
 
 // *************** LOADER ***************
-const createSchoolLoader = require('./modules/School/School.loader.js');
-const createUserLoader = require('./modules/User/User.loader.js');
-const createStudentLoader = require('./modules/Student/Student.loader.js');
+const Loaders = require('./core/loaders.js');
 
 // *************** Initialize the Express application
 const index = express();
@@ -31,8 +25,8 @@ const MONGODB_URI = process.env.MONGODB_URI;
 // *************** Setup PORT Value from Environment
 const PORT = process.env.PORT || 4000;
 
-// ****************** Calling the connectDB to connect the index with the MongoDB database
-connectDB(MONGODB_URI);
+// ****************** Calling the ConnectDB to connect the index with the MongoDB database
+ConnectDB();
 
 /**
  * Asynchronously starts an Apollo Server instance and integrates it with the Express application.
@@ -53,16 +47,9 @@ connectDB(MONGODB_URI);
 async function startApolloServer() {
   // ****************** Create a new Apollo Server instance with type definitions, resolvers, and context
   const server = new ApolloServer({
-    typeDefs: [schoolTypeDefs, studentTypeDefs, userTypeDefs],
-    resolvers: [schoolResolvers, studentResolvers, userResolvers],
-    // ****************** Define a context function that returns a new set of DataLoaders for each request
-    context: function() {
-      return {
-        schoolLoader: createSchoolLoader(),
-        userLoader: createUserLoader(),
-        studentLoader: createStudentLoader()
-      };
-    },
+    typeDefs: TypeDefs,
+    resolvers: Resolvers,
+    context: Loaders
   });
 
   // *************** Start the Apollo server
