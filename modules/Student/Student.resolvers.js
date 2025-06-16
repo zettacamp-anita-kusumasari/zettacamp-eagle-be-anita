@@ -1,5 +1,5 @@
-// *************** IMPORT CORE ***************
-const StudentModel = require('./Student.model');
+// *************** IMPORT MODULE ***************
+const studentModel = require('./Student.model');
 
 // *************** IMPORT LIBRARY ***************
 const { ApolloError } = require('apollo-server-express');
@@ -9,13 +9,13 @@ const mongoose = require('mongoose');
 const CreateStudentLoader = require('./Student.loader');
 
 // *************** IMPORT VALIDATOR ***************
-const validateStudent = require('./Student.validator');
+const ValidateStudent = require('./Student.validator');
 
 // *************** QUERY ***************
 /**
  * Retrieves all student documents from the database.
  *
- * - Uses Mongoose's `find()` method to fetch all records from the `StudentModel` collection.
+ * - Uses Mongoose's `find()` method to fetch all records from the `studentModel` collection.
  * - If the operation fails, an `ApolloError` is thrown to return a GraphQL-friendly error.
  *
  * @async
@@ -26,7 +26,7 @@ const validateStudent = require('./Student.validator');
 async function GetAllStudents() {
   try {
     // *************** Fetch all students from the database
-    return await StudentModel.find();
+    return await studentModel.find({});
   } catch (error) {
     // *************** If fetching fails, throw a descriptive GraphQL error
     throw new ApolloError(`Failed to fetch students: ${error.message}`, "INTERNAL_SERVER_ERROR");
@@ -50,7 +50,7 @@ async function GetAllStudents() {
  * @returns {Promise<Object>} The student object if found.
  * @throws {ApolloError} If the ID is invalid, the student is not found, or a fetch error occurs.
  */
-async function GetOneStudent(_, { id }, context) {
+async function GetOneStudent(parent, { id }, context) {
   // *************** Validate if the provided ID is a valid MongoDB ObjectId
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
@@ -74,9 +74,9 @@ async function GetOneStudent(_, { id }, context) {
 /**
  * Creates a new student document in the database.
  *
- * - Validates the input using `validateStudent`.
+ * - Validates the input using `ValidateStudent`.
  * - Assigns a `created_by` field (placeholder should be replaced with the authenticated user's ID).
- * - Saves the new student to the database using `StudentModel`.
+ * - Saves the new student to the database using `studentModel`.
  * - Returns the saved student object on success.
  *
  * @async
@@ -87,14 +87,14 @@ async function GetOneStudent(_, { id }, context) {
  * @returns {Promise<Object>} The newly created student document.
  * @throws {ApolloError} If validation fails or there is a problem saving the student.
  */
-async function CreateStudent(_, { input }) {
+async function CreateStudent(parent, { input }) {
   try {
     // *************** Validate the input payload to match the expected schema
-    const validatedInput = validateStudent(input);
+    const validatedInput = ValidateStudent(input);
     // *************** Assign the creator's ID (should be dynamic based on the authenticated user)
     validatedInput.created_by = '6846e5769e5502fce150eb67'; // Replace with auth user ID
     // *************** Create a new student instance using the validated data
-    const newStudent = new StudentModel(validatedInput);
+    const newStudent = new studentModel(validatedInput);
     // *************** Save the student to the database and return the result
     return await newStudent.save();
   } catch (error) {
@@ -118,18 +118,18 @@ async function CreateStudent(_, { input }) {
  *   - The student is not found.
  *   - The update operation fails due to any internal issue.
  */
-async function UpdateStudent(_, { id, input }) {
+async function UpdateStudent(parent, { id, input }) {
   // *************** Check if the provided ID is a valid MongoDB ObjectId
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
   }
   try {
     // *************** Validate the input data using a custom validation function
-    const validatedInput = validateStudent(input);
+    const validatedInput = ValidateStudent(input);
     // *************** Add/update the timestamp to track when the document was last modified
     validatedInput.updated_at = Date.now();
     // *************** The 'new: true' option returns the updated document
-    const updatedStudent = await StudentModel.findByIdAndUpdate(id, validatedInput, { new: true });
+    const updatedStudent = await studentModel.findByIdAndUpdate(id, validatedInput, { new: true });
     // *************** If no student is found with the given ID, throw a 'NOT FOUND' error
     if (!updatedStudent) {
       throw new ApolloError("Student not found", "NOT_FOUND");
@@ -153,7 +153,7 @@ async function UpdateStudent(_, { id, input }) {
  * @returns {Promise<object>} The updated (soft-deleted) student document.
  * @throws {ApolloError} If the ID is invalid, the student is not found, or the operation fails.
  */
-async function DeleteStudent(_, { id }) {
+async function DeleteStudent(parent, { id }) {
   // *************** Check if the provided ID is a valid MongoDB ObjectId
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
@@ -162,7 +162,7 @@ async function DeleteStudent(_, { id }) {
     // *************** Assign a hardcoded user ID to represent the user who deleted the student
     const deleted_by = '6847af632c3aafcd7ad64244';
     // *************** This includes setting 'deleted_by' and a timestamp in 'deleted_at'
-    const deletedStudent = await StudentModel.findByIdAndUpdate(
+    const deletedStudent = await studentModel.findByIdAndUpdate(
       id,
       { deleted_by, deleted_at: Date.now() },
       { new: true }
@@ -185,13 +185,13 @@ async function DeleteStudent(_, { id }) {
  *
  * @param {Object} parent - The parent object containing `schoolId`.
  * @param {Object} _ - Unused GraphQL argument placeholder.
- * @param {Object} context - GraphQL context containing `schoolLoader`.
- * @returns {Promise<Object|null>} The loaded school object or null if no `schoolId`.
+ * @param {Object} context - GraphQL context containing `SchoolLoader`.
+ * @returns {Promise<Object|null>} The loaded school object or null if no `school_id`.
  */
-async function schoolLoader(parent, _, context) {
+async function SchoolLoader(parent, context) {
   try {
     // *************** Check if 'parent' object has a valid 'schoolId' to resolve
-    return parent.schoolId ? await context.schoolLoader.load(parent.schoolId) : null;
+    return parent.school_id ? await context.SchoolLoader.load(parent.school_id) : null;
   } catch (error) {
     // *************** If loading fails, throw an ApolloError with a specific error code
     throw new ApolloError(`Failed to load school: ${error.message}`, "SCHOOL_LOAD_FAILED");
@@ -206,17 +206,17 @@ async function schoolLoader(parent, _, context) {
  * allowing for efficient batching and caching of user lookups.
  *
  * @async
- * @function createdByLoader
+ * @function CreatedByLoader
  * @param {Object} parent - The parent object containing the `created_by` user ID field.
  * @param {Object} _ - GraphQL arguments (unused placeholder).
- * @param {Object} context - The GraphQL context, expected to contain `userLoader` (DataLoader instance).
+ * @param {Object} context - The GraphQL context, expected to contain `UserLoader` (DataLoader instance).
  * @returns {Promise<Object|null>} - The resolved User object, or `null` if loading fails or user not found.
  * @throws {ApolloError} - Throws a formatted error if user loading fails.
  */
-async function createdByLoader(parent, _, context) {
+async function CreatedByLoader(parent, context) {
   try {
     // *************** Use DataLoader to load the user who created this parent resource
-    return await context.userLoader.load(parent.created_by);
+    return await context.UserLoader.load(parent.created_by);
   } catch (error) {
     // *************** If loading the user fails, throw an ApolloError with a custom error code
     throw new ApolloError(`Failed to load user: ${error.message}`, "USER_LOAD_FAILED");
@@ -228,21 +228,21 @@ async function createdByLoader(parent, _, context) {
  *
  * This function is used as a GraphQL field resolver for the `deleted_by` field.
  * It checks if the parent object contains a `deleted_by` ID. If so, it uses the
- * `userLoader` DataLoader from the GraphQL context to fetch the corresponding User document.
+ * `UserLoader` DataLoader from the GraphQL context to fetch the corresponding User document.
  * If `deleted_by` is not present, it returns `null`.
  *
  * @async
- * @function deletedByLoader
+ * @function DeletedByLoader
  * @param {Object} parent - The parent object containing the `deleted_by` user ID field.
  * @param {Object} _ - GraphQL arguments (unused placeholder).
- * @param {Object} context - The GraphQL context, expected to contain `userLoader` (DataLoader instance).
+ * @param {Object} context - The GraphQL context, expected to contain `UserLoader` (DataLoader instance).
  * @returns {Promise<Object|null>} - The resolved User object, or `null` if `deleted_by` is not set.
  * @throws {ApolloError} - Throws an ApolloError if an error occurs during user loading.
  */
-async function deletedByLoader(parent, _, context) {
+async function DeletedByLoader(parent, _, context) {
   try {
     // *************** Check if 'deleted_by' exists in the parent object
-    return parent.deleted_by ? await context.userLoader.load(parent.deleted_by) : null;
+    return parent.deleted_by ? await context.UserLoader.load(parent.deleted_by) : null;
   } catch (error) {
     // *************** If loading the user fails, throw an ApolloError with a descriptive message and code
     throw new ApolloError(`Failed to load user: ${error.message}`, "USER_LOAD_FAILED");
@@ -254,8 +254,8 @@ module.exports = {
   Query: { GetAllStudents, GetOneStudent },
   Mutation: { CreateStudent, UpdateStudent, DeleteStudent },
   Student: {
-    schoolId: schoolLoader,
-    created_by: createdByLoader,
-    deleted_by: deletedByLoader
+    school_id: SchoolLoader,
+    created_by: CreatedByLoader,
+    deleted_by: DeletedByLoader
   }
 };

@@ -1,12 +1,12 @@
-// *************** IMPORT CORE ***************
-const UserModel = require('./User.model');
+// *************** IMPORT MODULE ***************
+const userModel = require('./User.model');
 
 // *************** IMPORT LIBRARY ***************
 const { ApolloError } = require('apollo-server-express');
 const mongoose = require('mongoose');
 
 // *************** IMPORT VALIDATOR ***************
-const validateUser = require('./User.validator');
+const ValidateUser = require('./User.validator');
 
 // *************** QUERY ***************
 /**
@@ -23,7 +23,7 @@ const validateUser = require('./User.validator');
 async function GetAllUsers() {
   try {
     // *************** Define an asynchronous function to retrieve all users from the database
-    return await UserModel.find();
+    return await userModel.find({});
   } catch (error) {
     // *************** If an error occurs during the fetch, throw a formatted ApolloError for GraphQL error handling
     throw new ApolloError(`Failed to fetch users: ${error.message}`, "INTERNAL_SERVER_ERROR");
@@ -71,8 +71,8 @@ async function GetOneUser(_, { id }, context) {
  * Creates a new user in the database after validating the input.
  *
  * This function is typically used in a GraphQL mutation resolver to handle user creation.
- * It validates the incoming input using a `validateUser` function (e.g., Joi schema),
- * then constructs a new `UserModel` instance and saves it to the database.
+ * It validates the incoming input using a `ValidateUser` function (e.g., Joi schema),
+ * then constructs a new `userModel` instance and saves it to the database.
  * If any step fails (validation or saving), an ApolloError is thrown.
  *
  * @async
@@ -86,9 +86,9 @@ async function GetOneUser(_, { id }, context) {
 async function CreateUser(_, { input }) {
   try {
     // *************** Validate the input object using a custom validation function
-    const validatedInput = validateUser(input);
+    const validatedInput = ValidateUser(input);
     // *************** Create a new Mongoose user instance using the validated input data
-    const newUser = new UserModel(validatedInput);
+    const newUser = new userModel(validatedInput);
     // *************** Save the new user to the database and return the saved document
     return await newUser.save();
   } catch (error) {
@@ -102,7 +102,7 @@ async function CreateUser(_, { input }) {
  *
  * This function is typically used in a GraphQL mutation resolver to handle user updates.
  * It first validates the provided `id` to ensure it's a valid MongoDB ObjectId.
- * Then it validates the input using `validateUser`, updates the `updated_at` timestamp,
+ * Then it validates the input using `ValidateUser`, updates the `updated_at` timestamp,
  * and attempts to find and update the user using Mongoose's `findByIdAndUpdate`.
  * If the user is not found or an error occurs, an appropriate ApolloError is thrown.
  *
@@ -122,11 +122,11 @@ async function UpdateUser(_, { id, input }) {
   }
   try {
     // *************** Validate the input data using a custom function (e.g., Joi schema)
-    const validatedInput = validateUser(input);
+    const validatedInput = ValidateUser(input);
     // *************** Add a timestamp to mark when the user was last updated
     validatedInput.updated_at = Date.now();
     // *************** Attempt to find the user by ID and update their data in the database
-    const updatedUser = await UserModel.findByIdAndUpdate(id, validatedInput, { new: true });
+    const updatedUser = await userModel.findByIdAndUpdate(id, validatedInput, { new: true });
     // *************** If no user is found with the given ID, throw a "NOT FOUND" error
     if (!updatedUser) {
       throw new ApolloError("User not found", "NOT_FOUND");
@@ -162,7 +162,7 @@ async function DeleteUser(_, { id }) {
   }
   try {
     // *************** Attempt to find and delete the user with the specified ID from the database
-    const deletedUser = await UserModel.findByIdAndDelete(id);
+    const deletedUser = await userModel.findByIdAndDelete(id);
     // *************** If no user is found with the given ID, throw a "NOT FOUND" error
     if (!deletedUser) {
       throw new ApolloError("User not found", "NOT_FOUND");
