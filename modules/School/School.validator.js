@@ -1,5 +1,6 @@
 // *************** IMPORT LIBRARY ***************
 const Joi = require('joi');
+const { ApolloError } = require('apollo-server-express');
 
 /**
  * Joi validation schema for a School object.
@@ -71,7 +72,8 @@ function ValidateSchool(input) {
   const { error, value } = schoolSchema.validate(input);
   // *************** If validation fails, throw an error with the validation message
   if (error) {
-    throw new Error(`School validation failed: ${error.message}`);
+    // throw new Error(`School validation failed: ${error.message}`);
+    throw new ApolloError(`School validation failed: ${error.message}`, "INTERNAL_SERVER_ERROR");
   }
   // *************** If validation succeeds, return the validated and possibly transformed value
   return value;

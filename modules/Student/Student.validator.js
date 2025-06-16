@@ -1,6 +1,7 @@
 // *************** IMPORT CORE ***************
 const Joi = require('joi');
-const mongoose = require('mongoose');
+const Mongoose = require('mongoose');
+const { ApolloError } = require('apollo-server-express');
 
 /**
  * Joi validation schema for a Student input object.
@@ -31,7 +32,7 @@ const studentInputSchema = Joi.object({
   // *************** school_id: optional, must be a valid MongoDB ObjectId if provided
   school_id: Joi.string().custom(function (value, helpers) {
     // *************** Check if the string is a valid ObjectId using Mongoose's validation
-    if (!mongoose.Types.ObjectId.isValid(value)) {
+    if (!Mongoose.Types.ObjectId.isValid(value)) {
       return helpers.error('any.invalid');
     }
     // *************** If valid, return the original value to be used in the validated result
@@ -61,7 +62,8 @@ function ValidateStudent(data) {
   const { error, value } = studentInputSchema.validate(data);
   // *************** If validation fails, throw an error with the validation message
   if (error) {
-    throw new Error(`Student validation error: ${error.message}`);
+    // throw new Error(`Student validation error: ${error.message}`);
+    throw new ApolloError(`Student validation failed: ${error.message}`, "INTERNAL_SERVER_ERROR");
   }
   // *************** If validation succeeds, return the validated and possibly transformed value
   return value;

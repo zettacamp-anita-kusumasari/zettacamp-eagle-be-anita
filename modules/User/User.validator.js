@@ -1,5 +1,6 @@
 // *************** IMPORT LIBRARY ***************
 const Joi = require('joi');
+const { ApolloError } = require('apollo-server-express');
 
 /**
  * Joi validation schema for User input data.
@@ -59,7 +60,8 @@ function validateUser(input) {
   const { error, value } = userSchema.validate(input);
   // *************** If validation fails, throw an error with a descriptive message
   if (error) {
-    throw new Error(`User validation failed: ${error.message}`);
+    // throw new Error(`User validation failed: ${error.message}`);
+    throw new ApolloError(`User validation failed: ${error.message}`, "INTERNAL_SERVER_ERROR");
   }
   // *************** If validation succeeds, return the validated and sanitized data
   return value;
