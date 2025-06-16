@@ -1,7 +1,7 @@
 // *************** IMPORT LIBRARY ***************
-const mongoose = require('mongoose')
+const Mongoose = require('mongoose')
 
-const schoolSchema = new mongoose.Schema({
+const schoolSchema = new Mongoose.Schema({
     // School's name for identification
     name: {
         type: String,
@@ -34,17 +34,17 @@ const schoolSchema = new mongoose.Schema({
     },
     // Reference to the Students (one-to-many relationship)
     students: [{
-        type: mongoose.Schema.Types.ObjectId,
+        type: Mongoose.Schema.Types.ObjectId,
         ref: 'Student'
     }],
     // Reference to the person who create the school data
     created_by: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
     // Reference to the person who delete the school data
     deleted_by: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
 },{
@@ -56,4 +56,4 @@ const schoolSchema = new mongoose.Schema({
 });
 
 // *************** EXPORT MODULE ***************
-module.exports = mongoose.model('School', schoolSchema);
+module.exports = Mongoose.model('School', schoolSchema);
