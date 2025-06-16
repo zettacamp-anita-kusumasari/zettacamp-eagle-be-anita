@@ -19,13 +19,20 @@ const Joi = require('joi');
  * @property {Date} [updated_at] - Optional. Timestamp for when the user was last updated.
  */
 const userSchema = Joi.object({
-  firstName: Joi.string().min(3).max(100).required(),
-  lastName: Joi.string().min(3).max(100).required(),
+  // *************** first_name: required string, 3–100 characters
+  first_name: Joi.string().min(3).max(100).required(),
+  // *************** last_name: required string, 3–100 characters
+  last_name: Joi.string().min(3).max(100).required(),
+  // *************** email: required string, 5–50 characters
   email: Joi.string().min(5).max(50).required(),
+  // role: required string, 3–50 characters
   role: Joi.string().min(3).max(50).required(),
+  // password: required string, 3–50 characters
   password: Joi.string().min(5).max(50).required(),
+  // created_at (timestamp): optional date
   created_at: Joi.date().optional(),
-  updatedAt: Joi.date().optional()
+  // updated_at (timestamp): optional date
+  updated_at: Joi.date().optional()
 });
 
 /**

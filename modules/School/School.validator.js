@@ -27,18 +27,30 @@ const Joi = require('joi');
  * @property {Date} [deleted_at] - Optional. Date when the school was deleted.
  */
 const schoolSchema = Joi.object({
+  // *************** School name: required string, 2–100 characters
   name: Joi.string().min(2).max(100).required(),
+  // *************** School initial_name: required string, 1–20 characters
   initial_name: Joi.string().min(1).max(20).required(),
+  // *************** address: required string, 5–200 characters
   address: Joi.string().min(5).max(200).required(),
+  // *************** city: required string, 2–100 characters
   city: Joi.string().min(2).max(100).required(),
+  // *************** country: required string, 2–100 characters
   country: Joi.string().min(2).max(100).required(),
+  // *************** postal_code: required string, 3–15 characters
   postal_code: Joi.string().min(3).max(15).required(),
+  // *************** Students field: optional, can be a MongoDB ObjectId string or an object
   students: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
+  // *************** created_by: optional, can be a MongoDB ObjectId string or an object
   created_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
+  // *************** deleted_by: optional, can be a MongoDB ObjectId string or an object
   deleted_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
+  // *************** created_at: optional date
   created_at: Joi.date().optional(),
+  // *************** updated_at: optional date
   updated_at: Joi.date().optional(),
-  deletedAt: Joi.date().optional()
+  // *************** deleted_at: optional date
+  deleted_at: Joi.date().optional()
 });
 
 /**
@@ -54,7 +66,7 @@ const schoolSchema = Joi.object({
  * @returns {Object} - The validated and possibly transformed school object.
  * @throws {Error} - Throws an error if validation fails with details from Joi.
  */
-function validateSchool(input) {
+function ValidateSchool(input) {
   // *************** Perform validation using the predefined schoolSchema
   const { error, value } = schoolSchema.validate(input);
   // *************** If validation fails, throw an error with the validation message
@@ -66,4 +78,4 @@ function validateSchool(input) {
 }
 
 // *************** EXPORT MODULE ***************
-module.exports = validateSchool;
+module.exports = ValidateSchool;
