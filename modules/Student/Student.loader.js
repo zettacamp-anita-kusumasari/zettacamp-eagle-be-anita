@@ -2,7 +2,7 @@
 const DataLoader = require('dataloader');
 
 // *************** IMPORT MODULE ***************
-const studentModel = require('./Student.model.js');
+const StudentModel = require('./Student.model.js');
 
 /**
  * Batch loads a list of students based on an array of student IDs.
@@ -18,7 +18,7 @@ const studentModel = require('./Student.model.js');
  */
 async function BatchStudents(ids) {
   // *************** Fetch students matching the given IDs
-  const students = await studentModel.find({ _id: { $in: ids } });
+  const students = await StudentModel.find({ _id: { $in: ids } });
   // *************** Map student ID to school object
   const studentMap = new Map();
   // *************** Store each student in the map with its ID as the key

@@ -2,7 +2,7 @@
 const DataLoader = require('dataloader');
 
 // *************** IMPORT MODULE ***************
-const schoolModel = require('./School.model.js');
+const SchoolModel = require('./School.model.js');
 
 /**
  * Batch loads a list of schools based on an array of school IDs.
@@ -18,7 +18,7 @@ const schoolModel = require('./School.model.js');
  */
 async function BatchSchools(ids) {
   // *************** Fetch schools matching the given IDs
-  const schools = await schoolModel.find({ _id: { $in: ids } });
+  const schools = await SchoolModel.find({ _id: { $in: ids } });
   // *************** Map school ID to school object
   const schoolMap = new Map();
   // *************** Store each school in the map with its ID as the key
@@ -29,8 +29,14 @@ async function BatchSchools(ids) {
   return ids.map(id => schoolMap.get(String(id)));
 }
 
-// *************** Creates a DataLoader instance for schools ***************
+/**
+ * Creates a new instance of DataLoader for batching and caching school data fetching.
+ *
+ * @function
+ * @returns {DataLoader<string, School>} A DataLoader instance that batches and caches school retrieval by ID.
+ */
 function CreateSchoolLoader() {
+  // *************** Return DataLoader to BatchSchools 
   return new DataLoader(BatchSchools);
 }
 
