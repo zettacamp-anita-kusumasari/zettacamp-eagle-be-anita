@@ -1,4 +1,4 @@
-// *************** IMPORT CORE ***************
+// *************** IMPORT LIBRARY ***************
 const Mongoose = require('mongoose');
 
 const userSchema = new Mongoose.Schema({

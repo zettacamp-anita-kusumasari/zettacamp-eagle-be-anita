@@ -34,12 +34,12 @@ const studentSchema = new Mongoose.Schema({
         ref: 'User' 
     },
     // Reference to the person who delete the student data
-    delete_by: {
+    deleted_by: {
         type: Mongoose.Schema.Types.ObjectId,
         ref: 'User' 
     },
 },{
-    // Automatically adds created_at and updateAt fields
+    // Automatically adds created_at and update_at fields
     timestamps: {
         created_at: 'created_at',
         updated_at: 'updated_at'
