@@ -29,8 +29,14 @@ async function BatchStudents(ids) {
   return ids.map(id => studentMap.get(String(id)));
 }
 
-// *************** Creates a DataLoader instance for students ***************
+/**
+ * Creates a new instance of DataLoader for batching and caching student data fetching.
+ *
+ * @function
+ * @returns {DataLoader<string, School>} A DataLoader instance that batches and caches student retrieval by ID.
+ */
 function CreateStudentLoader() {
+  // *************** Return DataLoader to BatchStudents
   return new DataLoader(BatchStudents);
 }
 
