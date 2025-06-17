@@ -1,4 +1,4 @@
-// *************** IMPORT LOADERS (default export) ***************
+// *************** IMPORT MODULE ***************
 const createSchoolLoader = require('../modules/School/School.loader.js');
 const createUserLoader = require('../modules/User/User.loader.js');
 const createStudentLoader = require('../modules/Student/Student.loader.js');
