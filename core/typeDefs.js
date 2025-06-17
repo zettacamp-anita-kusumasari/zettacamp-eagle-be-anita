@@ -1,6 +1,3 @@
-// *************** IMPORT LIBRARY ***************
-const { gql } = require('apollo-server-express');
-
 // *************** IMPORT MODULE ***************
 const schoolTypeDefs = require('../modules/School/School.typeDefs.js');
 const studentTypeDefs = require('../modules/Student/Student.typeDefs.js');
