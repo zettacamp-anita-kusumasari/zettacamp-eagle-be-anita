@@ -37,11 +37,11 @@ const schoolSchema = new Mongoose.Schema({
         },
     },
     // Status of the school: ACTIVE, INACTIVE, or DELETED
-    // school_status: {
-    //     type: String,
-    //     enum: ['PENDING', 'ACTIVE', 'DELETED'],
-    //     required: true
-    // },
+    school_status: {
+        type: String,
+        enum: ['PENDING', 'ACTIVE', 'DELETED'],
+        required: true
+    },
     // Reference to the Students (one-to-many relationship)
     students: [{
         type: Mongoose.Schema.Types.ObjectId,
