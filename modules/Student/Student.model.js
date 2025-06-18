@@ -19,10 +19,10 @@ const studentSchema = new Mongoose.Schema({
     },
     // Student's birth details
     student_birth: {
-        // date_of_birth: {
-        //     type: Date,
-        //     required: true
-        // },
+        date_of_birth: {
+            type: Date,
+            required: true
+        },
         place_of_birth: {
             type: String,
             required: true
