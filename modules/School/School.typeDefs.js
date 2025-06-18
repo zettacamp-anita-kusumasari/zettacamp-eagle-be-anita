@@ -11,7 +11,11 @@ type Address {
   zip_code: String!
 }
 
-
+enum SchoolStatus {
+  PENDING
+  ACTIVE
+  DELETED
+}
 
 type School {
   id: ID!
@@ -19,6 +23,7 @@ type School {
   commercial_name: String!
   logo: String
   address: Address!
+  school_status: SchoolStatus!
   students: [Student]
   created_by: User
   created_at: Date
@@ -40,7 +45,7 @@ input CreateSchoolInput {
   commercial_name: String!
   logo: String
   address: AddressInput!
-
+  school_status: SchoolStatus!
 }
 
 input UpdateSchoolInput {
@@ -48,7 +53,7 @@ input UpdateSchoolInput {
   commercial_name: String!
   logo: String
   address: AddressInput!
-
+  school_status: SchoolStatus!
 }
 
 type Query {
