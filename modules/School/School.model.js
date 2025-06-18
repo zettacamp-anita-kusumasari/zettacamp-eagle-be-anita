@@ -3,35 +3,45 @@ const Mongoose = require('mongoose')
 
 const schoolSchema = new Mongoose.Schema({
     // School's name for identification
-    name: {
+    legal_name: {
         type: String,
         required: true
     },
     // School's initial name for identification
-    initial_name: {
+    commercial_name: {
         type: String,
         required: true
+    },
+    // School's logo for identification
+    logo: {
+        type: String,
+        default: null
     },
     // School's address for identification
     address: {
-        type: String,
-        required: true
+        street_name: {
+            type: String,
+            required: true
+        },
+        city: {
+            type: String,
+            required: true
+        },
+        country: {
+            type: String,
+            required: true
+        },
+        zip_code: {
+            type: String,
+            required: true
+        },
     },
-    // School's city for identification
-    city: {
-        type: String,
-        required: true
-    },
-    // School's country for identification
-    country: {
-        type: String,
-        required: true
-    },
-    // School's postal code for identification
-    postal_code: {
-        type: String,
-        required: true
-    },
+    // Status of the school: ACTIVE, INACTIVE, or DELETED
+    // school_status: {
+    //     type: String,
+    //     enum: ['PENDING', 'ACTIVE', 'DELETED'],
+    //     required: true
+    // },
     // Reference to the Students (one-to-many relationship)
     students: [{
         type: Mongoose.Schema.Types.ObjectId,
@@ -42,16 +52,22 @@ const schoolSchema = new Mongoose.Schema({
         type: Mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
+    // Reference to the person who update the school data
+    updated_by: {
+        type: Mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
     // Reference to the person who delete the school data
     deleted_by: {
         type: Mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
 },{
-    // Automatically adds created_at and updateAt fields
+    // Automatically adds created_at, updateAt, and deleted_at fields
     timestamps: {
-        created_at: 'created_at',
-        updated_at: 'updated_at'
+        created_at: 'Created_At',
+        updated_at: 'Updated_At',
+        deleted_at: 'Deleted_At'
     }
 });
 
