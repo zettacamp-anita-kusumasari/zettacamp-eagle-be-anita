@@ -2,39 +2,53 @@
 const { gql } = require('apollo-server-express');
 
 const typeDefs = gql`
-  scalar Date
-  
-  type School {
-  id: ID!
-  name: String!
-  initial_name: String!
-  address: String!
+scalar Date
+
+type Address {
+  street_name: String!
   city: String!
   country: String!
-  postal_code: String!
+  zip_code: String!
+}
+
+
+
+type School {
+  id: ID!
+  legal_name: String!
+  commercial_name: String!
+  logo: String
+  address: Address!
   students: [Student]
   created_by: User
+  created_at: Date
+  updated_by: User
+  updated_at: Date
   deleted_by: User
-  created_at: String
-  updated_at: String
+  deleted_at: Date
+}
+
+input AddressInput {
+  street_name: String!
+  city: String!
+  country: String!
+  zip_code: String!
 }
 
 input CreateSchoolInput {
-  name: String!
-  initial_name: String!
-  address: String!
-  city: String!
-  country: String!
-  postal_code: String!
+  legal_name: String!
+  commercial_name: String!
+  logo: String
+  address: AddressInput!
+
 }
 
 input UpdateSchoolInput {
-  name: String!
-  initial_name: String!
-  address: String!
-  city: String!
-  country: String!
-  postal_code: String!
+  legal_name: String!
+  commercial_name: String!
+  logo: String
+  address: AddressInput!
+
 }
 
 type Query {
@@ -43,9 +57,9 @@ type Query {
 }
 
 type Mutation {
-  CreateSchool(input: CreateSchoolInput!): School
-  UpdateSchool(id: ID!, input: UpdateSchoolInput!): School
-  DeleteSchool(id: ID!): School
+  CreateSchool(input: CreateSchoolInput!): School!
+  UpdateSchool(id: ID!, input: UpdateSchoolInput!): School!
+  DeleteSchool(id: ID!): School!
 }
 `;
 
