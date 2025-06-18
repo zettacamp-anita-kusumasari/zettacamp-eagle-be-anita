@@ -24,16 +24,29 @@ const userSchema = Joi.object({
   first_name: Joi.string().min(3).max(100).required(),
   // *************** last_name: required string, 3–100 characters
   last_name: Joi.string().min(3).max(100).required(),
-  // *************** email: required string, 5–50 characters
-  email: Joi.string().min(5).max(50).required(),
+  // *************** photo_profile: required string, 3–100 characters
+  photo_profile: Joi.string().min(3).max(100).required(),
+  // *************** contact: required phone number and email of the user
+  contact: {
+    phone_number: Joi.string().min(3).max(200).required(),
+    email: Joi.string().min(5).max(50).required()
+  },
   // role: required string, 3–50 characters
   role: Joi.string().min(3).max(50).required(),
   // password: required string, 3–50 characters
   password: Joi.string().min(5).max(50).required(),
-  // created_at (timestamp): optional date
+  // *************** created_by: optional, can be a MongoDB ObjectId string or an object
+  created_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
+  // *************** updated_by: optional, can be a MongoDB ObjectId string or an object
+  updated_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
+  // *************** deleted_by: optional, can be a MongoDB ObjectId string or an object
+  deleted_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
+  // *************** created_at: optional date
   created_at: Joi.date().optional(),
-  // updated_at (timestamp): optional date
-  updated_at: Joi.date().optional()
+  // *************** updated_at: optional date
+  updated_at: Joi.date().optional(),
+  // *************** deleted_at: optional date
+  deleted_at: Joi.date().optional()
 });
 
 /**

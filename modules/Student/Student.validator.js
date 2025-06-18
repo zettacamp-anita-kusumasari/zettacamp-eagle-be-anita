@@ -25,10 +25,25 @@ const studentInputSchema = Joi.object({
   first_name: Joi.string().min(3).max(100).required(),
   // *************** last_name: required string, 3–100 characters
   last_name: Joi.string().min(3).max(100).required(),
-  // *************** email: required, must be a valid email format and max 100 characters
-  email: Joi.string().email().max(100).required(),
-  // *************** date_of_birth: required, must be a valid date
-  date_of_birth: Joi.date().required(),
+  // *************** last_name: required string, 3–100 characters
+  photo_profile: Joi.string().min(3).max(100).optional(),
+  // *************** student_birth: required date and place of birth of the student
+  student_birth: {
+    date_of_birth: Joi.date().required(),
+    place_of_birth: Joi.string().min(3).max(200).required()
+  },
+  // *************** contact: required phone number and email of the student
+  contact: {
+    phone_number: Joi.string().min(3).max(200).required(),
+    email: Joi.string().email().max(100).required()
+  },
+  // *************** address: required string, 3–200 characters
+  address: {
+    street_number: Joi.string().min(3).max(200).required(),
+    city: Joi.string().min(3).max(200).required(),
+    country: Joi.string().min(3).max(200).required(),
+    zip_code: Joi.string().min(3).max(200).required(),
+  },
   // *************** school_id: optional, must be a valid MongoDB ObjectId if provided
   school_id: Joi.string().custom(function (value, helpers) {
     // *************** Check if the string is a valid ObjectId using Mongoose's validation
@@ -38,6 +53,18 @@ const studentInputSchema = Joi.object({
     // *************** If valid, return the original value to be used in the validated result
     return value;
   }, 'ObjectId validation').optional(),
+  // *************** created_by: optional, can be a MongoDB ObjectId string or an object
+  created_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
+  // *************** updated_by: optional, can be a MongoDB ObjectId string or an object
+  updated_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
+  // *************** deleted_by: optional, can be a MongoDB ObjectId string or an object
+  deleted_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
+  // *************** created_at: optional date
+  created_at: Joi.date().optional(),
+  // *************** updated_at: optional date
+  updated_at: Joi.date().optional(),
+  // *************** deleted_at: optional date
+  deleted_at: Joi.date().optional()
 });
 
 /**

@@ -17,10 +17,7 @@ const { ApolloError } = require('apollo-server-express');
  * @property {string} name - Required. School's full name. Min 2, max 100 characters.
  * @property {string} initial_name - Required. Shortened or initial name. Min 1, max 20 characters.
  * @property {string} address - Required. Full address. Min 5, max 200 characters.
- * @property {string} city - Required. City name. Min 2, max 100 characters.
- * @property {string} country - Required. Country name. Min 2, max 100 characters.
- * @property {string} postal_code - Required. Postal code. Min 3, max 15 characters.
- * @property {string|Object} [students] - Optional. A single student ID (24-char hex string) or object.
+  * @property {string|Object} [students] - Optional. A single student ID (24-char hex string) or object.
  * @property {string|Object} [created_by] - Optional. User ID (24-char hex string) or user object.
  * @property {string|Object} [deleted_by] - Optional. User ID (24-char hex string) or user object.
  * @property {Date} [created_at] - Optional. Date when the school was created.
@@ -29,21 +26,24 @@ const { ApolloError } = require('apollo-server-express');
  */
 const schoolSchema = Joi.object({
   // *************** School name: required string, 2–100 characters
-  name: Joi.string().min(2).max(100).required(),
+  legal_name: Joi.string().min(2).max(100).required(),
   // *************** School initial_name: required string, 1–20 characters
-  initial_name: Joi.string().min(1).max(20).required(),
-  // *************** address: required string, 5–200 characters
-  address: Joi.string().min(5).max(200).required(),
-  // *************** city: required string, 2–100 characters
-  city: Joi.string().min(2).max(100).required(),
-  // *************** country: required string, 2–100 characters
-  country: Joi.string().min(2).max(100).required(),
-  // *************** postal_code: required string, 3–15 characters
-  postal_code: Joi.string().min(3).max(15).required(),
+  commercial_name: Joi.string().min(1).max(20).required(),
+  // *************** School logo: required string, 1–200 characters
+  logo: Joi.string().min(1).max(200).optional(),
+  // *************** address: required string, 3–200 characters
+  address: {
+    street_name: Joi.string().min(3).max(200).required(),
+    city: Joi.string().min(3).max(200).required(),
+    country: Joi.string().min(3).max(200).required(),
+    zip_code: Joi.string().min(3).max(200).required()
+  },
   // *************** Students field: optional, can be a MongoDB ObjectId string or an object
   students: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
   // *************** created_by: optional, can be a MongoDB ObjectId string or an object
   created_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
+  // *************** updated_by: optional, can be a MongoDB ObjectId string or an object
+  updated_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
   // *************** deleted_by: optional, can be a MongoDB ObjectId string or an object
   deleted_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
   // *************** created_at: optional date
@@ -77,7 +77,8 @@ function ValidateSchool(input) {
   }
   // *************** If validation succeeds, return the validated and possibly transformed value
   return value;
-}
+  }
+
 
 // *************** EXPORT MODULE ***************
 module.exports = ValidateSchool;
