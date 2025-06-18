@@ -255,14 +255,6 @@ async function DeletedByLoader(parent, _, context) {
  * @param {Object} parent - The parent Student object.
  * @returns {string|null} - The formatted date string or null.
  */
-function FormatDateOfBirth(parent) {
-  // *************** Check if the `date_of_birth` field exists on the parent object
-  return parent.date_of_birth
-    // *************** If it exists, convert to ISO string and extract the date portion only
-    ? parent.date_of_birth.toISOString().split('T')[0]
-    // *************** If not, return null to indicate absence of value
-    : null;
-}
 
 // *************** EXPORT MODULE ***************
 module.exports = {
@@ -272,6 +264,5 @@ module.exports = {
     school_id: SchoolLoader,
     created_by: CreatedByLoader,
     deleted_by: DeletedByLoader,
-    date_of_birth: FormatDateOfBirth
   }
 };
