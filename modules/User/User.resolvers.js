@@ -23,9 +23,10 @@ const { ValidateUserInput } = require('./User.validator');
 async function GetAllUsers() {
   try {
     // *************** Query the UserModel to find all users whose status is 'ACTIVE'
-    return await UserModel.find({ user_status: 'ACTIVE' });
+    const toActiveUsers = await UserModel.find({ user_status: 'ACTIVE' });
+    return toActiveUsers;
   } catch (error) {
-    // *************** If an error occurs during the database query, throw an ApolloError with details
+    // *************** If an error occurs during the database query, throw an ApolloError
     throw new ApolloError(`Failed to fetch users: ${error.message}`, "INTERNAL_SERVER_ERROR");
   }
 }
@@ -85,8 +86,9 @@ async function CreateUser(_, { input }) {
   // *************** Validate the input fields using a custom validation function
   ValidateUserInput(input);
   try {
-    // *************** Hardcoded creator ID to associate the creator of the user
+    // *************** Hardcoded ID representing the user who is creating this entry
     const creatorId = '6846e5769e5502fce150eb67';
+    // *************** Destructure necessary fields from the input object
     const {
       first_name,
       last_name,
@@ -96,7 +98,7 @@ async function CreateUser(_, { input }) {
       user_status,
       password
     } = input;
-
+    // *************** Construct the user data object for database insertion
     const userData = {
       first_name: first_name,
       last_name: last_name,
@@ -110,10 +112,9 @@ async function CreateUser(_, { input }) {
       password: password,
       created_by: creatorId
     };
-
     // *************** Create a new user document in the database
-    const toNewUser = await UserModel.create(userData);
-    return toNewUser;
+    const toCreatedUser = await UserModel.create(userData);
+    return toCreatedUser;
   } catch (error) {
     // *************** Throw an ApolloError if any error occurs during creation
     throw new ApolloError('Failed to create user.', 'USER_CREATION_FAILED', {error: error.message});
@@ -146,6 +147,7 @@ async function UpdateUser(_, { id, input }) {
   try {
     // *************** Hardcoded updater ID to track who updated the data
     const updaterId = '6846e5769e5502fce150eb67';
+    // *************** Destructure relevant fields from the input object
     const {
       first_name,
       last_name,
@@ -155,7 +157,7 @@ async function UpdateUser(_, { id, input }) {
       user_status,
       password
     } = input;
-
+    // *************** Construct the userData object to be saved to the database
     const userData = {
       first_name: first_name,
       last_name: last_name,
@@ -169,10 +171,9 @@ async function UpdateUser(_, { id, input }) {
       password: password,
       updated_by: updaterId
     };
-
     // *************** Update the user document in the database and return the new version
-    const newVersion = await UserModel.findOneAndUpdate({ _id: id }, userData, { new: true });
-    return newVersion;
+    const toUpdatedUser = await UserModel.findOneAndUpdate({ _id: id }, userData, { new: true });
+    return toUpdatedUser;
   } catch (error) {
     // *************** Handle and throw any errors during the update operation
     throw new ApolloError('Failed to update user.', 'USER_UPDATE_FAILED', {error: error.message});
@@ -180,18 +181,20 @@ async function UpdateUser(_, { id, input }) {
 }
 
 /**
- * Soft deletes a user by updating their status and deletion metadata.
+ * Soft deletes a user by updating their status to 'INACTIVE' and recording the deleter's ID and timestamp.
  *
- * This function checks if the provided ID is valid, then updates the user's
- * status to "DELETED" along with who deleted it and when.
+ * This function:
+ * - Validates the given MongoDB ObjectId.
+ * - Finds the user by ID.
+ * - Ensures the user exists and is currently active.
+ * - Updates the user document with soft deletion fields (status, deleted_by, deleted_at).
+ * - Returns the updated user document.
  *
- * @async
- * @function DeleteUser
- * @param {Object} _ - Unused parameter (GraphQL resolver convention).
- * @param {Object} args - GraphQL arguments containing the user ID.
- * @param {string} args.id - The MongoDB ObjectId of the user to delete.
- * @returns {Promise<Object>} - The updated user document after soft deletion.
- * @throws {ApolloError} - If the ID is invalid or the deletion process fails.
+ * @param {Object} _ - Unused first parameter (typically root or parent in GraphQL resolvers).
+ * @param {Object} args - The arguments passed to the resolver.
+ * @param {string} args.id - The ID of the user to be deleted.
+ * @returns {Promise<Object>} The updated user document after soft deletion.
+ * @throws {ApolloError} If the ID is invalid, user is not found, already inactive, or any internal error occurs during the update.
  */
 async function DeleteUser(_, { id }) {
   // *************** Validate whether the provided ID is a valid MongoDB ObjectId
@@ -199,43 +202,33 @@ async function DeleteUser(_, { id }) {
     // *************** If invalid, throw an ApolloError with a specific error code
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
   }
-
   try {
-    // *************** Find User by ID
+    // *************** Find the user document by the given ID
     const user = await UserModel.findById(id);
-
-    // *************** If not found throw error
+    // *************** If the user does not exist, throw a NOT_FOUND error
     if (!user) {
       throw new ApolloError("User not found", "NOT_FOUND");
     }
-
-    // *************** If user not ACTIVE, no need to delete again
+    // *************** If the user is already inactive, prevent redundant deletion
     if (user.user_status !== 'ACTIVE') {
       throw new ApolloError("User is already inactive", "BAD_USER_INPUT");
     }
-
-    // *************** Hardcoded user ID
+    // *************** Hardcoded ID representing the user who performs the deletion
     const deleterId = '6846e5769e5502fce150eb67';
-
-    // *************** Prepare the data to soft delete 
+    // *************** Perform update and return the modified user document 
     const userData = {
       user_status: 'INACTIVE',
       deleted_by: deleterId,
       deleted_at: Date.now()
     };
-
     // *************** Update user document and return new doc
-    const newDoc = await UserModel.findOneAndUpdate({ _id: id }, userData, { new: true });
-    return newDoc;
-
+    const toDeletedUser = await UserModel.findOneAndUpdate({ _id: id }, userData, { new: true });
+    return toDeletedUser;
   } catch (error) {
     // *************** Jika ada error saat proses, lempar ApolloError
-    throw new ApolloError('Failed to delete user.', 'USER_DELETION_FAILED', {
-      error: error.message
-    });
+    throw new ApolloError('Failed to delete user.', 'USER_DELETION_FAILED', { error: error.message });
   }
 }
-
 
 // *************** LOADER ***************
 /**
@@ -255,10 +248,10 @@ async function DeleteUser(_, { id }) {
 async function CreatedByLoader(parent, _, context) {
   try {
     // *************** Use the UserLoader DataLoader to fetch the user who created this record
-    const tofetchUser = await context.dataLoaders.UserLoader.load(parent.created_by);
-    return tofetchUser;
+    const toCreatedByUser = await context.dataLoaders.UserLoader.load(parent.created_by);
+    return toCreatedByUser;
   } catch (error) {
-    // *************** If any error occurs while fetching, throw an ApolloError with a custom code
+    // *************** If any error occurs while fetching, throw an ApolloError
     throw new ApolloError(`Failed to fetch creator: ${error.message}`, 'USER_FETCH_FAILED');
   }
 }
@@ -280,13 +273,14 @@ async function CreatedByLoader(parent, _, context) {
 async function UpdatedByLoader(parent, _, context) {
   try {
     // *************** Use the UserLoader from context to fetch the user by ID in parent.updated_by
-    const toLoadMany = await context.dataLoaders.UserLoader.load(parent.updated_by);
-    return toLoadMany;
+    const toUpdatedByUser = await context.dataLoaders.UserLoader.load(parent.updated_by);
+    return toUpdatedByUser;
   } catch (error) {
     // *************** If fetching fails, throw an ApolloError with a custom error code and message
     throw new ApolloError(`Failed to fetch updater: ${error.message}`, 'USER_FETCH_FAILED');
   }
 }
+
 /**
  * DataLoader resolver to fetch the user who deleted the current document.
  *
@@ -307,8 +301,8 @@ async function DeletedByLoader(parent, _, context) {
     // *************** Check if the parent object has a deleted_by field
     if (parent.deleted_by) {
       // *************** Load and return the user who deleted the data using DataLoader
-      const deleteUser = await context.dataLoaders.UserLoader.load(parent.deleted_by);
-      return deleteUser;
+      const toDeletedByUser = await context.dataLoaders.UserLoader.load(parent.deleted_by);
+      return toDeletedByUser;
     } else {
       // *************** If deleted_by is not available, return null
       return null;

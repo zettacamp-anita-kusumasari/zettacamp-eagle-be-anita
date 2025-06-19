@@ -198,19 +198,25 @@ async function UpdateSchool(_, { id, input }) {
 }
 
 /**
- * Soft deletes a school by setting its status to 'INACTIVE'.
+ * Soft deletes a school by setting its status to 'INACTIVE' and logging deletion metadata.
  *
- * This function first validates the provided school ID. If valid, it updates the corresponding
- * school document by setting its `school_status` to `'INACTIVE'`, and adds audit fields such as 
- * `deleted_by` and `deleted_at`. The actual document is not removed from the database.
+ * This function:
+ * - Validates whether the given ID is a valid MongoDB ObjectId.
+ * - Finds the school document by the provided ID.
+ * - Ensures the school exists and is currently active.
+ * - Updates the school document to set its status to 'INACTIVE',
+ *   records the deleter's user ID, and logs the deletion timestamp.
+ * - Returns the updated school document.
  *
- * @async
- * @function DeleteSchool
  * @param {Object} _ - Unused GraphQL resolver root argument.
- * @param {Object} args - Arguments object containing the school ID.
- * @param {string} args.id - The ID of the school to be soft deleted.
- * @returns {Promise<Object|null>} A promise that resolves to the updated school document if found, or null if not found.
- * @throws {ApolloError} If the ID is invalid or a database error occurs during deletion.
+ * @param {Object} args - The arguments object containing input values.
+ * @param {string} args.id - The ID of the school to be soft-deleted.
+ * @returns {Promise<Object>} The updated school document after soft deletion.
+ * @throws {ApolloError} If:
+ * - The provided ID is invalid.
+ * - No school is found with the given ID.
+ * - The school is already inactive.
+ * - An error occurs during the update process.
  */
 async function DeleteSchool(_, { id }) {
   // *************** Check if the provided ID is a valid MongoDB ObjectId.

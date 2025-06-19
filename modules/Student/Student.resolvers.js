@@ -212,24 +212,25 @@ async function UpdateStudent(_, { id, input }) {
 }
 
 /**
- * Soft deletes a student by setting their status to 'INACTIVE'.
+ * Soft deletes a student by marking their status as 'INACTIVE' and setting deletion metadata.
  *
- * This asynchronous function:
- * - Validates the provided ID to ensure it is a valid MongoDB ObjectId.
- * - Constructs a soft delete payload including `student_status`, `deleted_by`, and `deleted_at`.
- * - Updates the student document using `findOneAndUpdate` to mark it as inactive.
+ * This function:
+ * - Validates whether the provided ID is a valid MongoDB ObjectId.
+ * - Retrieves the student document by the provided ID.
+ * - Ensures the student exists and is currently ACTIVE.
+ * - Updates the student status to 'INACTIVE', records the deleter's ID and timestamp.
+ * - Returns the updated student document after soft deletion.
  *
- * Throws an `ApolloError` if the ID is invalid or a database error occurs.
- *
- * @async
- * @function DeleteStudent
- * @param {Object} _ - Unused root argument (GraphQL convention).
- * @param {Object} args - Argument object containing student ID.
- * @param {string} args.id - The MongoDB ObjectId of the student to delete.
- * @returns {Promise<Object|null>} A promise that resolves to the updated (soft-deleted) student document, or `null` if not found.
- * @throws {ApolloError} If the ID is invalid or the deletion operation fails.
+ * @param {Object} _ - Unused resolver root argument (standard in GraphQL resolvers).
+ * @param {Object} args - The arguments passed to the resolver.
+ * @param {string} args.id - The ID of the student to be soft-deleted.
+ * @returns {Promise<Object>} The updated student document after soft deletion.
+ * @throws {ApolloError} If:
+ * - The provided ID is invalid.
+ * - No student is found with the given ID.
+ * - The student is already inactive.
+ * - An error occurs during the update process.
  */
-
 async function DeleteStudent(_, { id }) {
   // *************** Check if the provided ID is a valid MongoDB ObjectId.
   if (!Mongoose.Types.ObjectId.isValid(id)) {
