@@ -29,9 +29,16 @@ async function BatchUsers(ids) {
   return ids.map(id => userMap.get(String(id)));
 }
 
-// *************** Creates a DataLoader instance for users ***************
+/**
+ * Creates a new instance of DataLoader for batching and caching user data fetching.
+ *
+ * @function
+ * @returns {DataLoader<string, School>} A DataLoader instance that batches and caches user retrieval by ID.
+ */
 function CreateUserLoader() {
-  return new DataLoader(BatchUsers);
+  // *************** Return DataLoader to BatchUsers
+  const toUserLoader = new DataLoader(BatchUsers);
+  return toUserLoader;
 }
 
 // *************** EXPORT MODULE ***************
