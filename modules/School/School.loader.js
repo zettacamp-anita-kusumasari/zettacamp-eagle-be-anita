@@ -26,7 +26,8 @@ async function BatchSchools(ids) {
     schoolMap.set(String(school._id), school);
   }
   // *************** Return schools in the same order as input IDs
-  return ids.map(id => schoolMap.get(String(id)));
+  const toInputId = ids.map(id => schoolMap.get(String(id)));
+  return toInputId;
 }
 
 /**
@@ -36,8 +37,9 @@ async function BatchSchools(ids) {
  * @returns {DataLoader<string, School>} A DataLoader instance that batches and caches school retrieval by ID.
  */
 function CreateSchoolLoader() {
-  // *************** Return DataLoader to BatchSchools 
-  return new DataLoader(BatchSchools);
+  // *************** Return DataLoader to BatchSchools
+  const toBatchSchools =  new DataLoader(BatchSchools);
+  return toBatchSchools;
 }
 
 // *************** EXPORT MODULE ***************
