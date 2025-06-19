@@ -1,84 +1,77 @@
 // *************** IMPORT LIBRARY ***************
-const Joi = require('joi');
-const { ApolloError } = require('apollo-server-express');
+const { ApolloError } = require('apollo-server');
+const Validator = require('validator');
+
+// *************** Valid status for school_status
+const ValidStatus = ['ACTIVE', 'INACTIVE'];
 
 /**
- * Joi validation schema for User input data.
+ * Validates the user input data before creating or updating a user.
  *
- * This schema defines the expected structure and constraints for user-related input,
- * ensuring each field conforms to type, length, and presence requirements.
+ * This function checks for required fields such as first name, last name, contact details,
+ * role, user status, and password. It also validates field formats (e.g., email, URL).
  *
- * @constant
- * @type {Joi.ObjectSchema}
- *
- * @property {string} firstName - Required. The user's first name (3–100 characters).
- * @property {string} lastName - Required. The user's last name (3–100 characters).
- * @property {string} email - Required. The user's email address (5–50 characters).
- * @property {string} role - Required. The user's role or access level (3–50 characters).
- * @property {string} password - Required. The user's password (5–50 characters).
- * @property {Date} [created_at] - Optional. Timestamp for when the user was created.
- * @property {Date} [updated_at] - Optional. Timestamp for when the user was last updated.
+ * @param {Object} input - The input object containing user details.
+ * @param {string} input.first_name - User's first name.
+ * @param {string} input.last_name - User's last name.
+ * @param {string} [input.photo_profile] - Optional URL to the user's profile photo.
+ * @param {Object} input.contact - Object containing contact information.
+ * @param {string} input.contact.phone_number - User's phone number.
+ * @param {string} input.contact.email - User's email address.
+ * @param {string} input.role - Role of the user.
+ * @param {string} input.user_status - Status of the user (e.g., ACTIVE, INACTIVE).
+ * @param {string} input.password - User's password (minimum 6 characters).
+ * @throws {ApolloError} If any required field is missing or invalid.
  */
-const userSchema = Joi.object({
-  // *************** first_name: required string, 3–100 characters
-  first_name: Joi.string().min(3).max(100).required(),
-  // *************** last_name: required string, 3–100 characters
-  last_name: Joi.string().min(3).max(100).required(),
-  // *************** photo_profile: required string, 3–100 characters
-  photo_profile: Joi.string().min(3).max(100).required(),
-  // *************** contact: required phone number and email of the user
-  contact: {
-    phone_number: Joi.string().min(3).max(200).required(),
-    email: Joi.string().min(5).max(50).required()
-  },
-  // role: required string, 3–50 characters
-  role: Joi.string().min(3).max(50).required(),
-  // password: required string, 3–50 characters
-  password: Joi.string().min(5).max(50).required(),
-  // *************** created_by: optional, can be a MongoDB ObjectId string or an object
-  created_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
-  // *************** updated_by: optional, can be a MongoDB ObjectId string or an object
-  updated_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
-  // *************** deleted_by: optional, can be a MongoDB ObjectId string or an object
-  deleted_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
-  // *************** created_at: optional date
-  created_at: Joi.date().optional(),
-  // *************** updated_at: optional date
-  updated_at: Joi.date().optional(),
-  // *************** deleted_at: optional date
-  deleted_at: Joi.date().optional()
-});
-
-/**
- * Validates user input data against the defined Joi schema.
- *
- * This function checks whether the provided user input conforms to the expected structure,
- * types, and constraints defined in `userSchema`. It returns the validated data if successful,
- * or throws an error if the validation fails.
- *
- * @function
- * @param {Object} input - The raw user input data to be validated.
- * @param {string} input.firstName - User's first name (required, 3–100 characters).
- * @param {string} input.lastName - User's last name (required, 3–100 characters).
- * @param {string} input.email - User's email address (required, 5–50 characters).
- * @param {string} input.role - User's role or permission level (required, 3–50 characters).
- * @param {string} input.password - User's password (required, 5–50 characters).
- * @param {Date} [input.createdAt] - Optional timestamp for creation.
- * @param {Date} [input.updatedAt] - Optional timestamp for last update.
- * @returns {Object} - The validated and sanitized user data.
- * @throws {Error} - Throws an error if validation fails, including the Joi validation message.
- */
-function validateUser(input) {
-  // *************** Destructure the result of validation into error and value
-  const { error, value } = userSchema.validate(input);
-  // *************** If validation fails, throw an error with a descriptive message
-  if (error) {
-    // throw new Error(`User validation failed: ${error.message}`);
-    throw new ApolloError(`User validation failed: ${error.message}`, "INTERNAL_SERVER_ERROR");
+function ValidateUserInput(input) {
+  const {
+    first_name,
+    last_name,
+    photo_profile,
+    contact,
+    role,
+    user_status,
+    password
+  } = input;
+  // *************** Validate first name: required and not empty
+  if (!first_name || Validator.isEmpty(first_name)) {
+    throw new ApolloError('First name is required.', 'BAD_USER_INPUT', { field: 'first_name' });
   }
-  // *************** If validation succeeds, return the validated and sanitized data
-  return value;
+  // *************** Validate last name: required and not empty
+  if (!last_name || Validator.isEmpty(last_name)) {
+    throw new ApolloError('Last name is required.', 'BAD_USER_INPUT', { field: 'last_name' });
+  }
+  // *************** If photo_profile is provided, it must be a valid URL
+  if (photo_profile && !Validator.isURL(photo_profile)) {
+    throw new ApolloError('Photo profile must be a valid URL.', 'BAD_USER_INPUT', { field: 'photo_profile' });
+  }
+  // *************** Validate contact: must be an object
+  if (!contact || typeof contact !== 'object') {
+    throw new ApolloError('Contact is required.', 'BAD_USER_INPUT', { field: 'contact' });
+  }
+  // *************** Validate phone number inside contact: required and not empty
+  if (!contact.phone_number || Validator.isEmpty(contact.phone_number)) {
+    throw new ApolloError('Phone number is required.', 'BAD_USER_INPUT', { field: 'contact.phone_number' });
+  }
+  // *************** Validate email inside contact: required and must be a valid email
+  if (!contact.email || !Validator.isEmail(contact.email)) {
+    throw new ApolloError('Valid email is required.', 'BAD_USER_INPUT', { field: 'contact.email' });
+  }
+  // *************** Validate role: required and not empty
+  if (!role || Validator.isEmpty(role)) {
+    throw new ApolloError('Role number is required.', 'BAD_USER_INPUT', { field: 'role' });
+  }
+  // *************** Validate user status: must be one of the allowed values
+  if (!user_status || !ValidStatus.includes(user_status.toUpperCase())) {
+    throw new ApolloError(`User status must be one of: ${ValidStatus.join(', ')}.`, 'BAD_USER_INPUT',{ field: 'user_status' });
+  }
+  // *************** Validate password: required, not empty, and minimum 6 characters
+  if (!password || Validator.isEmpty(password) || password.length < 6) {
+    throw new ApolloError('Password is required and must be at least 6 characters.','BAD_USER_INPUT',{ field: 'password' });
+  }
 }
 
 // *************** EXPORT MODULE ***************
-module.exports = validateUser;
+module.exports = {
+  ValidateUserInput
+};

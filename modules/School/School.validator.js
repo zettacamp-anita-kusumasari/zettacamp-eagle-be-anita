@@ -1,84 +1,90 @@
 // *************** IMPORT LIBRARY ***************
-const Joi = require('joi');
-const { ApolloError } = require('apollo-server-express');
+const { ApolloError } = require('apollo-server');
+const Validator = require('validator');
+
+// *************** Valid status for school_status
+const ValidStatus = ['ACTIVE', 'INACTIVE'];
 
 /**
- * Joi validation schema for a School object.
+ * Validates the input data for creating or updating a school.
  *
- * This schema is used to validate the structure and data types of a school object
- * before it is created or updated in the database.
- * It enforces constraints such as required fields, string lengths, object ID formats,
- * and optional date fields. It also supports flexible formats for related object references
- * (e.g., `students`, `created_by`, `deleted_by`) allowing either an ObjectId string or full object.
+ * This function checks for the presence and correctness of required fields such as
+ * `legal_name`, `commercial_name`, `logo`, `address`, and `school_status`. It ensures that
+ * strings are not empty, URLs are valid (for `logo`), and that `address` is a valid object
+ * containing properly formatted subfields. It also checks if `school_status` is one of the allowed values
+ * defined in `ValidStatus`.
  *
- * @constant
- * @type {Joi.ObjectSchema}
+ * If any field is invalid or missing, the function throws an `ApolloError` with a `BAD_USER_INPUT` code
+ * and includes the name of the invalid field in the error extensions.
  *
- * @property {string} name - Required. School's full name. Min 2, max 100 characters.
- * @property {string} initial_name - Required. Shortened or initial name. Min 1, max 20 characters.
- * @property {string} address - Required. Full address. Min 5, max 200 characters.
-  * @property {string|Object} [students] - Optional. A single student ID (24-char hex string) or object.
- * @property {string|Object} [created_by] - Optional. User ID (24-char hex string) or user object.
- * @property {string|Object} [deleted_by] - Optional. User ID (24-char hex string) or user object.
- * @property {Date} [created_at] - Optional. Date when the school was created.
- * @property {Date} [updated_at] - Optional. Date when the school was last updated.
- * @property {Date} [deleted_at] - Optional. Date when the school was deleted.
+ * @function ValidateSchoolInput
+ * @param {Object} input - The school input data to validate.
+ * @param {string} input.legal_name - The legal name of the school (required, non-empty).
+ * @param {string} input.commercial_name - The commercial name of the school (required, non-empty).
+ * @param {string} [input.logo] - Optional URL to the school's logo (must be a valid URL if provided).
+ * @param {Object} input.address - The address object containing street, city, country, and ZIP code.
+ * @param {string} input.address.street_name - Street name (required, non-empty).
+ * @param {string} input.address.city - City name (required, non-empty).
+ * @param {string} input.address.country - Country name (required, non-empty).
+ * @param {string} input.address.zip_code - ZIP code (required, non-empty).
+ * @param {string} input.school_status - Status of the school (must match one of `ValidStatus` values).
+ * @throws {ApolloError} If any required field is missing or invalid.
  */
-const schoolSchema = Joi.object({
-  // *************** School name: required string, 2–100 characters
-  legal_name: Joi.string().min(2).max(100).required(),
-  // *************** School initial_name: required string, 1–20 characters
-  commercial_name: Joi.string().min(1).max(20).required(),
-  // *************** School logo: required string, 1–200 characters
-  logo: Joi.string().min(1).max(200).optional(),
-  // *************** address: required string, 3–200 characters
-  address: {
-    street_name: Joi.string().min(3).max(200).required(),
-    city: Joi.string().min(3).max(200).required(),
-    country: Joi.string().min(3).max(200).required(),
-    zip_code: Joi.string().min(3).max(200).required()
-  },
-  // *************** Students field: optional, can be a MongoDB ObjectId string or an object
-  students: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
-  // *************** created_by: optional, can be a MongoDB ObjectId string or an object
-  created_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
-  // *************** updated_by: optional, can be a MongoDB ObjectId string or an object
-  updated_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
-  // *************** deleted_by: optional, can be a MongoDB ObjectId string or an object
-  deleted_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
-  // *************** created_at: optional date
-  created_at: Joi.date().optional(),
-  // *************** updated_at: optional date
-  updated_at: Joi.date().optional(),
-  // *************** deleted_at: optional date
-  deleted_at: Joi.date().optional()
-});
-
-/**
- * Validates input data against the school schema.
- *
- * This function uses the predefined `schoolSchema` (a Joi schema) to validate
- * the structure and values of a school object. If the input is valid,
- * the sanitized and validated value is returned. Otherwise, it throws an error
- * describing the validation failure.
- *
- * @function
- * @param {Object} input - The input object representing a school to be validated.
- * @returns {Object} - The validated and possibly transformed school object.
- * @throws {Error} - Throws an error if validation fails with details from Joi.
- */
-function ValidateSchool(input) {
-  // *************** Perform validation using the predefined schoolSchema
-  const { error, value } = schoolSchema.validate(input);
-  // *************** If validation fails, throw an error with the validation message
-  if (error) {
-    // throw new Error(`School validation failed: ${error.message}`);
-    throw new ApolloError(`School validation failed: ${error.message}`, "INTERNAL_SERVER_ERROR");
+function ValidateSchoolInput(input) {
+  // *************** Destructure expected fields from the input object
+  const {
+    legal_name,
+    commercial_name,
+    logo,
+    address,
+    school_status
+  } = input;
+  // *************** Validate that legal_name is provided and not an empty string
+  if (!legal_name || Validator.isEmpty(legal_name)) {
+    throw new ApolloError('Legal name is required.', 'BAD_USER_INPUT', { field: 'legal_name' });
   }
-  // *************** If validation succeeds, return the validated and possibly transformed value
-  return value;
+  // *************** Validate that commercial_name is provided and not an empty string
+  if (!commercial_name || Validator.isEmpty(commercial_name)) {
+    throw new ApolloError('Commercial name is required.', 'BAD_USER_INPUT', { field: 'commercial_name' });
   }
-
+  // *************** If logo is provided, validate that it's a valid URL
+  if (logo && !Validator.isURL(logo)) {
+    throw new ApolloError('Logo must be a valid URL.', 'BAD_USER_INPUT', { field: 'logo' });
+  }
+  // *************** Validate that address is provided and is an object
+  if (!address || typeof address !== 'object') {
+    throw new ApolloError('Address is required and must be an object.', 'BAD_USER_INPUT', { field: 'address' });
+  }
+  // *************** Destructure subfields from the address object
+  const {
+    street_name,
+    city,
+    country,
+    zip_code
+  } = address;
+  // *************** Validate that street_name is provided and not an empty string
+  if (!street_name || Validator.isEmpty(street_name)) {
+    throw new ApolloError('Street name is required.', 'BAD_USER_INPUT', { field: 'address.street_name' });
+  }
+  // *************** Validate that city is provided and not an empty string
+  if (!city || Validator.isEmpty(city)) {
+    throw new ApolloError('City is required.', 'BAD_USER_INPUT', { field: 'address.city' });
+  }
+  // *************** Validate that country is provided and not an empty string
+  if (!country || Validator.isEmpty(country)) {
+    throw new ApolloError('Country is required.', 'BAD_USER_INPUT', { field: 'address.country' });
+  }
+  // *************** Validate that zip_code is provided and not an empty string
+  if (!zip_code || Validator.isEmpty(zip_code)) {
+    throw new ApolloError('Zip code is required.', 'BAD_USER_INPUT', { field: 'address.zip_code' });
+  }
+  // *************** Validate that school_status exists and is within the allowed values
+  if (!school_status || !ValidStatus.includes(school_status.toUpperCase())) {
+    throw new ApolloError(`School status must be one of: ${ValidStatus.join(', ')}.`, 'BAD_USER_INPUT', {field: 'school_status'});
+  }
+}
 
 // *************** EXPORT MODULE ***************
-module.exports = ValidateSchool;
+module.exports = {
+    ValidateSchoolInput
+};

@@ -1,100 +1,115 @@
-// *************** IMPORT CORE ***************
-const Joi = require('joi');
-const Mongoose = require('mongoose');
-const { ApolloError } = require('apollo-server-express');
+// *************** IMPORT LIBRARY ***************
+const { ApolloError } = require('apollo-server');
+const Validator = require('validator');
+
+// *************** Valid status for school_status
+const ValidStatus = ['ACTIVE', 'INACTIVE'];
 
 /**
- * Joi validation schema for a Student input object.
+ * Validates the input object for creating or updating a student.
  *
- * This schema is used to validate the structure and constraints of student input data
- * before creating or updating a student record. It ensures required fields are present,
- * and that they conform to the expected format and length. Additionally, `schoolId` is
- * validated as a proper MongoDB ObjectId using a custom validator.
+ * This function performs validation on multiple fields of the `input` object,
+ * including first name, last name, photo profile URL, birth information,
+ * student status, contact details, and address. It throws an `ApolloError`
+ * with specific error codes and field names if validation fails.
  *
- * @constant
- * @type {Joi.ObjectSchema}
+ * @function ValidateStudentInput
+ * @param {Object} input - The student input object to validate.
+ * @param {string} input.first_name - Student's first name (required, non-empty).
+ * @param {string} input.last_name - Student's last name (required, non-empty).
+ * @param {string} [input.photo_profile] - Optional URL for the student's profile photo (must be valid URL if provided).
+ * @param {Object} input.student_birth - Object containing student birth information.
+ * @param {string} input.student_birth.date_of_birth - Required date of birth (must be a valid date string).
+ * @param {string} input.student_birth.place_of_birth - Required place of birth (non-empty).
+ * @param {string} input.student_status - Student status (must be one of the allowed `ValidStatus` values).
+ * @param {Object} input.contact - Object containing contact information.
+ * @param {string} input.contact.phone_number - Required phone number (non-empty).
+ * @param {string} input.contact.email - Required email address (must be a valid email).
+ * @param {Object} [input.address] - Optional address object containing location details.
+ * @param {string} [input.address.street_name] - Street name (if provided, must not be empty).
+ * @param {string} [input.address.city] - City (if provided, must not be empty).
+ * @param {string} [input.address.country] - Country (if provided, must not be empty).
+ * @param {string} [input.address.zip_code] - Zip code (if provided, must not be empty).
+ * @param {string} [input.school_id] - Optional ID of the related school (validation not performed here).
  *
- * @property {string} first_name - Required. First name of the student. Minimum 3, maximum 100 characters.
- * @property {string} last_name - Required. Last name of the student. Minimum 3, maximum 100 characters.
- * @property {string} email - Required. Email address of the student. Must be a valid email format and max 100 characters.
- * @property {Date} date_of_birth - Required. Birth date of the student.
- * @property {string} [school_id] - Optional. Must be a valid MongoDB ObjectId if provided.
+ * @throws {ApolloError} If any required field is missing, invalid, or empty.
  */
-const studentInputSchema = Joi.object({
-  // *************** first_name: required string, 3–100 characters
-  first_name: Joi.string().min(3).max(100).required(),
-  // *************** last_name: required string, 3–100 characters
-  last_name: Joi.string().min(3).max(100).required(),
-  // *************** last_name: required string, 3–100 characters
-  photo_profile: Joi.string().min(3).max(100).optional(),
-  // *************** student_birth: required date and place of birth of the student
-  student_birth: {
-    date_of_birth: Joi.date().required(),
-    place_of_birth: Joi.string().min(3).max(200).required()
-  },
-  // *************** contact: required phone number and email of the student
-  contact: {
-    phone_number: Joi.string().min(3).max(200).required(),
-    email: Joi.string().email().max(100).required()
-  },
-  // *************** address: required string, 3–200 characters
-  address: {
-    street_number: Joi.string().min(3).max(200).required(),
-    city: Joi.string().min(3).max(200).required(),
-    country: Joi.string().min(3).max(200).required(),
-    zip_code: Joi.string().min(3).max(200).required(),
-  },
-  // *************** school_id: optional, must be a valid MongoDB ObjectId if provided
-  school_id: Joi.string().custom(function (value, helpers) {
-    // *************** Check if the string is a valid ObjectId using Mongoose's validation
-    if (!Mongoose.Types.ObjectId.isValid(value)) {
-      return helpers.error('any.invalid');
-    }
-    // *************** If valid, return the original value to be used in the validated result
-    return value;
-  }, 'ObjectId validation').optional(),
-  // *************** created_by: optional, can be a MongoDB ObjectId string or an object
-  created_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
-  // *************** updated_by: optional, can be a MongoDB ObjectId string or an object
-  updated_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
-  // *************** deleted_by: optional, can be a MongoDB ObjectId string or an object
-  deleted_by: Joi.alternatives().try(Joi.string().hex().length(24), Joi.object()).optional(),
-  // *************** created_at: optional date
-  created_at: Joi.date().optional(),
-  // *************** updated_at: optional date
-  updated_at: Joi.date().optional(),
-  // *************** deleted_at: optional date
-  deleted_at: Joi.date().optional()
-});
+function ValidateStudentInput(input) {
+  // *************** Destructure input object into expected fields
+  const {
+    first_name,
+    last_name,
+    photo_profile,
+    student_birth,
+    student_status,
+    contact,
+    address,
+    school_id
+  } = input;
 
-/**
- * Validates student input data against the defined Joi schema.
- *
- * This function ensures that the provided student data matches the expected format and constraints
- * as defined in `studentInputSchema`. If the input is valid, it returns the validated and possibly
- * transformed data. If invalid, it throws an error describing the validation issue.
- *
- * @function
- * @param {Object} data - The raw student input data to validate.
- * @param {string} data.first_name - Student's first name (required, 3–100 characters).
- * @param {string} data.last_name - Student's last name (required, 3–100 characters).
- * @param {string} data.email - Student's email address (required, valid email format).
- * @param {Date|string} data.date_of_birth - Student's birth date (required).
- * @param {string} [data.school_id] - Optional MongoDB ObjectId string for the related school.
- * @returns {Object} - The validated and sanitized student data.
- * @throws {Error} - Throws an error if validation fails with details from Joi.
- */
-function ValidateStudent(data) {
-  // *************** Destructure the result of validation into error and value
-  const { error, value } = studentInputSchema.validate(data);
-  // *************** If validation fails, throw an error with the validation message
-  if (error) {
-    // throw new Error(`Student validation error: ${error.message}`);
-    throw new ApolloError(`Student validation failed: ${error.message}`, "INTERNAL_SERVER_ERROR");
+  // *************** Validate first_name: must be present and not empty
+  if (!first_name || Validator.isEmpty(first_name)) {
+    throw new ApolloError('First name is required.', 'BAD_USER_INPUT', { field: 'first_name' });
   }
-  // *************** If validation succeeds, return the validated and possibly transformed value
-  return value;
+  // *************** Validate last_name: must be present and not empty
+  if (!last_name || Validator.isEmpty(last_name)) {
+    throw new ApolloError('Last name is required.', 'BAD_USER_INPUT', { field: 'last_name' });
+  }
+  // *************** Validate photo_profile: if present, must be a valid URL
+  if (photo_profile && !Validator.isURL(photo_profile)) {
+    throw new ApolloError('Photo profile must be a valid URL.', 'BAD_USER_INPUT', { field: 'photo_profile' });
+  }
+  // *************** Validate student_birth: must be an object
+  if (!student_birth || typeof student_birth !== 'object') {
+    throw new ApolloError('Student birth data is required.', 'BAD_USER_INPUT', { field: 'student_birth' });
+  }
+  // *************** Validate student_birth.date_of_birth: must be a valid date string
+  if (!student_birth.date_of_birth || isNaN(Date.parse(student_birth.date_of_birth))) {
+    throw new ApolloError('Valid date of birth is required.', 'BAD_USER_INPUT', { field: 'student_birth.date_of_birth' });
+  }
+  // *************** Validate student_birth.place_of_birth: must be present and not empty
+  if (!student_birth.place_of_birth || Validator.isEmpty(student_birth.place_of_birth)) {
+    throw new ApolloError('Place of birth is required.', 'BAD_USER_INPUT', { field: 'student_birth.place_of_birth' });
+  }
+  // *************** Validate student_status: must be one of the allowed values
+  if (!student_status || !ValidStatus.includes(student_status.toUpperCase())) {
+    throw new ApolloError(`Student status must be one of: ${ValidStatus.join(', ')}`, 'BAD_USER_INPUT', { field: 'student_status' });
+  }
+  // *************** Validate contact: must be an object and contain valid fields
+  if (!contact || typeof contact !== 'object') {
+    throw new ApolloError('Contact information is required.', 'BAD_USER_INPUT', { field: 'contact' });
+  }
+  // *************** Validate contact.phone_number: must be present and not empty
+  if (!contact.phone_number || Validator.isEmpty(contact.phone_number)) {
+    throw new ApolloError('Phone number is required.', 'BAD_USER_INPUT', { field: 'contact.phone_number' });
+  }
+  // *************** Validate contact.email: must be present and in valid email format
+  if (!contact.email || !Validator.isEmail(contact.email)) {
+    throw new ApolloError('Valid email is required.', 'BAD_USER_INPUT', { field: 'contact.email' });
+  }
+  // *************** Validate address: must be an object with complete fields
+  if (!address || typeof address !== 'object') {
+    throw new ApolloError('Address is required and must be an object.', 'BAD_USER_INPUT', { field: 'address' });
+  }
+  // *************** Validate address.street_name: must be present and not empty
+  if (!address.street_name || Validator.isEmpty(address.street_name)) {
+    throw new ApolloError('Street name is required.', 'BAD_USER_INPUT', { field: 'address.street_name' });
+  }
+  // *************** Validate address.city: must be present and not empty
+  if (!address.city || Validator.isEmpty(address.city)) {
+    throw new ApolloError('City is required.', 'BAD_USER_INPUT', { field: 'address.city' });
+  }
+  // *************** Validate address.country: must be present and not empty
+  if (!address.country || Validator.isEmpty(address.country)) {
+    throw new ApolloError('Country is required.', 'BAD_USER_INPUT', { field: 'address.country' });
+  }
+  // *************** Validate address.zip_code: must be present and not empty
+  if (!address.zip_code || Validator.isEmpty(address.zip_code)) {
+    throw new ApolloError('Zip code is required.', 'BAD_USER_INPUT', { field: 'address.zip_code' });
+  }
 }
 
 // *************** EXPORT MODULE ***************
-module.exports = ValidateStudent;
+module.exports = {
+  ValidateStudentInput
+};
