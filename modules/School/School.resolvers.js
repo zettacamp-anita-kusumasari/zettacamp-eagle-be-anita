@@ -98,19 +98,28 @@ async function CreateSchool(_, { input }) {
   try {
     // *************** Define the user ID of the creator
     const userId = '6846e5769e5502fce150eb67';
+    const {
+      legal_name,
+      commercial_name,
+      logo,
+      address,
+      school_status
+    } = input;
+
     const schoolData = {
-      // *************** Spread the rest of the input fields
-      ...input,
+      legal_name: legal_name,
+      commercial_name: commercial_name,
+      logo: logo || null,
       address: {
-        street_name: input.address.street_name,
-        city: input.address.city,
-        country: input.address.country,
-        zip_code: input.address.zip_code
+        street_name: address.street_name,
+        city: address.city,
+        country: address.country,
+        zip_code: address.zip_code
       },
-      school_status: input.school_status.toUpperCase(),
-      created_by: userId,
-      updated_by: userId
+      school_status: school_status.toUpperCase(),
+      created_by: userId
     };
+
     // *************** Save the school data to the database using Mongoose
     return await SchoolModel.create(schoolData);
   } catch (error) {
@@ -156,18 +165,28 @@ async function UpdateSchool(_, { id, input }) {
   ValidateSchoolInput(input);
   try {
     const userId = '6846e5769e5502fce150eb67';
+    const {
+      legal_name,
+      commercial_name,
+      logo,
+      address,
+      school_status
+    } = input;
+
     const schoolData = {
-      // *************** Spread the rest of the input fields
-      ...input,
+      legal_name: legal_name,
+      commercial_name: commercial_name,
+      logo: logo || null,
       address: {
-        street_name: input.address.street_name,
-        city: input.address.city,
-        country: input.address.country,
-        zip_code: input.address.zip_code
+        street_name: address.street_name,
+        city: address.city,
+        country: address.country,
+        zip_code: address.zip_code
       },
-      school_status: input.school_status.toUpperCase(),
+      school_status: school_status.toUpperCase(),
       updated_by: userId
     };
+
     // *************** Perform the update in the database and return the updated document
     return await SchoolModel.findOneAndUpdate({ _id: id }, schoolData, { new: true });
   } catch (error) {
@@ -200,6 +219,16 @@ async function DeleteSchool(_, { id }) {
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
   }
   try {
+    // *************** Find the school by ID and check its current status
+    const school = await SchoolModel.findById(id);
+    if (!school) {
+      // *************** If no school found with the ID, throw an error
+      throw new ApolloError("School not found", "NOT_FOUND");
+    }
+    if (school.school_status !== 'ACTIVE') {
+      // *************** If the school is not ACTIVE, prevent deletion
+      throw new ApolloError("School is already inactive", "BAD_USER_INPUT");
+    }
     // *************** Set the user ID who is performing the deletion
     const userId = '6846e5769e5502fce150eb67';
     const schoolData = {
@@ -208,14 +237,14 @@ async function DeleteSchool(_, { id }) {
       deleted_at: Date.now()
     };
     // *************** Perform the update in the database and return the updated school document
-    return await SchoolModel.findOneAndUpdate({ _id: id }, schoolData, { new: true });
+    const toUpdatedSchoolDocument = await SchoolModel.findOneAndUpdate({ _id: id }, schoolData, { new: true });
+    return toUpdatedSchoolDocument;
   } catch (error) {
     // *************** If an error occurs during the update, throw an ApolloError with details
-    throw new ApolloError('Failed to delete school:', 'SCHOOL_DELETION_FAILED', {
-      error: error.message
-    });
+    throw new ApolloError('Failed to delete school:', 'SCHOOL_DELETION_FAILED', {error: error.message});
   }
 }
+
 
 // *************** LOADER ***************
 /**
@@ -239,7 +268,8 @@ async function DeleteSchool(_, { id }) {
 async function StudentLoader(parent, _, context) {
   try {
     // *************** Use the UserLoader DataLoader to load the user document based on parent.student ID
-    return await context.dataLoaders.StudentLoader.loadMany(parent.students || []);
+    const toLoadMany = await context.dataLoaders.StudentLoader.loadMany(parent.students || []);
+    return toLoadMany;
   } catch (error) {
     // *************** If an error occurs during loading, throw an ApolloError with a custom error code and message
     throw new ApolloError(`Failed to load students: ${error.message}`, 'STUDENT_FETCH_FAILED');
@@ -266,7 +296,8 @@ async function StudentLoader(parent, _, context) {
 async function CreatedByLoader(parent, _, context) {
   try {
     // *************** Use the UserLoader DataLoader to load the user document based on parent.created_by ID
-    return await context.dataLoaders.UserLoader.load(parent.created_by);
+    const toLoadMany = await context.dataLoaders.UserLoader.load(parent.created_by);
+    return toLoadMany;
   } catch (error) {
     // *************** If an error occurs during loading, throw an ApolloError with a custom error code and message
     throw new ApolloError(`Failed to load creator user: ${error.message}`, 'USER_FETCH_FAILED');
@@ -293,7 +324,8 @@ async function CreatedByLoader(parent, _, context) {
 async function UpdatedByLoader(parent, _, context) {
   try {
     // *************** Use the UserLoader DataLoader to load the user document based on parent.updated_by ID
-    return await context.dataLoaders.UserLoader.load(parent.updated_by);
+    const toLoadMany = await context.dataLoaders.UserLoader.load(parent.updated_by);
+    return toLoadMany;
   } catch (error) {
     // *************** If an error occurs during loading, throw an ApolloError with a custom error code and message
     throw new ApolloError(`Failed to load updater user: ${error.message}`, 'USER_FETCH_FAILED');
@@ -323,7 +355,8 @@ async function DeletedByLoader(parent, _, context) {
     // *************** Check if the parent object contains the 'deleted_by' user ID
     if (parent.deleted_by) {
       // *************** If it exists, use UserLoader to load and return the user document by ID
-      return await context.dataLoaders.UserLoader.load(parent.deleted_by);
+      const toLoadMany = await context.dataLoaders.UserLoader.load(parent.deleted_by);
+      return toLoadMany;
     } else {
       // *************** If 'deleted_by' is not present, return null (no user to load)
       return null;

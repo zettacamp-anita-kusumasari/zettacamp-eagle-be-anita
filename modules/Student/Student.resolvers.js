@@ -25,7 +25,8 @@ const { ValidateStudentInput } = require('./Student.validator');
 async function GetAllStudents() {
   try {
     // *************** Attempt to query the database using Mongoose. Only students with 'ACTIVE' student_status will be returned
-    return await StudentModel.find({ student_status: 'ACTIVE' });
+    const toReturnStudent = await StudentModel.find({ student_status: 'ACTIVE' });
+    return toReturnStudent;
   } catch (error) {
     // *************** If an error occurs during the query, throw an ApolloError
     throw new ApolloError(`Failed to fetch students: ${error.message}`, "INTERNAL_SERVER_ERROR");
@@ -92,17 +93,44 @@ async function CreateStudent(_, { input }) {
   // Validate the incoming student input using a custom validation function
   ValidateStudentInput(input);
   try {
-    // *************** Hardcoded user ID to set created_by and updated_by fields
     const userId = '6846e5769e5502fce150eb67';
+    const {
+      first_name,
+      last_name,
+      photo_profile,
+      student_birth,
+      student_status,
+      contact,
+      address,
+      school_id
+    } = input;
+
     const studentData = {
-      // *************** Spread the input fields
-      ...input,
-      student_status: input.student_status.toUpperCase(),
+      first_name: first_name,
+      last_name: last_name,
+      photo_profile: photo_profile || null,
+      student_birth: {
+        date_of_birth: student_birth.date_of_birth,
+        place_of_birth: student_birth.place_of_birth
+      },
+      student_status: student_status.toUpperCase(),
+      contact: {
+        phone_number: contact.phone_number,
+        email: contact.email
+      },
+      address: {
+        street_name: address?.street_name || null,
+        city: address?.city || null,
+        country: address?.country || null,
+        zip_code: address?.zip_code || null
+      },
+      school_id: school_id || null,
       created_by: userId,
-      updated_by: userId
     };
+
     // *************** Create the student document in the database
-    return await StudentModel.create(studentData);
+    const toStudentData = await StudentModel.create(studentData);
+    return toStudentData;
   } catch (error) {
     // *************** If an error occurs during creation, throw an ApolloError with details
     throw new ApolloError('Failed to create student:', 'STUDENT_CREATION_FAILED', {error: error.message});
@@ -137,16 +165,44 @@ async function UpdateStudent(_, { id, input }) {
   // *************** Validate the student input using a custom validator
   ValidateStudentInput(input);
   try {
-    // *************** Simulated current user ID
     const userId = '6846e5769e5502fce150eb67';
-    // *************** Prepare the updated student data
+    const {
+      first_name,
+      last_name,
+      photo_profile,
+      student_birth,
+      student_status,
+      contact,
+      address,
+      school_id
+    } = input;
+
     const studentData = {
-      ...input,
-      student_status: input.student_status.toUpperCase(),
+      first_name: first_name,
+      last_name: last_name,
+      photo_profile: photo_profile || null,
+      student_birth: {
+        date_of_birth: student_birth.date_of_birth,
+        place_of_birth: student_birth.place_of_birth
+      },
+      student_status: student_status.toUpperCase(),
+      contact: {
+        phone_number: contact.phone_number,
+        email: contact.email
+      },
+      address: {
+        street_name: address?.street_name || null,
+        city: address?.city || null,
+        country: address?.country || null,
+        zip_code: address?.zip_code || null
+      },
+      school_id: school_id || null,
       updated_by: userId
     };
+
     // *************** Find the student by ID and update with the new data, returning the new document
-    return await StudentModel.findOneAndUpdate({ _id: id }, studentData, { new: true });
+    const newDoc = await StudentModel.findOneAndUpdate({ _id: id }, studentData, { new: true });
+    return newDoc;
   } catch (error) {
     // *************** If an error occurs during creation, throw an ApolloError with details
     throw new ApolloError('Failed to update student:', 'STUDENT_UPDATE_FAILED', {error: error.message});
@@ -171,24 +227,36 @@ async function UpdateStudent(_, { id, input }) {
  * @returns {Promise<Object|null>} A promise that resolves to the updated (soft-deleted) student document, or `null` if not found.
  * @throws {ApolloError} If the ID is invalid or the deletion operation fails.
  */
+
 async function DeleteStudent(_, { id }) {
-  // *************** Check if the provided ID is a valid MongoDB ObjectId. If the ID is invalid, throw an ApolloError.
+  // *************** Check if the provided ID is a valid MongoDB ObjectId.
   if (!Mongoose.Types.ObjectId.isValid(id)) {
+    // *************** If the ID is invalid, throw an ApolloError with a BAD_USER_INPUT code
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
   }
   try {
-    // *************** Simulated current user ID
+    // *************** Find the student by ID and check its current status
+    const student = await StudentModel.findById(id);
+    if (!student) {
+      // *************** If no student found with the ID, throw an error
+      throw new ApolloError("Student not found", "NOT_FOUND");
+    }
+    if (student.student_status !== 'ACTIVE') {
+      // *************** If the student is not ACTIVE, prevent deletion
+      throw new ApolloError("Student is already inactive", "BAD_USER_INPUT");
+    }
+    // *************** Set the user ID who is performing the deletion
     const userId = '6846e5769e5502fce150eb67';
-    // *************** Prepare the soft delete payload: change status and log who deleted
     const studentData = {
       student_status: 'INACTIVE',
       deleted_by: userId,
       deleted_at: Date.now()
     };
-    // *************** Update the student document in the database and return the updated version
-    return await StudentModel.findOneAndUpdate({ _id: id }, studentData, { new: true });
+    // *************** Perform the update in the database and return the updated student document
+    const toUpdatedStudent = await StudentModel.findOneAndUpdate({ _id: id }, studentData, { new: true });
+    return toUpdatedStudent;
   } catch (error) {
-    // *************** If an error occurs, throw an ApolloError with custom error code and message
+    // *************** If an error occurs during the update, throw an ApolloError with details
     throw new ApolloError('Failed to delete student:', 'STUDENT_DELETION_FAILED', {error: error.message});
   }
 }
@@ -216,7 +284,8 @@ async function SchoolLoader(parent, _, context) {
     // *************** Check if parent.school_id exists
     if (parent.school_id) {
       // *************** Load and return the school using DataLoader
-      return await context.dataLoaders.SchoolLoader.load(parent.school_id);
+      const toSchool = await context.dataLoaders.SchoolLoader.load(parent.school_id);
+      return toSchool;
     } else {
       // *************** If no school_id, return null
       return null;
@@ -246,7 +315,8 @@ async function SchoolLoader(parent, _, context) {
 async function CreatedByLoader(parent, _, context) {
   try {
     // *************** Use the UserLoader DataLoader to load the user by the created_by field from parent
-    return await context.dataLoaders.UserLoader.load(parent.created_by);
+    const toLoadMany = await context.dataLoaders.UserLoader.load(parent.created_by);
+    return toLoadMany;
   } catch (error) {
     // *************** If an error occurs while loading the user, throw an ApolloError
     throw new ApolloError(`Failed to fetch creator: ${error.message}`, 'USER_FETCH_FAILED');
@@ -273,7 +343,8 @@ async function CreatedByLoader(parent, _, context) {
 async function UpdatedByLoader(parent, _, context) {
   try {
     // *************** Use the UserLoader DataLoader to fetch the user based on the updated_by field from the parent
-    return await context.dataLoaders.UserLoader.load(parent.updated_by);
+    const toLoadMany = await context.dataLoaders.UserLoader.load(parent.created_by);
+    return toLoadMany;
   } catch (error) {
     // *************** If an error occurs while loading the user, throw an ApolloError
     throw new ApolloError(`Failed to fetch updater: ${error.message}`, 'USER_FETCH_FAILED');
@@ -284,7 +355,8 @@ async function DeletedByLoader(parent, _, context) {
   try {
     if (parent.deleted_by) {
       // *************** Load and return the school using DataLoader
-      return await context.dataLoaders.UserLoader.load(parent.deleted_by);
+      const toSchool = await context.dataLoaders.UserLoader.load(parent.deleted_by);
+      return toSchool;
     } else {
       // *************** If no school_id, return null
       return null;

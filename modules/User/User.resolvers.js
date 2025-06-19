@@ -87,15 +87,33 @@ async function CreateUser(_, { input }) {
   try {
     // *************** Hardcoded creator ID to associate the creator of the user
     const creatorId = '6846e5769e5502fce150eb67';
-    // *************** Construct the user data with additional metadata (created_by, updated_by)
+    const {
+      first_name,
+      last_name,
+      photo_profile,
+      contact,
+      role,
+      user_status,
+      password
+    } = input;
+
     const userData = {
-      ...input, // spread original input fields
-      user_status: input.user_status.toUpperCase(), // normalize status to uppercase
-      created_by: creatorId,
-      updated_by: creatorId
+      first_name: first_name,
+      last_name: last_name,
+      photo_profile: photo_profile || null,
+      contact: {
+        phone_number: contact.phone_number,
+        email: contact.email
+      },
+      role: role,
+      user_status: user_status.toUpperCase(),
+      password: password,
+      created_by: creatorId
     };
+
     // *************** Create a new user document in the database
-    return await UserModel.create(userData);
+    const toNewUser = await UserModel.create(userData);
+    return toNewUser;
   } catch (error) {
     // *************** Throw an ApolloError if any error occurs during creation
     throw new ApolloError('Failed to create user.', 'USER_CREATION_FAILED', {error: error.message});
@@ -128,15 +146,33 @@ async function UpdateUser(_, { id, input }) {
   try {
     // *************** Hardcoded updater ID to track who updated the data
     const updaterId = '6846e5769e5502fce150eb67';
-    // *************** Spread the input fields
+    const {
+      first_name,
+      last_name,
+      photo_profile,
+      contact,
+      role,
+      user_status,
+      password
+    } = input;
+
     const userData = {
-      ...input,
-      user_status: input.user_status.toUpperCase(), // Normalize status to uppercase
+      first_name: first_name,
+      last_name: last_name,
+      photo_profile: photo_profile || null,
+      contact: {
+        phone_number: contact.phone_number,
+        email: contact.email
+      },
+      role: role,
+      user_status: user_status.toUpperCase(),
+      password: password,
       updated_by: updaterId
     };
 
     // *************** Update the user document in the database and return the new version
-    return await UserModel.findOneAndUpdate({ _id: id }, userData, { new: true });
+    const newVersion = await UserModel.findOneAndUpdate({ _id: id }, userData, { new: true });
+    return newVersion;
   } catch (error) {
     // *************** Handle and throw any errors during the update operation
     throw new ApolloError('Failed to update user.', 'USER_UPDATE_FAILED', {error: error.message});
@@ -163,22 +199,43 @@ async function DeleteUser(_, { id }) {
     // *************** If invalid, throw an ApolloError with a specific error code
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
   }
+
   try {
-    // *************** Hardcoded user ID that represents the deleter (usually should be from context)
+    // *************** Find User by ID
+    const user = await UserModel.findById(id);
+
+    // *************** If not found throw error
+    if (!user) {
+      throw new ApolloError("User not found", "NOT_FOUND");
+    }
+
+    // *************** If user not ACTIVE, no need to delete again
+    if (user.user_status !== 'ACTIVE') {
+      throw new ApolloError("User is already inactive", "BAD_USER_INPUT");
+    }
+
+    // *************** Hardcoded user ID
     const deleterId = '6846e5769e5502fce150eb67';
-    // *************** Prepare the fields to mark the user as deleted (soft delete)
+
+    // *************** Prepare the data to soft delete 
     const userData = {
-      user_status: 'INACTIVE', 
+      user_status: 'INACTIVE',
       deleted_by: deleterId,
       deleted_at: Date.now()
     };
-    // *************** Update the user document with the soft delete info and return the updated doc
-    return await UserModel.findOneAndUpdate({ _id: id }, userData, { new: true });
+
+    // *************** Update user document and return new doc
+    const newDoc = await UserModel.findOneAndUpdate({ _id: id }, userData, { new: true });
+    return newDoc;
+
   } catch (error) {
-    // *************** If any error occurs during the process, throw ApolloError with details
-    throw new ApolloError('Failed to delete user.', 'USER_DELETION_FAILED', {error: error.message});
+    // *************** Jika ada error saat proses, lempar ApolloError
+    throw new ApolloError('Failed to delete user.', 'USER_DELETION_FAILED', {
+      error: error.message
+    });
   }
 }
+
 
 // *************** LOADER ***************
 /**
@@ -198,7 +255,8 @@ async function DeleteUser(_, { id }) {
 async function CreatedByLoader(parent, _, context) {
   try {
     // *************** Use the UserLoader DataLoader to fetch the user who created this record
-    return await context.dataLoaders.UserLoader.load(parent.created_by);
+    const tofetchUser = await context.dataLoaders.UserLoader.load(parent.created_by);
+    return tofetchUser;
   } catch (error) {
     // *************** If any error occurs while fetching, throw an ApolloError with a custom code
     throw new ApolloError(`Failed to fetch creator: ${error.message}`, 'USER_FETCH_FAILED');
@@ -222,7 +280,8 @@ async function CreatedByLoader(parent, _, context) {
 async function UpdatedByLoader(parent, _, context) {
   try {
     // *************** Use the UserLoader from context to fetch the user by ID in parent.updated_by
-    return await context.dataLoaders.UserLoader.load(parent.updated_by);
+    const toLoadMany = await context.dataLoaders.UserLoader.load(parent.updated_by);
+    return toLoadMany;
   } catch (error) {
     // *************** If fetching fails, throw an ApolloError with a custom error code and message
     throw new ApolloError(`Failed to fetch updater: ${error.message}`, 'USER_FETCH_FAILED');
@@ -248,7 +307,8 @@ async function DeletedByLoader(parent, _, context) {
     // *************** Check if the parent object has a deleted_by field
     if (parent.deleted_by) {
       // *************** Load and return the user who deleted the data using DataLoader
-      return await context.dataLoaders.UserLoader.load(parent.deleted_by);
+      const deleteUser = await context.dataLoaders.UserLoader.load(parent.deleted_by);
+      return deleteUser;
     } else {
       // *************** If deleted_by is not available, return null
       return null;
