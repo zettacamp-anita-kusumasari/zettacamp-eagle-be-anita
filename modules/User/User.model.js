@@ -38,7 +38,7 @@ const userSchema = new Mongoose.Schema({
     // Reference for User's status
     user_status: {
         type: String,
-        enum: ['ACTIVE', 'PENDING', 'DELETED'],
+        enum: ['ACTIVE', 'INACTIVE'],
         required: true
     },
     // Password for authentication
