@@ -13,11 +13,11 @@ const createStudentLoader = require('../modules/Student/Student.loader.js');
  * @returns {DataLoader} return.studentLoader - Batches and caches student data requests
  */
 function Loaders() {
-    // *************** Returns an object containing all DataLoaders
-    return {
-        schoolLoader: createSchoolLoader(),
-        userLoader: createUserLoader(),
-        studentLoader: createStudentLoader(),
+  // *************** Returns an object containing all DataLoaders
+  return {
+    schoolLoader: createSchoolLoader(),
+    userLoader: createUserLoader(),
+    studentLoader: createStudentLoader(),
   };
 }
 
