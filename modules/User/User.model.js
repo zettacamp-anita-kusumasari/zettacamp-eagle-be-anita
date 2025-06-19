@@ -2,6 +2,7 @@
 const { required } = require('joi');
 const Mongoose = require('mongoose');
 
+// *************** Define Mongoose schema for the User collection
 const userSchema = new Mongoose.Schema({
     // User's first name for identification
     first_name: {

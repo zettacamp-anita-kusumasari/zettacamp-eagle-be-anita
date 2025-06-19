@@ -1,6 +1,7 @@
 // *************** IMPORT LIBRARY ***************
 const Mongoose = require('mongoose')
 
+// *************** Define Mongoose schema for the School collection
 const schoolSchema = new Mongoose.Schema({
     // School's name for identification
     legal_name: {
