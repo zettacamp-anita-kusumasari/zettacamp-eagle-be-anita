@@ -26,8 +26,8 @@ async function BatchSchools(ids) {
     schoolMap.set(String(school._id), school);
   }
   // *************** Return schools in the same order as input IDs
-  const toInputId = ids.map(id => schoolMap.get(String(id)));
-  return toInputId;
+  const toOrderedSchools = ids.map(id => schoolMap.get(String(id)));
+  return toOrderedSchools;
 }
 
 /**
@@ -38,8 +38,8 @@ async function BatchSchools(ids) {
  */
 function CreateSchoolLoader() {
   // *************** Return DataLoader to BatchSchools
-  const toBatchSchools =  new DataLoader(BatchSchools);
-  return toBatchSchools;
+  const toSchoolLoader = new DataLoader(BatchSchools);
+  return toSchoolLoader;
 }
 
 // *************** EXPORT MODULE ***************
