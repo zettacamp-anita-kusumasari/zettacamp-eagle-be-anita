@@ -26,8 +26,8 @@ async function BatchStudents(ids) {
     studentMap.set(String(student._id), student);
   }
   // *************** Return students in the same order as input IDs
-  const toSameOrderInput = ids.map(id => studentMap.get(String(id)));
-  return toSameOrderInput;
+  const toOrderedStudents = ids.map(id => studentMap.get(String(id)));
+  return toOrderedStudents;
 }
 
 /**
@@ -38,8 +38,8 @@ async function BatchStudents(ids) {
  */
 function CreateStudentLoader() {
   // *************** Return DataLoader to BatchStudents
-  const toBatchStudents = new DataLoader(BatchStudents);
-  return toBatchStudents;
+  const toStudentLoader = new DataLoader(BatchStudents);
+  return toStudentLoader;
 }
 
 // *************** EXPORT MODULE ***************
