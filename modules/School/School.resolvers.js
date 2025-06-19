@@ -2,72 +2,67 @@
 const SchoolModel = require('./School.model');
 
 // *************** IMPORT LIBRARY ***************
-const { ApolloError } = require('apollo-server-express');
+const { ApolloError } = require('apollo-server');
 const Mongoose = require('mongoose');
 
-// *************** LOADER ***************
-const CreateSchoolLoader = require('./School.loader');
-
 // *************** IMPORT VALIDATOR ***************
-const ValidateSchool = require('./School.validator');
+const { ValidateSchoolInput } = require('./School.validator');
 
 // *************** QUERY ***************
 /**
- * Retrieves all school documents from the database.
+ * Retrieves all schools with the status "ACTIVE" from the database.
  *
- * This function queries the `SchoolModel` to fetch all existing school records.
- * If an error occurs during the database operation, it throws an `ApolloError`
- * with a relevant error message and a status code.
+ * This function queries the SchoolModel to find all documents where
+ * `school_status` is set to `'ACTIVE'`. If the operation fails,
+ * it throws an ApolloError with a detailed message.
  *
  * @async
  * @function GetAllSchools
- * @returns {Promise<Array<Object>>} A promise that resolves to an array of school objects.
- * @throws {ApolloError} Throws an ApolloError if the database query fails.
+ * @returns {Promise<Array<Object>>} A promise that resolves to an array of active school documents.
+ * @throws {ApolloError} If there is an error during the database operation.
  */
 async function GetAllSchools() {
   try {
-    // *************** Attempt to find and return all school documents from the database
-    return await SchoolModel.find({});
+    // *************** Attempt to query the database using Mongoose. Only schools with 'ACTIVE' school_status will be returned
+    return await SchoolModel.find({ school_status: 'ACTIVE' });
   } catch (error) {
-    // *************** If an error occurs, throw an ApolloError with a message and error code
+    // *************** If an error occurs during the query, throw an ApolloError
     throw new ApolloError(`Failed to fetch schools: ${error.message}`, "INTERNAL_SERVER_ERROR");
   }
 }
 
 /**
- * Retrieves a single school by its ID using DataLoader with validation and error handling.
+ * Retrieves a single active school by its ID.
  *
- * This resolver function checks if the provided `id` is a valid MongoDB ObjectId.
- * If valid, it attempts to load the corresponding school from the DataLoader (`context.schoolLoader`).
- * If the school does not exist or if any error occurs during the fetch, it throws an appropriate `ApolloError`.
+ * This function validates the given MongoDB ObjectId. If valid, it attempts
+ * to find a school document with a matching `_id` and a `school_status` of `'ACTIVE'`.
+ * If the ID is invalid or no school is found, it throws an appropriate ApolloError.
  *
  * @async
  * @function GetOneSchool
- * @param {Object} _ - Unused parent argument from the GraphQL resolver signature.
- * @param {Object} args - The arguments object.
- * @param {string} args.id - The ID of the school to retrieve.
- * @param {Object} context - The GraphQL context object, containing the DataLoader instance.
- * @param {DataLoader<string, Object>} context.schoolLoader - A DataLoader instance for batching and caching school lookups.
- * @returns {Promise<Object>} A promise that resolves to the school object if found and valid.
- * @throws {ApolloError} Throws a `BAD USER INPUT` error if the ID is invalid, `NOT FOUND` if no school is found,
- *   or `INTERNAL SERVER ERROR` if an unexpected error occurs.
+ * @param {Object} _ - Unused first argument (GraphQL resolver convention).
+ * @param {Object} args - An object containing the ID of the school to retrieve.
+ * @param {string} args.id - The ID of the school to find.
+ * @returns {Promise<Object>} A promise that resolves to the school document if found.
+ * @throws {ApolloError} If the ID is invalid, the school is not found, or a database error occurs.
  */
-async function GetOneSchool(parent, { id }, context) {
-  // *************** Check if the given ID is a valid MongoDB ObjectId
+async function GetOneSchool(_, { id }) {
+  // *************** Check if the provided ID is a valid MongoDB ObjectId
   if (!Mongoose.Types.ObjectId.isValid(id)) {
+    // *************** If the ID is invalid, throw a BAD_USER_INPUT error
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
   }
   try {
-    // *************** Find the school data by its MongoDB ObjectId
-    const school = await SchoolModel.findById(id);
-    // *************** If no school is found, throw a NOT FOUND error
+    // *************** Query the database for a school with the given ID and status 'ACTIVE'
+    const school = await SchoolModel.findOne({ _id: id, school_status: 'ACTIVE' });
+    // *************** If no matching school is found, throw a NOT_FOUND error
     if (!school) {
       throw new ApolloError("School not found", "NOT_FOUND");
     }
-    // *************** Return the fetched school object
+    // *************** If found, return the school document
     return school;
   } catch (error) {
-    // *************** If any unexpected error occurs, throw a generic internal server error
+    // *************** If an error occurs during the query, throw an ApolloError
     throw new ApolloError(`Failed to fetch school: ${error.message}`, "INTERNAL_SERVER_ERROR");
   }
 }
@@ -76,213 +71,284 @@ async function GetOneSchool(parent, { id }, context) {
 /**
  * Creates a new school document in the database.
  *
- * This resolver function validates the input using `ValidateSchool`, attaches a default `created_by` user ID
- * (which should later be replaced with the authenticated user's ID), and saves the new school to the database.
- * If an error occurs during validation or saving, it throws an `ApolloError`.
+ * This function validates the input using `ValidateSchoolInput`, constructs the school data
+ * including formatted address and status, and assigns fixed `created_by` and `updated_by` user IDs.
+ * If successful, the school document is saved to the database.
+ * If an error occurs, it throws an ApolloError with a custom error code and message.
  *
  * @async
  * @function CreateSchool
- * @param {Object} _ - Unused parent argument from the GraphQL resolver signature.
- * @param {Object} args - The arguments object.
- * @param {Object} args.input - The input object containing the school data to be created.
+ * @param {Object} _ - Unused GraphQL resolver root argument.
+ * @param {Object} args - Arguments object containing the school input.
+ * @param {Object} args.input - The input object containing the new school data.
  * @param {string} args.input.name - The name of the school.
- * @param {string} args.input.address - The address of the school.
- * @param {string} args.input.phoneNumber - The contact number of the school.
- * @param {Object} context - (Optional) The GraphQL context, typically containing user/session info.
+ * @param {string} args.input.email - The email of the school.
+ * @param {Object} args.input.address - The address details of the school.
+ * @param {string} args.input.address.street_name - Street name of the school.
+ * @param {string} args.input.address.city - City where the school is located.
+ * @param {string} args.input.address.country - Country where the school is located.
+ * @param {string} args.input.address.zip_code - ZIP code of the school.
+ * @param {string} args.input.school_status - Status of the school (e.g., 'active').
  * @returns {Promise<Object>} A promise that resolves to the newly created school document.
- * @throws {ApolloError} Throws an error with code `'SCHOOL CREATION FAILED'` if validation or database operations fail.
+ * @throws {ApolloError} If validation fails or a database error occurs.
  */
-async function CreateSchool(parent, { input }) {
+async function CreateSchool(_, { input }) {
+  // *************** Validate the input using exported function ValidateSchoolInput
+  ValidateSchoolInput(input);
   try {
-    // *************** Validate the input using a predefined Joi (or similar) schema
-    const validatedInput = ValidateSchool(input);
-    // *************** Temporarily hard-code the user ID who created this school (should be dynamic via auth)
-    const newSchool = new SchoolModel(validatedInput);
-    // *************** Save the document to the database and return it
-    return await newSchool.save();
+    // *************** Define the user ID of the creator
+    const userId = '6846e5769e5502fce150eb67';
+    const schoolData = {
+      // *************** Spread the rest of the input fields
+      ...input,
+      address: {
+        street_name: input.address.street_name,
+        city: input.address.city,
+        country: input.address.country,
+        zip_code: input.address.zip_code
+      },
+      school_status: input.school_status.toUpperCase(),
+      created_by: userId,
+      updated_by: userId
+    };
+    // *************** Save the school data to the database using Mongoose
+    return await SchoolModel.create(schoolData);
   } catch (error) {
-    // *************** If validation or database save fails, throw an ApolloError with a custom message and code
-    throw new ApolloError(`Failed to create school: ${error.message}`, 'SCHOOL_CREATION_FAILED');
+    // *************** If an error occurs during the query, throw an ApolloError
+    throw new ApolloError('Failed to create school:', 'SCHOOL_CREATION_FAILED', {
+      error: error.message
+    });
   }
 }
 
 /**
- * Updates an existing school document in the database by its ID.
+ * Updates an existing school document by its ID.
  *
- * This resolver performs the following steps:
- * - Validates the given `id` to ensure it is a valid MongoDB ObjectId.
- * - Validates the `input` data using `ValidateSchool`.
- * - Sets the `updated_at` timestamp to the current time.
- * - Attempts to update the corresponding school document using `findByIdAndUpdate`.
- * - If no school is found, throws a `NOT FOUND` error.
- * - If any other error occurs, throws an `ApolloError` with an appropriate message and error code.
+ * This function first validates the given MongoDB ObjectId. If valid, it validates
+ * the input using `ValidateSchoolInput`, prepares the update data (including address formatting
+ * and uppercasing the school status), and performs an update using `findOneAndUpdate`.
+ * Returns the updated school document if successful.
  *
  * @async
  * @function UpdateSchool
- * @param {Object} _ - Unused parent resolver argument.
- * @param {Object} args - Arguments object.
+ * @param {Object} _ - Unused GraphQL resolver root argument.
+ * @param {Object} args - Arguments object containing the school ID and input data.
  * @param {string} args.id - The ID of the school to update.
- * @param {Object} args.input - The input object containing updated school fields.
- * @param {string} [args.input.name] - (Optional) Updated name of the school.
- * @param {string} [args.input.address] - (Optional) Updated address of the school.
- * @param {string} [args.input.phoneNumber] - (Optional) Updated phone number.
+ * @param {Object} args.input - The input object containing updated school data.
+ * @param {string} args.input.name - Updated name of the school.
+ * @param {string} args.input.email - Updated email of the school.
+ * @param {Object} args.input.address - Updated address details.
+ * @param {string} args.input.address.street_name - Updated street name.
+ * @param {string} args.input.address.city - Updated city.
+ * @param {string} args.input.address.country - Updated country.
+ * @param {string} args.input.address.zip_code - Updated ZIP code.
+ * @param {string} args.input.school_status - Updated school status (e.g., 'active').
  * @returns {Promise<Object>} A promise that resolves to the updated school document.
- * @throws {ApolloError} Throws:
- *   - `BAD USER INPUT` if the ID is invalid,
- *   - `NOT FOUND` if no school with the given ID exists,
- *   - `SCHOOL UPDATE FAILED` for any other errors during the update process.
+ * @throws {ApolloError} If the ID is invalid, validation fails, or the update operation fails.
  */
-async function UpdateSchool(parent, { id, input }) {
-  // *************** Check if the provided ID is a valid MongoDB ObjectId
+async function UpdateSchool(_, { id, input }) {
+  // *************** Check if the provided ID is a valid MongoDB ObjectId.
   if (!Mongoose.Types.ObjectId.isValid(id)) {
+    // *************** If the ID is invalid, throw an ApolloError with a BAD_USER_INPUT code
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
   }
+  // *************** Validate the input using exported function ValidateSchoolInput
+  ValidateSchoolInput(input);
   try {
-    // *************** Validate the incoming input using a custom schema (e.g., Joi)
-    const validatedInput = ValidateSchool(input);
-    // *************** Attempt to update the school by ID, property { new: true } is returning the new (updated) document
-    const updatedSchool = await SchoolModel.findByIdAndUpdate(id, validatedInput, { new: true });
-    // *************** If no matching document is found, throw a NOT FOUND error
-    if (!updatedSchool) {
-      throw new ApolloError("School not found", "NOT_FOUND");
-    }
-    // *************** Return the updated school document
-    return updatedSchool;
+    const userId = '6846e5769e5502fce150eb67';
+    const schoolData = {
+      // *************** Spread the rest of the input fields
+      ...input,
+      address: {
+        street_name: input.address.street_name,
+        city: input.address.city,
+        country: input.address.country,
+        zip_code: input.address.zip_code
+      },
+      school_status: input.school_status.toUpperCase(),
+      updated_by: userId
+    };
+    // *************** Perform the update in the database and return the updated document
+    return await SchoolModel.findOneAndUpdate({ _id: id }, schoolData, { new: true });
   } catch (error) {
-    // *************** If any error occurs during validation or update, throw a custom ApolloError
-    throw new ApolloError(`Failed to update school: ${error.message}`, 'SCHOOL_UPDATE_FAILED');
+    // *************** If an error occurs during the update, throw an ApolloError with details
+    throw new ApolloError('Failed to update school:', 'SCHOOL_UPDATE_FAILED', {
+      error: error.message
+    });
   }
 }
 
 /**
- * Soft-deletes a school by its ID by setting `deleted_by` and `deleted_at` fields.
+ * Soft deletes a school by setting its status to 'INACTIVE'.
  *
- * This function performs the following steps:
- * - Validates the provided `id` to ensure it's a valid MongoDB ObjectId.
- * - Attempts to update the corresponding school document with `deleted_by` and `deleted_at` fields.
- * - If the school is not found, throws a `NOT FOUND` error.
- * - Returns the updated (soft-deleted) school document.
+ * This function first validates the provided school ID. If valid, it updates the corresponding
+ * school document by setting its `school_status` to `'INACTIVE'`, and adds audit fields such as 
+ * `deleted_by` and `deleted_at`. The actual document is not removed from the database.
  *
  * @async
  * @function DeleteSchool
- * @param {Object} _ - Unused parent resolver argument.
- * @param {Object} args - The arguments object.
- * @param {string} args.id - The ID of the school to soft-delete.
- * @returns {Promise<Object>} A promise that resolves to the updated school document with soft-delete markers.
- * @throws {ApolloError} Throws:
- *   - `BAD USER INPUT` if the ID is not a valid ObjectId,
- *   - `NOT FOUND` if no school with the provided ID exists,
- *   - `SCHOOL DELETION FAILED` for any other errors during the operation.
+ * @param {Object} _ - Unused GraphQL resolver root argument.
+ * @param {Object} args - Arguments object containing the school ID.
+ * @param {string} args.id - The ID of the school to be soft deleted.
+ * @returns {Promise<Object|null>} A promise that resolves to the updated school document if found, or null if not found.
+ * @throws {ApolloError} If the ID is invalid or a database error occurs during deletion.
  */
-async function DeleteSchool(parent, { id }) {
-  // *************** Check if the given ID is a valid MongoDB ObjectId
+async function DeleteSchool(_, { id }) {
+  // *************** Check if the provided ID is a valid MongoDB ObjectId.
   if (!Mongoose.Types.ObjectId.isValid(id)) {
+    // *************** If the ID is invalid, throw an ApolloError with a BAD_USER_INPUT code
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
   }
-
   try {
-    // *************** ID of the user performing the deletion (should be replaced with authenticated user's ID)
-    const deleted_by = '6846e5769e5502fce150eb67';
-    // *************** Attempt to update the school document to mark it as deleted
-    const deletedSchool = await SchoolModel.findByIdAndUpdate(
-      id,
-      { deleted_by, deleted_at: Date.now() },
-      { new: true }
-    );
-    // *************** If no school with the given ID is found, throw a NOT FOUND error
-    if (!deletedSchool) {
-      throw new ApolloError("School not found", "NOT_FOUND");
-    }
-    // *************** Return the updated (soft-deleted) school document
-    return deletedSchool;
+    // *************** Set the user ID who is performing the deletion
+    const userId = '6846e5769e5502fce150eb67';
+    const schoolData = {
+      school_status: 'INACTIVE',
+      deleted_by: userId,
+      deleted_at: Date.now()
+    };
+    // *************** Perform the update in the database and return the updated school document
+    return await SchoolModel.findOneAndUpdate({ _id: id }, schoolData, { new: true });
   } catch (error) {
-    // *************** Throw an internal error if the deletion fails unexpectedly
-    throw new ApolloError(`Failed to delete school: ${error.message}`, 'SCHOOL_DELETION_FAILED');
+    // *************** If an error occurs during the update, throw an ApolloError with details
+    throw new ApolloError('Failed to delete school:', 'SCHOOL_DELETION_FAILED', {
+      error: error.message
+    });
   }
 }
 
 // *************** LOADER ***************
 /**
- * Loads student data for a given parent object using DataLoader.
+ * Loads multiple student documents based on an array of student IDs from the parent object.
  *
- * Typically used as a field resolver in GraphQL to batch and cache requests for associated students.
+ * This function uses DataLoader to batch and cache the retrieval of student records.
+ * It attempts to load all student IDs provided in `parent.students`. If the list is empty or
+ * undefined, it defaults to an empty array. If an error occurs during the loading process,
+ * an ApolloError is thrown.
  *
  * @async
- * @function StudentsLoader
- * @param {Object} parent - The parent object that contains a `students` field, typically an array of student IDs.
- * @param {Object} _ - Unused arguments parameter (commonly required by GraphQL resolvers).
- * @param {Object} context - The GraphQL context object, expected to include `studentLoader` (a DataLoader instance).
- * @returns {Promise<Array<Object>>} A promise that resolves to an array of student objects.
- * @throws {ApolloError} Throws an ApolloError if loading students fails.
+ * @function StudentLoader
+ * @param {Object} parent - The parent object containing the `students` field (array of IDs).
+ * @param {Object} _ - Unused argument (GraphQL resolver convention).
+ * @param {Object} context - The GraphQL context containing the DataLoader instance.
+ * @param {Object} context.dataLoaders - Object holding all available DataLoaders.
+ * @param {DataLoader} context.dataLoaders.StudentLoader - DataLoader instance for student records.
+ * @returns {Promise<Array<Object>>} A promise that resolves to an array of student documents.
+ * @throws {ApolloError} If loading students fails.
  */
-async function StudentsLoader(parent, _, context) {
+async function StudentLoader(parent, _, context) {
   try {
-    // *************** This helps avoid N+1 query problems by batching multiple requests.
-    return await context.studentLoader.load(parent.students);
+    // *************** Use the UserLoader DataLoader to load the user document based on parent.student ID
+    return await context.dataLoaders.StudentLoader.loadMany(parent.students || []);
   } catch (error) {
-    // *************** Handle errors during the loading process by throwing a GraphQL-friendly ApolloError
-    throw new ApolloError(`Failed to load students: ${error.message}`, "STUDENT_LOAD_FAILED");
+    // *************** If an error occurs during loading, throw an ApolloError with a custom error code and message
+    throw new ApolloError(`Failed to load students: ${error.message}`, 'STUDENT_FETCH_FAILED');
   }
 }
 
 /**
- * Field resolver function to load the user who created a given entity (e.g., School).
+ * Loads the user who created the parent document using DataLoader.
  *
- * Uses DataLoader to efficiently retrieve the user document associated with the `created_by` field
- * from the parent object. This helps avoid redundant database queries in GraphQL.
+ * This function retrieves the `created_by` field from the parent object, which contains
+ * a user ID, and uses the `UserLoader` DataLoader from the context to load the corresponding user document.
+ * If an error occurs during the loading process, it throws an ApolloError.
  *
  * @async
  * @function CreatedByLoader
- * @param {Object} parent - The parent object that contains the `created_by` field (a user ID).
- * @param {Object} _ - Unused argument placeholder (required by GraphQL resolver signature).
- * @param {Object} context - The GraphQL context object containing `UserLoader` (a DataLoader instance).
- * @returns {Promise<Object>} A promise that resolves to the user object who created the entity.
- * @throws {ApolloError} If user loading fails, throws an ApolloError with a specific message.
+ * @param {Object} parent - The parent object containing the `created_by` user ID.
+ * @param {Object} _ - Unused argument (GraphQL resolver convention).
+ * @param {Object} context - The GraphQL context containing DataLoaders.
+ * @param {Object} context.dataLoaders - Object containing all available DataLoaders.
+ * @param {DataLoader} context.dataLoaders.UserLoader - DataLoader instance for user records.
+ * @returns {Promise<Object|null>} A promise that resolves to the user document or null if not found.
+ * @throws {ApolloError} If loading the user fails.
  */
 async function CreatedByLoader(parent, _, context) {
   try {
-    // *************** Use DataLoader to fetch the user based on the `created_by` field from the parent object
-    return await context.UserLoader.load(parent.created_by);
+    // *************** Use the UserLoader DataLoader to load the user document based on parent.created_by ID
+    return await context.dataLoaders.UserLoader.load(parent.created_by);
   } catch (error) {
-    // *************** If the user cannot be loaded, throw a descriptive ApolloError.
-    throw new ApolloError(`Failed to load user: ${error.message}`, "USER_LOAD_FAILED");
+    // *************** If an error occurs during loading, throw an ApolloError with a custom error code and message
+    throw new ApolloError(`Failed to load creator user: ${error.message}`, 'USER_FETCH_FAILED');
   }
 }
 
 /**
- * Field resolver function to load the user who deleted a given entity (if applicable).
+ * Loads the user who last updated the parent document using DataLoader.
  *
- * - Retrieves the `deleted_by` field from the parent object.
- * - Uses `context.UserLoader` (a DataLoader instance) to fetch the corresponding user.
- * - Returns `null` if the entity was not deleted (i.e., `deleted_by` is undefined or null).
- * - Throws an ApolloError if the user loading process fails.
+ * This function retrieves the `updated_by` field from the parent object, which contains
+ * a user ID, and uses the `UserLoader` DataLoader from the context to load the corresponding user document.
+ * If an error occurs during the loading process, it throws an ApolloError.
+ *
+ * @async
+ * @function UpdatedByLoader
+ * @param {Object} parent - The parent object containing the `updated_by` user ID.
+ * @param {Object} _ - Unused argument (GraphQL resolver convention).
+ * @param {Object} context - The GraphQL context containing DataLoaders.
+ * @param {Object} context.dataLoaders - Object containing all available DataLoaders.
+ * @param {DataLoader} context.dataLoaders.UserLoader - DataLoader instance for user records.
+ * @returns {Promise<Object|null>} A promise that resolves to the user document or null if not found.
+ * @throws {ApolloError} If loading the user fails.
+ */
+async function UpdatedByLoader(parent, _, context) {
+  try {
+    // *************** Use the UserLoader DataLoader to load the user document based on parent.updated_by ID
+    return await context.dataLoaders.UserLoader.load(parent.updated_by);
+  } catch (error) {
+    // *************** If an error occurs during loading, throw an ApolloError with a custom error code and message
+    throw new ApolloError(`Failed to load updater user: ${error.message}`, 'USER_FETCH_FAILED');
+  }
+}
+
+/**
+ * Loads the user who deleted the parent document using DataLoader, if available.
+ *
+ * This function checks if the `deleted_by` field exists in the parent object.
+ * If it exists, it uses the `UserLoader` DataLoader to load and return the user document.
+ * If `deleted_by` is not present, it returns `null`. Any error during the process
+ * will result in an ApolloError being thrown.
  *
  * @async
  * @function DeletedByLoader
- * @param {Object} parent - The parent object containing the `deleted_by` user ID (optional).
- * @param {Object} _ - Unused GraphQL resolver parameter.
- * @param {Object} context - The GraphQL context object containing the `UserLoader` DataLoader.
- * @returns {Promise<Object|null>} A promise that resolves to the user object or `null` if not deleted.
- * @throws {ApolloError} If loading the user fails.
+ * @param {Object} parent - The parent object containing the `deleted_by` user ID.
+ * @param {Object} _ - Unused argument (GraphQL resolver convention).
+ * @param {Object} context - The GraphQL context containing DataLoaders.
+ * @param {Object} context.dataLoaders - An object containing all DataLoader instances.
+ * @param {DataLoader} context.dataLoaders.UserLoader - DataLoader instance for loading user documents.
+ * @returns {Promise<Object|null>} A promise that resolves to the user document or null if `deleted_by` is not defined.
+ * @throws {ApolloError} If an error occurs during the loading process.
  */
 async function DeletedByLoader(parent, _, context) {
   try {
-    // *************** If the entity has a deleted_by value, load the associated user; otherwise, return null
-    return parent.deleted_by ? await context.UserLoader.load(parent.deleted_by) : null;
+    // *************** Check if the parent object contains the 'deleted_by' user ID
+    if (parent.deleted_by) {
+      // *************** If it exists, use UserLoader to load and return the user document by ID
+      return await context.dataLoaders.UserLoader.load(parent.deleted_by);
+    } else {
+      // *************** If 'deleted_by' is not present, return null (no user to load)
+      return null;
+    }
   } catch (error) {
-    // *************** If loading fails, throw a GraphQL-friendly error
-    throw new ApolloError(`Failed to load user: ${error.message}`, "USER_LOAD_FAILED");
+    // *************** If an error occurs during loading, throw an ApolloError with a custom error code and message
+    throw new ApolloError(`Failed to load deleter user: ${error.message}`, 'USER_FETCH_FAILED');
   }
 }
 
 // *************** EXPORT MODULE ***************
 module.exports = {
-  Query: { GetAllSchools, GetOneSchool },
-  Mutation: { CreateSchool, UpdateSchool, DeleteSchool },
+  Query: {
+    GetAllSchools,
+    GetOneSchool
+  },
+  Mutation: {
+    CreateSchool,
+    UpdateSchool,
+    DeleteSchool
+  },
   School: {
-    students: StudentsLoader,
+    students: StudentLoader,
     created_by: CreatedByLoader,
+    updated_by: UpdatedByLoader,
     deleted_by: DeletedByLoader
   }
 };
-
