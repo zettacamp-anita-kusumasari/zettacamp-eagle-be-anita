@@ -11,8 +11,7 @@ const typeDefs = gql`
 
   enum UserStatus {
     ACTIVE
-    PENDING
-    DELETED
+    INACTIVE
   }
 
   type User {

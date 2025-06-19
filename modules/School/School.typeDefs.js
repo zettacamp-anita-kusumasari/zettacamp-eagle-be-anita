@@ -12,9 +12,8 @@ type Address {
 }
 
 enum SchoolStatus {
-  PENDING
   ACTIVE
-  DELETED
+  INACTIVE
 }
 
 type School {
