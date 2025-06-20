@@ -274,7 +274,7 @@ async function DeleteSchool(_, { id }) {
 async function StudentLoader(parent, _, context) {
   try {
     // *************** Use the UserLoader DataLoader to load the user document based on parent.student ID
-    const toStudentList = await context.dataLoaders.StudentLoader.loadMany(parent.students || []);
+    const toStudentList = await context.dataLoaders.StudentLoader.loadMany(parent.students);
     return toStudentList;
   } catch (error) {
     // *************** If an error occurs during loading, throw an ApolloError with a custom error code and message
