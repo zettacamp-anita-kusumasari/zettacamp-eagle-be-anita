@@ -83,8 +83,6 @@ async function GetOneUser(_, { id }) {
  * @throws {ApolloError} - If validation fails or database creation throws an error.
  */
 async function CreateUser(_, { input }) {
-  // *************** Validate the input fields using a custom validation function
-  ValidateUserInput(input);
   try {
     // *************** Hardcoded ID representing the user who is creating this entry
     const creatorId = '6846e5769e5502fce150eb67';
@@ -112,6 +110,8 @@ async function CreateUser(_, { input }) {
       password: password,
       created_by: creatorId
     };
+    // *************** Validate the input fields using a custom validation function
+    ValidateUserInput(input);
     // *************** Create a new user document in the database
     const toCreatedUser = await UserModel.create(userData);
     return toCreatedUser;
@@ -142,8 +142,6 @@ async function UpdateUser(_, { id, input }) {
     // *************** Throw an error if the ID is not a valid MongoDB ObjectId
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
   }
-  // *************** Validate the user input fields
-  ValidateUserInput(input);
   try {
     // *************** Hardcoded updater ID to track who updated the data
     const updaterId = '6846e5769e5502fce150eb67';
@@ -171,6 +169,8 @@ async function UpdateUser(_, { id, input }) {
       password: password,
       updated_by: updaterId
     };
+    // *************** Validate the user input fields
+    ValidateUserInput(input);
     // *************** Update the user document in the database and return the new version
     const toUpdatedUser = await UserModel.findOneAndUpdate({ _id: id }, userData, { new: true });
     return toUpdatedUser;
@@ -222,7 +222,7 @@ async function DeleteUser(_, { id }) {
       deleted_at: Date.now()
     };
     // *************** Update user document and return new doc
-    const toDeletedUser = await UserModel.findOneAndUpdate({ _id: id }, userData, { new: true });
+    const toDeletedUser = await UserModel.findOneAndUpdate({ _id: id }, userData);
     return toDeletedUser;
   } catch (error) {
     // *************** Jika ada error saat proses, lempar ApolloError

@@ -94,8 +94,6 @@ async function GetOneSchool(_, { id }) {
  * @throws {ApolloError} If validation fails or a database error occurs.
  */
 async function CreateSchool(_, { input }) {
-  // *************** Validate the input using exported function ValidateSchoolInput
-  ValidateSchoolInput(input);
   try {
     // *************** Set the ID of the user who is creating the school
     const userId = '6846e5769e5502fce150eb67';
@@ -121,6 +119,8 @@ async function CreateSchool(_, { input }) {
       school_status: school_status.toUpperCase(),
       created_by: userId
     };
+    // *************** Validate the input using exported function ValidateSchoolInput
+    ValidateSchoolInput(input);
     // *************** Save the school data to the database using Mongoose
     const toCreatedSchool = await SchoolModel.create(schoolData);
     return toCreatedSchool;
@@ -161,8 +161,6 @@ async function UpdateSchool(_, { id, input }) {
     // *************** If the ID is invalid, throw an ApolloError with a BAD_USER_INPUT code
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
   }
-  // *************** Validate the input using exported function ValidateSchoolInput
-  ValidateSchoolInput(input);
   try {
     // *************** Hardcoded user ID who performs the update
     const userId = '6846e5769e5502fce150eb67';
@@ -188,6 +186,8 @@ async function UpdateSchool(_, { id, input }) {
       school_status: school_status.toUpperCase(),
       updated_by: userId
     };
+    // *************** Validate the input using exported function ValidateSchoolInput
+    ValidateSchoolInput(input);
     // *************** Perform the update in the database and return the updated document
     const toUpdatedSchool = await SchoolModel.findOneAndUpdate({ _id: id }, schoolData, { new: true });
     return toUpdatedSchool;
@@ -243,14 +243,13 @@ async function DeleteSchool(_, { id }) {
       deleted_at: Date.now()
     };
     // *************** Perform the update in the database and return the updated school document
-    const toUpdatedSchool = await SchoolModel.findOneAndUpdate({ _id: id }, schoolData, { new: true });
+    const toUpdatedSchool = await SchoolModel.findOneAndUpdate({ _id: id }, schoolData);
     return toUpdatedSchool;
   } catch (error) {
     // *************** If an error occurs during the update, throw an ApolloError with details
     throw new ApolloError('Failed to delete school:', 'SCHOOL_DELETION_FAILED', {error: error.message});
   }
 }
-
 
 // *************** LOADER ***************
 /**

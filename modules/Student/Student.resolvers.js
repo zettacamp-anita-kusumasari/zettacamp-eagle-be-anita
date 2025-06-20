@@ -90,8 +90,6 @@ async function GetOneStudent(_, { id }) {
  * @throws {ApolloError} If validation fails or the creation process encounters an error.
  */
 async function CreateStudent(_, { input }) {
-  // *************** Validate the incoming student input using a custom validation function
-  ValidateStudentInput(input);
   try {
     // *************** Hardcoded user ID who is creating the student
     const userId = '6846e5769e5502fce150eb67';
@@ -129,6 +127,8 @@ async function CreateStudent(_, { input }) {
       school_id: school_id || null,
       created_by: userId,
     };
+    // *************** Validate the incoming student input using a custom validation function
+    ValidateStudentInput(input);
     // *************** Create the student document in the database
     const toCreatedStudent = await StudentModel.create(studentData);
     return toCreatedStudent;
@@ -163,8 +163,6 @@ async function UpdateStudent(_, { id, input }) {
   if (!Mongoose.Types.ObjectId.isValid(id)) {
     throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
   }
-  // *************** Validate the student input using a custom validator
-  ValidateStudentInput(input);
   try {
     // *************** ID of the user performing the update
     const userId = '6846e5769e5502fce150eb67';
@@ -202,6 +200,8 @@ async function UpdateStudent(_, { id, input }) {
       school_id: school_id || null,
       updated_by: userId
     };
+    // *************** Validate the student input using a custom validator
+    ValidateStudentInput(input);
     // *************** Find the student by ID and update with the new data, returning the new document
     const toUpdatedStudent = await StudentModel.findOneAndUpdate({ _id: id }, studentData, { new: true });
     return toUpdatedStudent;
@@ -256,7 +256,7 @@ async function DeleteStudent(_, { id }) {
       deleted_at: Date.now()
     };
     // *************** Perform the update in the database and return the updated student document
-    const toUpdatedStudent = await StudentModel.findOneAndUpdate({ _id: id }, studentData, { new: true });
+    const toUpdatedStudent = await StudentModel.findOneAndUpdate({ _id: id }, studentData);
     return toUpdatedStudent;
   } catch (error) {
     // *************** If an error occurs during the update, throw an ApolloError with details
