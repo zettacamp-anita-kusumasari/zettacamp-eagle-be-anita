@@ -105,7 +105,9 @@ async function CreateSchool(_, { input }) {
       address,
       school_status
     } = input;
-    // *************** Construct a new school data object with properly structured fields
+    // *************** Validate the input using exported function ValidateSchoolInput
+    ValidateSchoolInput(input);
+    // *************** (Map input fields to database schema) Construct a new school data object with properly structured fields
     const schoolData = {
       legal_name: legal_name,
       commercial_name: commercial_name,
@@ -119,8 +121,6 @@ async function CreateSchool(_, { input }) {
       school_status: school_status.toUpperCase(),
       created_by: userId
     };
-    // *************** Validate the input using exported function ValidateSchoolInput
-    ValidateSchoolInput(input);
     // *************** Save the school data to the database using Mongoose
     const toCreatedSchool = await SchoolModel.create(schoolData);
     return toCreatedSchool;
@@ -172,7 +172,9 @@ async function UpdateSchool(_, { id, input }) {
       address,
       school_status
     } = input;
-    // *************** Construct a new school data object to be used for update
+    // *************** Validate the input using exported function ValidateSchoolInput
+    ValidateSchoolInput(input);
+    // *************** (Map input fields to database schema) Construct a new school data object to be used for update
     const schoolData = {
       legal_name: legal_name,
       commercial_name: commercial_name,
@@ -186,8 +188,6 @@ async function UpdateSchool(_, { id, input }) {
       school_status: school_status.toUpperCase(),
       updated_by: userId
     };
-    // *************** Validate the input using exported function ValidateSchoolInput
-    ValidateSchoolInput(input);
     // *************** Perform the update in the database and return the updated document
     const toUpdatedSchool = await SchoolModel.findOneAndUpdate({ _id: id }, schoolData, { new: true });
     return toUpdatedSchool;

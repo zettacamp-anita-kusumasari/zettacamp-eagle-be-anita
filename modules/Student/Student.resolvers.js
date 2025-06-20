@@ -104,7 +104,9 @@ async function CreateStudent(_, { input }) {
       address,
       school_id
     } = input;
-    // *************** Build the student data object to be saved into the database
+    // *************** Validate the incoming student input using a custom validation function
+    ValidateStudentInput(input);
+    // *************** (Map input fields to database schema) Build the student data object to be saved into the database
     const studentData = {
       first_name: first_name,
       last_name: last_name,
@@ -127,8 +129,6 @@ async function CreateStudent(_, { input }) {
       school_id: school_id || null,
       created_by: userId,
     };
-    // *************** Validate the incoming student input using a custom validation function
-    ValidateStudentInput(input);
     // *************** Create the student document in the database
     const toCreatedStudent = await StudentModel.create(studentData);
     return toCreatedStudent;
@@ -177,7 +177,9 @@ async function UpdateStudent(_, { id, input }) {
       address,
       school_id
     } = input;
-    // *************** Construct the studentData object based on the Student schema
+    // *************** Validate the student input using a custom validator
+    ValidateStudentInput(input);
+    // *************** (Map input fields to database schema) Construct the studentData object based on the Student schema
     const studentData = {
       first_name: first_name,
       last_name: last_name,
@@ -200,8 +202,6 @@ async function UpdateStudent(_, { id, input }) {
       school_id: school_id || null,
       updated_by: userId
     };
-    // *************** Validate the student input using a custom validator
-    ValidateStudentInput(input);
     // *************** Find the student by ID and update with the new data, returning the new document
     const toUpdatedStudent = await StudentModel.findOneAndUpdate({ _id: id }, studentData, { new: true });
     return toUpdatedStudent;

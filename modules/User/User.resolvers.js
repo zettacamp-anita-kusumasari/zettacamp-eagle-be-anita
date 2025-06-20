@@ -96,7 +96,9 @@ async function CreateUser(_, { input }) {
       user_status,
       password
     } = input;
-    // *************** Construct the user data object for database insertion
+    // *************** Validate the input fields using a custom validation function
+    ValidateUserInput(input);
+    // *************** (Map input fields to database schema) Construct the user data object for database insertion
     const userData = {
       first_name: first_name,
       last_name: last_name,
@@ -110,8 +112,6 @@ async function CreateUser(_, { input }) {
       password: password,
       created_by: creatorId
     };
-    // *************** Validate the input fields using a custom validation function
-    ValidateUserInput(input);
     // *************** Create a new user document in the database
     const toCreatedUser = await UserModel.create(userData);
     return toCreatedUser;
@@ -155,7 +155,9 @@ async function UpdateUser(_, { id, input }) {
       user_status,
       password
     } = input;
-    // *************** Construct the userData object to be saved to the database
+    // *************** Validate the user input fields
+    ValidateUserInput(input);
+    // *************** (Map input fields to database schema) Construct the userData object to be saved to the database
     const userData = {
       first_name: first_name,
       last_name: last_name,
@@ -169,8 +171,6 @@ async function UpdateUser(_, { id, input }) {
       password: password,
       updated_by: updaterId
     };
-    // *************** Validate the user input fields
-    ValidateUserInput(input);
     // *************** Update the user document in the database and return the new version
     const toUpdatedUser = await UserModel.findOneAndUpdate({ _id: id }, userData, { new: true });
     return toUpdatedUser;
