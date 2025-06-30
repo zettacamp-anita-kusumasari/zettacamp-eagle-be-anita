@@ -1,0 +1,65 @@
+// *************** IMPORT LIBRARY ***************
+const { ApolloError } = require('apollo-server');
+const Validator = require('validator');
+
+// *************** Valid status for block_status
+const ValidStatus = ['ACTIVE', 'COMPLETED'];
+
+// *************** Valid type for block_type
+const ValidType = ['REGULER', 'PROFESSIONAL', 'SOFT_SKILL', 'RETAKE'];
+
+// *************** Valid assessment for evaluation_assessment
+const ValidAssessment = ['COMPETENCY', 'SCORE'];
+
+function ValidateBlockInput(input) {
+    // *************** Destructure expected fields from the input object
+    const {
+        name,
+        academic_year,
+        block_code,
+        block_status,
+        block_type,
+        evaluation_assessment
+    } = input;
+    // *************** Validate that name is provided and not an empty string
+    if (!name || Validator.isEmpty(name)) {
+        throw new ApolloError('Name is required.', 'BAD_USER_INPUT', { field: 'name' });
+    }
+    // *************** If academic year is provided, validate that it's a valid URL
+    if (academic_year && !Validator.isNumeric(academic_year)) {
+        throw new ApolloError('Academic year must be a valid numeric.', 'BAD_USER_INPUT', { field: 'academic_year' });
+    }
+    // *************** Validate that block code is provided and not an empty string
+    if (!block_code || Validator.isEmpty(block_code)) {
+        throw new ApolloError('Block code is required.', 'BAD_USER_INPUT', { field: 'block_code' });
+    }
+    // *************** Validate that block status exists and is within the allowed values (‘ACTIVE’ | ‘COMPLETED’)
+    if (!block_status || !ValidStatus.includes(block_status.toUpperCase())) {
+        throw new ApolloError(`Block status must be one of: ${ValidStatus.join(', ')}.`, 'BAD_USER_INPUT', {field: 'block_status'});
+    }
+    // *************** Validate that block type exists and is within the allowed values (‘REGULER’ | ‘PROFESSIONAL’ | ‘SOFT_SKILL’ | ‘RETAKE’)
+    if (!block_type || !ValidType.includes(block_type.toUpperCase())) {
+        throw new ApolloError(`Block type status must be one of: ${ValidType.join(', ')}.`, 'BAD_USER_INPUT', {field: 'school_type'});
+    }
+    // *************** Validate that evaluation_assessment exists and is within the allowed values (‘COMPETENCY’ | ‘SCORE’)
+    if (!evaluation_assessment || !ValidAssessment.includes(evaluation_assessment.toUpperCase())) {
+        throw new ApolloError(`Evaluation assessment must be one of: ${ValidAssessment.join(', ')}.`, 'BAD_USER_INPUT', { field: 'evaluation_assessment' });
+    }
+
+    // *************** Additional Validation Logic
+    const validatedAssessment = evaluation_assessment.toUpperCase();
+    const validatedType = block_type.toUpperCase();
+
+    if (validatedAssessment === 'COMPETENCY' && !['PROFESSIONAL', 'SOFT_SKILL'].includes(validatedType)) {
+        throw new ApolloError('For COMPETENCY assessment, block type must be PROFESSIONAL or SOFT_SKILL.', 'BAD_USER_INPUT', { field: 'block_type' });
+    }
+
+    if (validatedAssessment === 'SCORE' && !['REGULER', 'RETAKE'].includes(validatedType)) {
+        throw new ApolloError('For SCORE assessment, block type must be REGULER or RETAKE.', 'BAD_USER_INPUT', { field: 'block_type' });
+    }
+}
+
+// *************** EXPORT MODULE ***************
+module.exports = {
+    ValidateBlockInput
+};
