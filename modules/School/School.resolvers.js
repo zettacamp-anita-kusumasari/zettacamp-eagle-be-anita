@@ -2,7 +2,7 @@
 const SchoolModel = require('./School.model');
 
 // *************** IMPORT LIBRARY ***************
-const { ApolloError } = require('apollo-server');
+const { ApolloError } = require('apollo-server-express');
 const Mongoose = require('mongoose');
 
 // *************** IMPORT VALIDATOR ***************
