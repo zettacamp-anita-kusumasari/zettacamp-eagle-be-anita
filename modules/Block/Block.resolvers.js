@@ -48,6 +48,7 @@ async function CreateBlock(_, { input }) {
         // *************** Destructure the necessary fields from the input object
         const {
             name,
+            description,
             academic_year,
             block_code,
             block_status,
@@ -59,6 +60,7 @@ async function CreateBlock(_, { input }) {
         // *************** (Map input fields to database schema) Construct a new block data object with properly structured fields
         const blockData = {
         name: name,
+        description: description,
         academic_year: academic_year,
         block_code: block_code,
         block_status: block_status.toUpperCase(),
@@ -87,6 +89,7 @@ async function UpdateBlock(_, { id, input }) {
         // *************** Destructure necessary fields from the input object
         const {
             name,
+            description,
             academic_year,
             block_code,
             block_status,
@@ -98,6 +101,7 @@ async function UpdateBlock(_, { id, input }) {
         // *************** (Map input fields to database schema) Construct a new block data object to be used for update
         const blockData = {
             name: name,
+            description: description,
             academic_year: academic_year,
             block_code: block_code,
             block_status: block_status.toUpperCase(),
