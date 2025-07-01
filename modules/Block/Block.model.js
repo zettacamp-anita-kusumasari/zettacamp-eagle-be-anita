@@ -3,11 +3,6 @@ const Mongoose = require('mongoose')
 
 // *************** Define Mongoose schema for the Block collection
 const BlockSchema = new Mongoose.Schema({
-    // Reference to unique identifier required for each Block document
-    id: {
-        type: Mongoose.Schema.Types.ObjectId,
-        ref: 'ID'
-    },
     // Name of the block for identification
     name: {
         type: String,
