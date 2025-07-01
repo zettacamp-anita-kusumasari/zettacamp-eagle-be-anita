@@ -15,6 +15,7 @@ function ValidateBlockInput(input) {
     // *************** Destructure expected fields from the input object
     const {
         name,
+        description,
         academic_year,
         block_code,
         block_status,
@@ -25,9 +26,13 @@ function ValidateBlockInput(input) {
     if (!name || Validator.isEmpty(name)) {
         throw new ApolloError('Name is required.', 'BAD_USER_INPUT', { field: 'name' });
     }
-    // *************** If academic year is provided, validate that it's a valid URL
-    if (academic_year && !Validator.isNumeric(academic_year)) {
-        throw new ApolloError('Academic year must be a valid numeric.', 'BAD_USER_INPUT', { field: 'academic_year' });
+    // *************** Validate that description is provided and not an empty string
+    if (!description || Validator.isEmpty(description)) {
+        throw new ApolloError('Description is required.', 'BAD_USER_INPUT', { field: 'description' });
+    }
+    // *************** Validate that academic_year is a valid integer
+    if (academic_year && !Number.isInteger(Number(academic_year))) {
+        throw new ApolloError('Academic year must be a valid integer.', 'BAD_USER_INPUT', { field: 'academic_year' });
     }
     // *************** Validate that block code is provided and not an empty string
     if (!block_code || Validator.isEmpty(block_code)) {
