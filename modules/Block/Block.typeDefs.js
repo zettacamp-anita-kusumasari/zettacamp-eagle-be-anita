@@ -20,13 +20,6 @@ enum EvaluationAssessment {
   SCORE
 }
 
-type User {
-  id: ID!
-  firstName: String!
-  lastName: String!
-  email: String!
-}
-
 type Subject {
   id: ID!
   name: String!
@@ -34,10 +27,17 @@ type Subject {
   coefficient: Float!
 }
 
+type User {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  email: String!
+}
+
 type Block {
   id: ID!
   name: String!
-  description: String
+  description: String!
   subject_ids: [Subject]
   school_id: ID
   academic_year: Int!
@@ -55,7 +55,7 @@ type Block {
 
 input CreateBlockInput {
   name: String!
-  description: String
+  description: String!
   academic_year: Int!
   block_code: String!
   block_status: BlockStatus!
@@ -65,7 +65,7 @@ input CreateBlockInput {
 
 input UpdateBlockInput {
   name: String!
-  description: String
+  description: String!
   academic_year: Int!
   block_code: String!
   block_status: BlockStatus!
