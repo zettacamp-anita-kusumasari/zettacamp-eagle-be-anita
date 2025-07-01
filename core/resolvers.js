@@ -4,6 +4,7 @@ const StudentResolvers = require('../modules/Student/Student.resolvers');
 const UserResolvers = require('../modules/User/User.resolvers');
 const BlockResolvers = require('../modules/Block/Block.resolvers');
 const SubjectResolvers = require('../modules/Subject/Subject.resolvers');
+const TestResolvers = require('../modules/Test/Test.resolvers');
 
 // *************** Combine all Query resolvers from School, Student, User, Block, and Subject
 const Resolvers = {
@@ -17,7 +18,9 @@ const Resolvers = {
     // *************** Spread Block-related query resolvers (GetAllBlocks and GetOneBlock)
     ...BlockResolvers.Query,
     // *************** Spread Subject-related query resolvers (GetAllSubjects and GetOneSubject)
-    ...SubjectResolvers.Query
+    ...SubjectResolvers.Query,
+    // *************** Spread Test-related query resolvers (GetAllTests and GetOneTest)
+    ...TestResolvers.Query
   },
   Mutation: {
     // *************** Spread School-related mutation resolvers (CreateSchool, UpdateSchool, and DeleteSchool)
@@ -29,7 +32,9 @@ const Resolvers = {
     // *************** Spread Block-related mutation resolvers (CreateBlock, UpdateBlock, and DeleteBlock)
     ...BlockResolvers.Mutation,
     // *************** Spread Subject-related mutation resolvers (CreateSubject, UpdateSubject, and DeleteSubject)
-    ...SubjectResolvers.Mutation
+    ...SubjectResolvers.Mutation,
+    // *************** Spread Test-related mutation resolvers (CreateTest, UpdateTest, and DeleteTest)
+    ...TestResolvers.Mutation
   },
   // *************** Field-level resolvers for Student type (e.g., school, created_by)
   Student: StudentResolvers.Student,
