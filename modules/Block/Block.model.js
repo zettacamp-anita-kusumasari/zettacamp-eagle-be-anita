@@ -51,17 +51,17 @@ const BlockSchema = new Mongoose.Schema({
         enum: ['COMPETENCY', 'SCORE'],
         required: true
     },
-    // Reference to the person who create the school data
+    // Reference to the person who create the block data
     created_by: {
         type: Mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
-    // Reference to the person who update the school data
+    // Reference to the person who update the block data
     updated_by: {
         type: Mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
-    // Reference to the person who delete the school data
+    // Reference to the person who delete the block data
     deleted_by: {
         type: Mongoose.Schema.Types.ObjectId,
         ref: 'User'
