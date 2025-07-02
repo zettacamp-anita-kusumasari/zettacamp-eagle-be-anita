@@ -63,11 +63,8 @@ function ValidateTestInput(input) {
         throw new ApolloError(`Corrector must be one of: ${ValidCorrector.join(', ')}.`, 'BAD_USER_INPUT', {field: 'corrector'});
     }
     // *************** Validate that published_date is provided
-    // if (!published_date || isNaN(new Date(published_date).getTime())) {
-    //     throw new ApolloError('Published Date is required and must be a valid date.', 'BAD_USER_INPUT', {field: 'published_date'});
-    // }
-    if (!published_date || Validator.isEmpty(published_date)) {
-        throw new ApolloError('Published Date is required.', 'BAD_USER_INPUT', { field: 'published_date' });
+    if (!published_date || isNaN(new Date(published_date).getTime())) {
+        throw new ApolloError('Published Date is required and must be a valid date.', 'BAD_USER_INPUT', {field: 'published_date'});
     }
 }
 
