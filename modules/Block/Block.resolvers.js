@@ -146,6 +146,39 @@ async function DeleteBlock(_, { id }) {
 }
 
 // *************** LOADER ***************
+
+// Load multiple Subject documents in the Block Model
+async function SubjectLoader(parent, _, context) {
+  try {
+    // *************** Use the SubjectLoader to load many subject documents by its ID
+    const toSubjectList = await context.dataLoaders.SubjectLoader.loadMany(parent.subjects);
+    // *************** Return the loaded subject documents
+    return toSubjectList;
+  } catch (error) {
+    // *************** If an error occurs during loading the subjects, throw an ApolloError
+    throw new ApolloError(`Failed to load subjects: ${error.message}`, 'SUBJECT_FETCH_FAILED');
+  }
+}
+
+// Load one School document in the Block Model
+async function SchoolLoader(parent, _, context) {
+  try {
+    // *************** Check if parent.school_id exists
+    if (parent.school_id) {
+      // *************** Use the SchoolLoader to fetch school document by its ID
+      const toLoadedSchool = await context.dataLoaders.SchoolLoader.load(parent.school_id);
+      // *************** Return the loaded school ducument
+      return toLoadedSchool;
+    } else {
+      // *************** If no school_id is present in the parent object, return null
+      return null;
+    }
+  } catch (error) {
+    // *************** If an error occurs while loading the school, throw an ApolloError
+    throw new ApolloError(`Failed to load school: ${error.message}`, 'SCHOOL_FETCH_FAILED');
+  }
+}
+
 async function CreatedByLoader(parent, _, context) {
     try {
         // *************** Use the UserLoader DataLoader to load the user document based on parent.created_by ID
@@ -197,6 +230,8 @@ module.exports = {
     DeleteBlock
   },
   Block: {
+    subject: SubjectLoader,
+    school: SchoolLoader,
     created_by: CreatedByLoader,
     updated_by: UpdatedByLoader,
     deleted_by: DeletedByLoader

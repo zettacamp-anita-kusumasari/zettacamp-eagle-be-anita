@@ -142,6 +142,39 @@ async function DeleteSubject(_, { id }) {
 }
 
 // *************** LOADER ***************
+
+// Load multiple Test documents in the Subject Model
+async function TestLoader(parent, _, context) {
+  try {
+    // *************** Use the TestLoader to load many test documents by its ID
+    const toTestList = await context.dataLoaders.TestLoader.loadMany(parent.tests);
+    // *************** Return the loaded test documents
+    return toTestList;
+  } catch (error) {
+    // *************** If an error occurs during loading the tests, throw an ApolloError
+    throw new ApolloError(`Failed to load tests: ${error.message}`, 'TEST_FETCH_FAILED');
+  }
+}
+
+// Load one Block document in the Subject Model
+async function BlockLoader(parent, _, context) {
+  try {
+    // *************** Check if parent.block_id exists
+    if (parent.block_id) {
+      // *************** Use the BlockLoader to fetch block document by its ID
+      const toLoadedBlock = await context.dataLoaders.BlockLoader.load(parent.block_id);
+      // *************** Return the loaded block ducument
+      return toLoadedBlock;
+    } else {
+      // *************** If no block_id is present in the parent object, return null
+      return null;
+    }
+  } catch (error) {
+    // *************** If an error occurs while loading the block, throw an ApolloError
+    throw new ApolloError(`Failed to load block: ${error.message}`, 'BLOCK_FETCH_FAILED');
+  }
+}
+
 async function CreatedByLoader(parent, _, context) {
     try {
         // *************** Use the UserLoader DataLoader to load the user document based on parent.created_by ID
@@ -193,6 +226,8 @@ module.exports = {
     DeleteSubject
   },
   Block: {
+    test: TestLoader,
+    block: BlockLoader,
     created_by: CreatedByLoader,
     updated_by: UpdatedByLoader,
     deleted_by: DeletedByLoader

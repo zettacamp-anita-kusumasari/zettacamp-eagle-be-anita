@@ -161,34 +161,80 @@ async function UpdateTest(_, { id, input }) {
     }
 }
 
-async function DeleteSubject(_, { id }) {
+async function DeleteTest(_, { id }) {
     // *************** Check if the provided ID is a valid MongoDB ObjectId
     if (!Mongoose.Types.ObjectId.isValid(id)) {
         throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
     }
     try {
-        // *************** Find the subject by ID and check its current status
-        const subject = await SubjectModel.findOne({ _id: id, subject_status: 'ACTIVE' });
-        if (!subject) {
+        // *************** Find the test by ID and check its current status
+        const test = await TestModel.findOne({ _id: id, test_status: 'TO_DO' });
+        if (!test) {
         // *************** If no subject found with the ID, throw an error
-        throw new ApolloError("Subject not found or already completed", "NOT_FOUND");
+        throw new ApolloError("Test not found or already completed", "NOT_FOUND");
         }
         // *************** Set the user ID who is performing the deletion
         const userId = '6846e5769e5502fce150eb67';
         // *************** Update for soft delete
-        const toUpdatedSubject = await SubjectModel.findOneAndUpdate({ _id: id },{
-            subject_status: 'COMPLETED',
+        const toUpdatedTest = await TestModel.findOneAndUpdate({ _id: id },{
+            test_status: 'FINISHED',
             deleted_by: userId,
             deleted_at: new Date()
         });
-        return toUpdatedSubject;
+        return toUpdatedTest;
     } catch (error) {
         // *************** If an error occurs during the update, throw an ApolloError with details
-        throw new ApolloError('Failed to delete subject:', 'SUBJECT_DELETION_FAILED', {error: error.message});
+        throw new ApolloError('Failed to delete test:', 'TEST_DELETION_FAILED', {error: error.message});
     }
 }
 
 // *************** LOADER ***************
+
+// Load Multiple Student Test Result Documents in the Test Model
+async function StudentTestResultLoader(parent, _, context) {
+  try {
+    // *************** Use the StudentTestResultLoader to load many student test result documents by its ID
+    const toStudentTestResultList = await context.dataLoaders.StudentTestResultLoader.loadMany(parent.studentTestResults);
+    // *************** Return the loaded student test result documents
+    return toStudentTestResultList;
+  } catch (error) {
+    // *************** If an error occurs during loading the student test results, throw an ApolloError
+    throw new ApolloError(`Failed to load student test results: ${error.message}`, 'STUDENT_TEST_RESULT_FETCH_FAILED');
+  }
+}
+
+// Load multiple Task documents in the Test Model
+async function TaskLoader(parent, _, context) {
+  try {
+    // *************** Use the TaskLoader to load many task documents by its ID
+    const toTaskList = await context.dataLoaders.TaskLoader.loadMany(parent.tasks);
+    // *************** Return the loaded task documents
+    return toTaskList;
+  } catch (error) {
+    // *************** If an error occurs during loading the tasks, throw an ApolloError
+    throw new ApolloError(`Failed to load tasks: ${error.message}`, 'TASK_FETCH_FAILED');
+  }
+}
+
+// Load one Subject Document in the Test Model
+async function SubjectLoader(parent, _, context) {
+  try {
+    // *************** Check if parent.subject_id exists
+    if (parent.subject_id) {
+      // *************** Use the SubjectLoader to fetch subject document by its ID
+      const toLoadedSubject = await context.dataLoaders.SubjectLoader.load(parent.subject_id);
+      // *************** Return the loaded subject document
+      return toLoadedSubject;
+    } else {
+      // *************** If no subject_id is present in the parent object, return null
+      return null;
+    }
+  } catch (error) {
+    // *************** If an error occurs while loading the subject, throw an ApolloError
+    throw new ApolloError(`Failed to load subject: ${error.message}`, 'SUBJECT_FETCH_FAILED');
+  }
+}
+
 async function CreatedByLoader(parent, _, context) {
     try {
         // *************** Use the UserLoader DataLoader to load the user document based on parent.created_by ID
@@ -238,9 +284,11 @@ module.exports = {
     CreateTest,
     PublishTest,
     UpdateTest,
-    DeleteSubject
+    DeleteTest
   },
   Block: {
+    student_test_result: StudentTestResultLoader,
+    task: TaskLoader,
     created_by: CreatedByLoader,
     updated_by: UpdatedByLoader,
     deleted_by: DeletedByLoader
