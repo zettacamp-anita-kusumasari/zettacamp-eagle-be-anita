@@ -55,6 +55,11 @@ const TestSchema = new Mongoose.Schema({
         enum: ['CERTIFIER', 'PREPARATION_CENTER'],
         required: true
     },
+    // Reference to the date when the test is published
+    published_date: {
+        type: Date,
+        required: true
+    },
     // Reference to the person who published the test
     published_by: {
         type: Mongoose.Schema.Types.ObjectId,
@@ -80,8 +85,7 @@ const TestSchema = new Mongoose.Schema({
     timestamps: {
         created_at: 'Created_At',
         updated_at: 'Updated_At',
-        deleted_at: 'Deleted_At',
-        published_date: 'Published_Date'
+        deleted_at: 'Deleted_At'
     }
 });
 
