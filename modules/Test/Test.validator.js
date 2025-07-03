@@ -5,9 +5,6 @@ const Validator = require('validator');
 // *************** Valid status for test_status
 const ValidStatus = ['TO_DO', 'FINISHED'];
 
-// *************** Valid corrector for test_status
-const ValidCorrector = ['CERTIFIER', 'PREPARATION_CENTER'];
-
 function ValidateTestInput(input) {
     // *************** Destructure expected fields from the input object
     const {
@@ -17,7 +14,6 @@ function ValidateTestInput(input) {
         notations,
         test_status,
         for_retake,
-        corrector,
         published_date
     } = input;
     // *************** Validate that name is provided and not an empty string
@@ -58,9 +54,6 @@ function ValidateTestInput(input) {
     // *************** Validate that for_retake must be a boolean (true or false)
     if (typeof for_retake !== 'boolean') {
         throw new ApolloError('For Retake must be a boolean value.', 'BAD_USER_INPUT', {field: 'for_retake'});
-    }
-    if (!corrector || !ValidCorrector.includes(corrector.toUpperCase())) {
-        throw new ApolloError(`Corrector must be one of: ${ValidCorrector.join(', ')}.`, 'BAD_USER_INPUT', {field: 'corrector'});
     }
     // *************** Validate that published_date is provided
     if (!published_date || isNaN(new Date(published_date).getTime())) {
