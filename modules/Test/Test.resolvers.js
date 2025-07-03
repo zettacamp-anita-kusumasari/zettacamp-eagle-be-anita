@@ -1,5 +1,6 @@
 // *************** IMPORT MODULE ***************
 const TestModel = require('./Test.model');
+const TaskModel = require('../Task/Task.model');
 
 // *************** IMPORT LIBRARY ***************
 const { ApolloError } = require('apollo-server');
@@ -53,7 +54,6 @@ async function CreateTest(_, { input }) {
             notations,
             test_status,
             for_retake,
-            corrector,
             published_date
         } = input;
         // *************** Validate the input using exported function ValidateTestInput
@@ -71,7 +71,6 @@ async function CreateTest(_, { input }) {
             }),
             test_status: test_status.toUpperCase(),
             for_retake: for_retake,
-            corrector: corrector,
             published_date: published_date,
             created_by: userId
         };
@@ -84,34 +83,67 @@ async function CreateTest(_, { input }) {
     }
 }
 
-async function PublishTest(_, { id }) {
-    // *************** Check if the provided ID is a valid MongoDB ObjectId
+async function PublishTest(_, { id, input }) {
+    // *************** Check if the given ID is a valid mongoDB ObjectId
     if (!Mongoose.Types.ObjectId.isValid(id)) {
-        throw new ApolloError(`Invalid ID: ${id}`, 'BAD_USER_INPUT');
+        throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
     }
-
     try {
-        // *************** Set the ID of the user who is publishing the test
+        // *************** Ambil user ID, fallback ke default ID
         const userId = '6846e5769e5502fce150eb67';
+        // *************** Destructure input
+        const {
+            name,
+            description,
+            weight,
+            notations,
+            test_status,
+            for_retake,
+            published_date
+        } = input;
+        // *************** Validasi input
+        ValidateTestInput(input);
+        // *************** Siapkan data baru
+        const testData = {
+            name: name,
+            description: description,
+            weight: weight,
+            notations: notations.map(n => ({
+                notation_text: n.notation_text,
+                max_point: n.max_point
+            })),
+            test_status: (test_status || 'FINISHED').toUpperCase(),
+            for_retake: for_retake,
+            published_date: published_date
+        };
 
-        // *************** Find test by ID
-        const test = await TestModel.findById(id);
-        if (!test) {
-            throw new ApolloError('Test not found.', 'NOT_FOUND');
-        }
+        const test = await TestModel.findById(id); 
 
-        // *************** Update status to FINISHED and set published info
-        test.test_status = 'FINISHED';
-        test.published_by = userId;
-        test.published_date = new Date();
+        // *************** Update field di instance test
+        Object.assign(test, testData);
 
-        // *************** Save and return updated test
+        // *************** Simpan test yang telah diperbarui
         const updatedTest = await test.save();
+
+        // *************** Buat Task baru: ASSIGN_CORRECTOR
+        const assignTask = new TaskModel({
+            test_id: updatedTest._id,
+            task_type: 'Assign_Corrector',
+            task_status: 'PENDING',
+            user_id: userId,
+            due_date: new Date(new Date().setHours(0, 0, 0, 0) + 3 * 86400000)
+        });
+        await assignTask.save();
+
+        // *************** Return hasil
         return updatedTest;
     } catch (error) {
-        throw new ApolloError('Failed to publish test.', 'TEST_PUBLISH_FAILED', { error: error.message });
+        throw new ApolloError('Failed to publish test.', 'TEST_PUBLISH_FAILED', {
+            error: error.message
+        });
     }
 }
+
 
 async function UpdateTest(_, { id, input }) {
     // *************** Check if the provided ID is a valid MongoDB ObjectId
@@ -130,7 +162,6 @@ async function UpdateTest(_, { id, input }) {
             notations,
             test_status,
             for_retake,
-            corrector,
             published_date
         } = input;
         // *************** Validate the input using exported function ValidateTestInput
@@ -148,7 +179,6 @@ async function UpdateTest(_, { id, input }) {
             }),
             test_status: test_status.toUpperCase(),
             for_retake: for_retake,
-            corrector: corrector,
             published_date: published_date,
             created_by: userId
         };
