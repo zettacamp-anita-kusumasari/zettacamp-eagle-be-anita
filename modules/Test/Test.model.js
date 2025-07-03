@@ -49,12 +49,6 @@ const TestSchema = new Mongoose.Schema({
         type: Boolean,
         required: true
     },
-    // Corrector of the test, is it ‘CERTIFIER’ or ‘PREPARATION CENTER’
-    corrector: {
-        type: String,
-        enum: ['CERTIFIER', 'PREPARATION_CENTER'],
-        required: true
-    },
     // Reference to the date when the test is published
     published_date: {
         type: Date,
