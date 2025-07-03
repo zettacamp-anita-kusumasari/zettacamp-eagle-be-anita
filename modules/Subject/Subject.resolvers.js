@@ -225,7 +225,7 @@ module.exports = {
     UpdateSubject,
     DeleteSubject
   },
-  Block: {
+  Subject: {
     test: TestLoader,
     block: BlockLoader,
     created_by: CreatedByLoader,

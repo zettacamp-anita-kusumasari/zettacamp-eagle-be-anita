@@ -316,7 +316,7 @@ module.exports = {
     UpdateTest,
     DeleteTest
   },
-  Block: {
+  Test: {
     student_test_result: StudentTestResultLoader,
     task: TaskLoader,
     created_by: CreatedByLoader,
