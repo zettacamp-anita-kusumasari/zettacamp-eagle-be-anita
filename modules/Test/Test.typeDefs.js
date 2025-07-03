@@ -8,11 +8,6 @@ const typeDefs = gql`
         FINISHED
     }
 
-    enum Corrector {
-        CERTIFIER
-        PREPARATION_CENTER
-    }
-
     type User {
         id: ID!
         firstName: String!
@@ -41,7 +36,6 @@ const typeDefs = gql`
         notations: [Notation!]!
         test_status: TestStatus!
         for_retake: Boolean!
-        corrector: Corrector!
         published_by: User
         published_date: Date
         created_by: User
@@ -64,7 +58,6 @@ const typeDefs = gql`
         notations: [NotationInput!]!
         test_status: TestStatus!
         for_retake: Boolean!
-        corrector: Corrector!
         published_date: Date
     }
 
@@ -75,7 +68,16 @@ const typeDefs = gql`
         notations: [NotationInput!]
         test_status: TestStatus!
         for_retake: Boolean!
-        corrector: Corrector!
+        published_date: Date
+    }
+
+    input PublishTestInput {
+        name: String!
+        description: String
+        weight: Float!
+        notations: [NotationInput!]!
+        test_status: TestStatus!
+        for_retake: Boolean! 
         published_date: Date
     }
 
@@ -86,7 +88,7 @@ const typeDefs = gql`
 
     type Mutation {
         CreateTest(input: CreateTestInput!): Test!
-        PublishTest(id: ID!): Test!
+        PublishTest(id: ID!, input: PublishTestInput!): Test!
         UpdateTest(id: ID!, input: UpdateTestInput!): Test!
         DeleteTest(id: ID!): Test!
     }
