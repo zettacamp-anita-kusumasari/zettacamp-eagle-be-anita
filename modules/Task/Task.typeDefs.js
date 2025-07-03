@@ -4,70 +4,74 @@ const typeDefs = gql`
     scalar Date
 
     enum TaskType {
-        IN_PROGRESS
-        GRADED
-        DELETED
+        Assign_Corrector
+        Enter_Marks
+        Validate_Marks
     }
 
     enum TaskStatus {
+        PENDING
         IN_PROGRESS
-        GRADED
-        DELETED
-    }
-
-    type Test {
-        id: ID!
-        name: String!
-        description: String
-    }
-    
-    type User {
-        id: ID!
-        firstName: String!
-        lastName: String!
-        email: String!
+        COMPLETED
     }
 
     type Task {
         id: ID!
-        test_id: Test
-        user_id: User
+        test_id: ID!
+        user_id: ID!
         task_type: TaskType!
         task_status: TaskStatus!
         due_date: Date!
-        created_by: User
-        created_at: Date
-        updated_by: User
-        updated_at: Date 
-        deleted_by: User
-        deleted_at: Date
+        created_by: ID
+        updated_by: ID
+        deleted_by: ID
+        Created_At: Date
+        Updated_At: Date
     }
 
-    input CreateTaskInput {
-        task_type: TaskType!
-        task_status: TaskStatus!
-        due_date: Date!
-
+    type StudentTestResult {
+        id: ID!
+        student_id: ID!
+        test_id: ID!
+        marks: [MarkEntry!]!
+        average_mark: Float!
+        mark_entry_date: Date!
     }
 
-    input UpdateTaskInput {
-        task_type: TaskType!
-        task_status: TaskStatus!
-        due_date: Date!
+    type MarkEntry {
+        notation_text: String!
+        mark: Float!
+    }
 
+    input AssignCorrectorInput {
+        task_id: ID!
+        corrector_id: ID!
+    }
+
+    input MarkEntryInput {
+        notation_text: String!
+        mark: Float!
+    }
+
+    input EnterMarksInput {
+        test_id: ID!
+        student_id: ID!
+        marks: [MarkEntryInput!]!
+    }
+
+    input ValidateMarksInput {
+        task_id: ID!
     }
 
     type Query {
-        GetAllTasks: [Task!]!
-        GetOneTask(id: ID!): Task
+        GetTasksByUser(user_id: ID!): [Task!]!
+        GetTasksByTest(test_id: ID!): [Task!]!
     }
 
     type Mutation {
-        UpdateTask(id: ID!, input: UpdateTaskInput!): Task!
-        DeleteTask(id: ID!): Task!
-        AssignCorrector
-        EnterMark
-        ValidateMark
+        AssignCorrector(input: AssignCorrectorInput!): Task!
+        EnterMarks(input: EnterMarksInput!): StudentTestResult!
+        ValidateMarks(input: ValidateMarksInput!): Task!
     }
 `;
 
