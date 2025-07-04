@@ -5,6 +5,8 @@ const UserResolvers = require('../modules/User/User.resolvers');
 const BlockResolvers = require('../modules/Block/Block.resolvers');
 const SubjectResolvers = require('../modules/Subject/Subject.resolvers');
 const TestResolvers = require('../modules/Test/Test.resolvers');
+const TaskResolvers = require('../modules/Task/Task.resolvers');
+const StudentTestResultResolvers = require('../modules/StudentTestResult/StudentTestResult.resolvers');
 
 // *************** Combine all Query resolvers from School, Student, User, Block, and Subject
 const Resolvers = {
@@ -20,7 +22,11 @@ const Resolvers = {
     // *************** Spread Subject-related query resolvers (GetAllSubjects and GetOneSubject)
     ...SubjectResolvers.Query,
     // *************** Spread Test-related query resolvers (GetAllTests and GetOneTest)
-    ...TestResolvers.Query
+    ...TestResolvers.Query,
+    // *************** Spread Student Test Result-related query resolvers (GetAllStudentTestResults and GetOneStudentTestResult)
+    ...StudentTestResultResolvers.Query,
+    // *************** Spread Task-related query resolvers (GetAllTasks and GetOneTask)
+    ...TaskResolvers.Query
   },
   Mutation: {
     // *************** Spread School-related mutation resolvers (CreateSchool, UpdateSchool, and DeleteSchool)
@@ -34,7 +40,11 @@ const Resolvers = {
     // *************** Spread Subject-related mutation resolvers (CreateSubject, UpdateSubject, and DeleteSubject)
     ...SubjectResolvers.Mutation,
     // *************** Spread Test-related mutation resolvers (CreateTest, UpdateTest, and DeleteTest)
-    ...TestResolvers.Mutation
+    ...TestResolvers.Mutation,
+    // *************** Spread Test-related mutation resolvers (CreateTest, UpdateTest, and DeleteTest)
+    ...StudentTestResultResolvers.Mutation,
+    // *************** Spread Test-related mutation resolvers (CreateTask, UpdateTask, and DeleteTask)
+    ...TaskResolvers.Mutation
   },
   // *************** Field-level resolvers for Student type (e.g., school, created_by)
   Student: StudentResolvers.Student,
