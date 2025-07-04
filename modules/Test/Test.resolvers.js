@@ -12,8 +12,8 @@ const { ValidateTestInput } = require('./Test.validator');
 // *************** QUERY ***************
 async function GetAllTests() {
     try {
-        // *************** Try to fetch all tests where status is TO_DO
-        const activeTests = await TestModel.find({ test_status: 'TO_DO' });
+        // *************** Try to fetch all tests where status is PUBLISHED
+        const activeTests = await TestModel.find({ test_status: 'PUBLISHED' });
         return activeTests;
     } catch (error) {
         // *************** If an error occurs, throw an ApolloError with a message and error code
@@ -28,7 +28,7 @@ async function GetOneTest(_, { id }) {
     }
     try {
         // *************** Try to find a subject data that has ACTIVE status by its mongoDB ObjectId
-        const test = await TestModel.findOne({ _id: id, test_status: 'TO_DO' });
+        const test = await TestModel.findOne({ _id: id, test_status: 'PUBLISHED' });
         // *************** If no test is found, throw a NOT FOUND error
         if (!test) {
         throw new ApolloError("Test not found", "NOT_FOUND");
@@ -84,11 +84,11 @@ async function CreateTest(_, { input }) {
 }
 
 async function PublishTest(_, { id, input }) {
-    // *************** Check if the given ID is a valid mongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(id)) {
-        throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
-    }
     try {
+        // *************** Check if the given ID is a valid mongoDB ObjectId
+        if (!Mongoose.Types.ObjectId.isValid(id)) {
+            throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
+        }
         // *************** Ambil user ID, fallback ke default ID
         const userId = '6846e5769e5502fce150eb67';
         // *************** Destructure input
@@ -112,7 +112,7 @@ async function PublishTest(_, { id, input }) {
                 notation_text: n.notation_text,
                 max_point: n.max_point
             })),
-            test_status: (test_status || 'FINISHED').toUpperCase(),
+            test_status: (test_status || 'NOT_PUBLISHED').toUpperCase(),
             for_retake: for_retake,
             published_date: published_date
         };
@@ -198,7 +198,7 @@ async function DeleteTest(_, { id }) {
     }
     try {
         // *************** Find the test by ID and check its current status
-        const test = await TestModel.findOne({ _id: id, test_status: 'TO_DO' });
+        const test = await TestModel.findOne({ _id: id, test_status: 'PUBLISHED' });
         if (!test) {
         // *************** If no subject found with the ID, throw an error
         throw new ApolloError("Test not found or already completed", "NOT_FOUND");
@@ -207,7 +207,7 @@ async function DeleteTest(_, { id }) {
         const userId = '6846e5769e5502fce150eb67';
         // *************** Update for soft delete
         const toUpdatedTest = await TestModel.findOneAndUpdate({ _id: id },{
-            test_status: 'FINISHED',
+            test_status: 'NOT_PUBLISHED',
             deleted_by: userId,
             deleted_at: new Date()
         });

@@ -3,7 +3,7 @@ const { ApolloError } = require('apollo-server');
 const Validator = require('validator');
 
 // *************** Valid status for test_status
-const ValidStatus = ['TO_DO', 'FINISHED'];
+const ValidStatus = ['PUBLISHED', 'NOT_PUBLISHED'];
 
 function ValidateTestInput(input) {
     // *************** Destructure expected fields from the input object
@@ -47,7 +47,7 @@ function ValidateTestInput(input) {
             throw new ApolloError(`Max Point at index ${index} cannot be negative.`, 'BAD_USER_INPUT', { field: `notations[${index}].max_point` });
         }
     });
-    // *************** Validate that test status exists and is within the allowed values (‘TO_DO’ | ‘FINISHED’)
+    // *************** Validate that test status exists and is within the allowed values ('PUBLISHED', 'NOT_PUBLISHED')
     if (!test_status || !ValidStatus.includes(test_status.toUpperCase())) {
         throw new ApolloError(`Test status must be one of: ${ValidStatus.join(', ')}.`, 'BAD_USER_INPUT', {field: 'test_status'});
     }

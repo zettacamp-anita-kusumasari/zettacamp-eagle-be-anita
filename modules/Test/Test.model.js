@@ -38,10 +38,10 @@ const TestSchema = new Mongoose.Schema({
             min: [0, 'max_point cannot be negative']
         }
     }],
-    // Status of the test, is it ‘TO_DO’ or ‘FINISHED’
+    // Status of the test, is it 'PUBLISHED', 'NOT_PUBLISHED'
     test_status: {
         type: String,
-        enum: ['TO_DO', 'FINISHED'],
+        enum: ['PUBLISHED', 'NOT_PUBLISHED'],
         required: true
     },
     // Check the test, is it for retake or not
