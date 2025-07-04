@@ -89,7 +89,7 @@ async function PublishTest(_, { id, input }) {
         if (!Mongoose.Types.ObjectId.isValid(id)) {
             throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
         }
-        // *************** Ambil user ID, fallback ke default ID
+        // *************** Take the user ID, fallback to the default ID
         const userId = '6846e5769e5502fce150eb67';
         // *************** Destructure input
         const {
@@ -101,9 +101,9 @@ async function PublishTest(_, { id, input }) {
             for_retake,
             published_date
         } = input;
-        // *************** Validasi input
+        // *************** Validate the input
         ValidateTestInput(input);
-        // *************** Siapkan data baru
+        // *************** Prepare the new test data
         const testData = {
             name: name,
             description: description,
@@ -119,13 +119,13 @@ async function PublishTest(_, { id, input }) {
 
         const test = await TestModel.findById(id); 
 
-        // *************** Update field di instance test
+        // *************** Update field in the instance test
         Object.assign(test, testData);
 
-        // *************** Simpan test yang telah diperbarui
+        // *************** Save the test that has been updated
         const updatedTest = await test.save();
 
-        // *************** Buat Task baru: ASSIGN_CORRECTOR
+        // *************** Assign new task: ASSIGN_CORRECTOR
         const assignTask = new TaskModel({
             test_id: updatedTest._id,
             task_type: 'Assign_Corrector',
@@ -135,7 +135,7 @@ async function PublishTest(_, { id, input }) {
         });
         await assignTask.save();
 
-        // *************** Return hasil
+        // *************** Return updated test
         return updatedTest;
     } catch (error) {
         throw new ApolloError('Failed to publish test.', 'TEST_PUBLISH_FAILED', {
