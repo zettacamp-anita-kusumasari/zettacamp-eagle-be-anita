@@ -21,6 +21,7 @@ function ValidateBlockInput(input) {
     block_status,
     block_type,
     evaluation_assessment,
+    user_id
   } = input;
   // *************** Validate that name is provided and not an empty string
   if (!name || Validator.isEmpty(name)) {
@@ -90,6 +91,12 @@ function ValidateBlockInput(input) {
       "BAD_USER_INPUT",
       { field: "block_type" }
     );
+  }
+  // *************** Validate that user_id is provided and not an empty string
+  if (!user_id || Validator.isEmpty(user_id)) {
+    throw new ApolloError("User id is required.", "BAD_USER_INPUT", {
+      field: "user_id",
+    });
   }
 }
 

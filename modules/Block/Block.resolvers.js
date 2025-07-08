@@ -96,6 +96,7 @@ async function CreateBlock(_, { input }) {
       block_status,
       block_type,
       evaluation_assessment,
+      user_id
     } = input;
     // *************** Validate the input using exported function ValidateBlockInput
     ValidateBlockInput(input);
@@ -108,6 +109,7 @@ async function CreateBlock(_, { input }) {
       block_status: block_status.toUpperCase(),
       block_type: block_type.toUpperCase(),
       evaluation_assessment: evaluation_assessment.toUpperCase(),
+      user_id: user_id
     };
     // *************** Save the block data to the database using Mongoose
     const toCreatedBlock = await BlockModel.create(blockData);
@@ -153,6 +155,7 @@ async function UpdateBlock(_, { id, input }) {
       block_status,
       block_type,
       evaluation_assessment,
+      user_id
     } = input;
     // *************** Validate the input using exported function ValidateBlockInput
     ValidateBlockInput(input);
@@ -165,6 +168,7 @@ async function UpdateBlock(_, { id, input }) {
       block_status: block_status.toUpperCase(),
       block_type: block_type.toUpperCase(),
       evaluation_assessment: evaluation_assessment.toUpperCase(),
+      user_id: user_id
     };
     // *************** Perform the update in the database and return the updated document
     const toUpdatedBlock = await BlockModel.findOneAndUpdate(

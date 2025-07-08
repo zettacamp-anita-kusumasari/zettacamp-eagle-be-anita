@@ -26,6 +26,12 @@ const BlockSchema = new Mongoose.Schema(
       type: Mongoose.Schema.Types.ObjectId,
       ref: "School",
     },
+    // A list of ID referencing the User documents related to this Block
+    user_id: {
+      type: Mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+    },
     // The academic year for this block
     academic_year: {
       type: Number,
