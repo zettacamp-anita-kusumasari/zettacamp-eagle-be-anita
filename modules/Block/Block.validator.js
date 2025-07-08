@@ -21,7 +21,7 @@ function ValidateBlockInput(input) {
     block_status,
     block_type,
     evaluation_assessment,
-    user_id
+    user_id,
   } = input;
   // *************** Validate that name is provided and not an empty string
   if (!name || Validator.isEmpty(name)) {

@@ -30,7 +30,7 @@ const BlockSchema = new Mongoose.Schema(
     user_id: {
       type: Mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true
+      required: true,
     },
     // The academic year for this block
     academic_year: {

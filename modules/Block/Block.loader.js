@@ -13,13 +13,13 @@ const BlockModel = require("./Block.model.js");
  * @returns {Promise<Array<Object|null>>} A Promise that resolves to an array of Block objects in the same order as `ids`.
  * If a block ID does not exist, `null` will be returned in its place.
  */
-async function BatchBlocks(ids) { 
+async function BatchBlocks(ids) {
   // *************** Fetch blocks matching the given IDs
   const blocks = await BlockModel.find({ _id: { $in: ids } }).lean();
   // *************** Map block ID to block object
   const blockMap = new Map();
   // *************** Store each block in the map with its ID as the key
-  blocks.forEach(block => {
+  blocks.forEach((block) => {
     blockMap.set(String(block._id), block);
   });
   // *************** Return blocks in the same order as input IDs
