@@ -19,11 +19,11 @@ async function BatchBlocks(ids) {
   // *************** Map block ID to block object
   const blockMap = new Map();
   // *************** Store each block in the map with its ID as the key
-  blocks.forEach(function (block) {
+  blocks.forEach(block => {
     blockMap.set(String(block._id), block);
   });
   // *************** Return blocks in the same order as input IDs
-  const toOrderedBlocks = ids.map((id) => blockMap.get(String(id)));
+  const toOrderedBlocks = ids.map((id) => blockMap.get(String(id)) || null);
   return toOrderedBlocks;
 }
 
