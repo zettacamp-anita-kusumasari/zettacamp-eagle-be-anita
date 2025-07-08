@@ -1,20 +1,20 @@
 // *************** IMPORT LIBRARY ***************
-const DataLoader = require('dataloader');
+const DataLoader = require("dataloader");
 
 // *************** IMPORT MODULE ***************
-const BlockModel = require('./Block.model.js');
+const BlockModel = require("./Block.model.js");
 
-async function BatchBlocks(ids) {
+async function BatchBlocks(ids) { 
   // *************** Fetch blocks matching the given IDs
-  const blocks = await BlockModel.find({ _id: { $in: ids } });
+  const blocks = await BlockModel.find({ _id: { $in: ids } }).lean();
   // *************** Map block ID to block object
   const blockMap = new Map();
   // *************** Store each block in the map with its ID as the key
-  for (const block of blocks) {
+  blocks.forEach(function (block) {
     blockMap.set(String(block._id), block);
-  }
+  });
   // *************** Return blocks in the same order as input IDs
-  const toOrderedBlocks = ids.map(id => blockMap.get(String(id)));
+  const toOrderedBlocks = ids.map((id) => blockMap.get(String(id)));
   return toOrderedBlocks;
 }
 
