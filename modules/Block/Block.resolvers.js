@@ -171,12 +171,12 @@ async function UpdateBlock(_, { id, input }) {
       user_id: user_id,
     };
     // *************** Perform the update in the database and return the updated document
-    const toUpdatedBlock = await BlockModel.findByIdAndUpdate(
+    const UpdatedBlock = await BlockModel.findByIdAndUpdate(
       { _id: id },
       { $set: blockData },
       { new: true }
     ).lean();
-    return toUpdatedBlock;
+    return UpdatedBlock;
   } catch (error) {
     // *************** If an error occurs during the update, throw an ApolloError with details
     throw new ApolloError("Failed to update block:", "BLOCK_UPDATE_FAILED", {
