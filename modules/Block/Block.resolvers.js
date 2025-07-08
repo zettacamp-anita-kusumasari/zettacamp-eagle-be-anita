@@ -171,9 +171,9 @@ async function UpdateBlock(_, { id, input }) {
       user_id: user_id,
     };
     // *************** Perform the update in the database and return the updated document
-    const toUpdatedBlock = await BlockModel.findOneAndUpdate(
+    const toUpdatedBlock = await BlockModel.findByIdAndUpdate(
       { _id: id },
-      blockData,
+      { $set: blockData },
       { new: true }
     ).lean();
     return toUpdatedBlock;
