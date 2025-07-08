@@ -11,7 +11,7 @@ const BlockModel = require("./Block.model.js");
  * @function
  * @param {Array<string|import('mongoose').Types.ObjectId>} ids - Array of Block document IDs.
  * @returns {Promise<Array<Object|null>>} A Promise that resolves to an array of Block objects in the same order as `ids`.
- *                                       If a block ID does not exist, `null` will be returned in its place.
+ * If a block ID does not exist, `null` will be returned in its place.
  */
 async function BatchBlocks(ids) { 
   // *************** Fetch blocks matching the given IDs
