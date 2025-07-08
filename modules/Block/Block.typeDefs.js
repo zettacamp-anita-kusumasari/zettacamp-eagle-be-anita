@@ -6,7 +6,7 @@ const typeDefs = gql`
 
   enum BlockStatus {
     ACTIVE
-    COMPLETED
+    DELETED
   }
 
   enum BlockType {

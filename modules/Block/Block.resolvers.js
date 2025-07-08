@@ -87,6 +87,8 @@ async function GetOneBlock(_, { id }) {
  */
 async function CreateBlock(_, { input }) {
   try {
+    // *************** Validate the input using exported function ValidateBlockInput
+    ValidateBlockInput(input);
     // *************** Destructure the necessary fields from the input object
     const {
       name,
@@ -98,8 +100,6 @@ async function CreateBlock(_, { input }) {
       evaluation_assessment,
       user_id
     } = input;
-    // *************** Validate the input using exported function ValidateBlockInput
-    ValidateBlockInput(input);
     // *************** Map input fields to database schema
     const blockData = {
       name: name,
@@ -146,6 +146,8 @@ async function UpdateBlock(_, { id, input }) {
       // *************** If the ID is invalid, throw an ApolloError with a BAD_USER_INPUT code
       throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
     }
+    // *************** Validate the input using exported function ValidateBlockInput
+    ValidateBlockInput(input);
     // *************** Destructure necessary fields from the input object
     const {
       name,
@@ -157,8 +159,6 @@ async function UpdateBlock(_, { id, input }) {
       evaluation_assessment,
       user_id
     } = input;
-    // *************** Validate the input using exported function ValidateBlockInput
-    ValidateBlockInput(input);
     // *************** Map input fields to database schema
     const blockData = {
       name: name,
@@ -186,7 +186,7 @@ async function UpdateBlock(_, { id, input }) {
 }
 
 /**
- * DeleteBlock - Soft deletes a block by updating its status to "COMPLETED" and setting a deletion timestamp.
+ * DeleteBlock - Soft deletes a block by updating its status to "DELETED" and setting a deletion timestamp.
  *
  * @param {Object} _ - Unused first parameter (parent/root resolver).
  * @param {Object} args - GraphQL arguments object.
@@ -205,10 +205,10 @@ async function DeleteBlock(_, { id }) {
       _id: id,
       block_status: "ACTIVE",
     });
-    // *************** If block is not found or already completed, throw an error
+    // *************** If block is not found or already deleted, throw an error
     if (!existingBlock) {
       throw new ApolloError(
-        "Block not found or already completed",
+        "Block not found or already deleted",
         "NOT_FOUND"
       );
     }
@@ -217,7 +217,7 @@ async function DeleteBlock(_, { id }) {
     const updateResult = await BlockModel.updateOne(
       { _id: id },
       {
-        block_status: "COMPLETED",
+        block_status: "DELETED",
         deleted_at: new Date(),
       }
     );

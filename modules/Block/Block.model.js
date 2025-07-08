@@ -42,10 +42,10 @@ const BlockSchema = new Mongoose.Schema(
       type: String,
       required: true,
     },
-    // Status of the block, is it ‘ACTIVE’ or ‘COMPLETED’
+    // Status of the block, is it ‘ACTIVE’ or ‘DELETED’
     block_status: {
       type: String,
-      enum: ["ACTIVE", "COMPLETED"],
+      enum: ["ACTIVE", "DELETED"],
       required: true,
     },
     // The type of the block, is it ‘REGULER’, ‘PROFESSIONAL’, ‘SOFT_SKILL’, and ‘RETAKE’

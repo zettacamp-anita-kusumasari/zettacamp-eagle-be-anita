@@ -3,7 +3,7 @@ const { ApolloError } = require("apollo-server");
 const Validator = require("validator");
 
 // *************** Valid status for block_status
-const ValidStatus = ["ACTIVE", "COMPLETED"];
+const ValidStatus = ["ACTIVE", "DELETED"];
 
 // *************** Valid type for block_type
 const ValidType = ["REGULER", "PROFESSIONAL", "SOFT_SKILL", "RETAKE"];
@@ -49,7 +49,7 @@ function ValidateBlockInput(input) {
       field: "block_code",
     });
   }
-  // *************** Validate that block status exists and is within the allowed values (‘ACTIVE’ | ‘COMPLETED’)
+  // *************** Validate that block status exists and is within the allowed values (‘ACTIVE’ | ‘DELETED’)
   if (!block_status || !ValidStatus.includes(block_status.toUpperCase())) {
     throw new ApolloError(
       `Block status must be one of: ${ValidStatus.join(", ")}.`,
