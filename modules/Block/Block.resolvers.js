@@ -98,7 +98,7 @@ async function CreateBlock(_, { input }) {
       block_status,
       block_type,
       evaluation_assessment,
-      user_id
+      user_id,
     } = input;
     // *************** Map input fields to database schema
     const blockData = {
@@ -109,7 +109,7 @@ async function CreateBlock(_, { input }) {
       block_status: block_status.toUpperCase(),
       block_type: block_type.toUpperCase(),
       evaluation_assessment: evaluation_assessment.toUpperCase(),
-      user_id: user_id
+      user_id: user_id,
     };
     // *************** Save the block data to the database using Mongoose
     const toCreatedBlock = await BlockModel.create(blockData);
@@ -157,7 +157,7 @@ async function UpdateBlock(_, { id, input }) {
       block_status,
       block_type,
       evaluation_assessment,
-      user_id
+      user_id,
     } = input;
     // *************** Map input fields to database schema
     const blockData = {
@@ -168,7 +168,7 @@ async function UpdateBlock(_, { id, input }) {
       block_status: block_status.toUpperCase(),
       block_type: block_type.toUpperCase(),
       evaluation_assessment: evaluation_assessment.toUpperCase(),
-      user_id: user_id
+      user_id: user_id,
     };
     // *************** Perform the update in the database and return the updated document
     const toUpdatedBlock = await BlockModel.findOneAndUpdate(
@@ -207,21 +207,18 @@ async function DeleteBlock(_, { id }) {
     });
     // *************** If block is not found or already deleted, throw an error
     if (!existingBlock) {
-      throw new ApolloError(
-        "Block not found or already deleted",
-        "NOT_FOUND"
-      );
+      throw new ApolloError("Block not found or already deleted", "NOT_FOUND");
     }
 
     // *************** Soft delete: update block_status and set deleted_at timestamp
-    const updateResult = await BlockModel.updateOne(
+    await BlockModel.updateOne(
       { _id: id },
       {
         block_status: "DELETED",
         deleted_at: new Date(),
       }
     );
-    return updateResult;
+    return id;
     // *************** If an error occurs during the update, throw an ApolloError with details
   } catch (error) {
     throw new ApolloError("Failed to delete block", "BLOCK_DELETION_FAILED", {
@@ -231,7 +228,6 @@ async function DeleteBlock(_, { id }) {
 }
 
 // *************** LOADER ***************
-
 /**
  * subject - Resolver to load multiple Subject documents based on subject_ids in the parent Block object.
  *
@@ -242,17 +238,16 @@ async function DeleteBlock(_, { id }) {
  * @returns {Promise<Array>} A promise that resolves to an array of Subject documents, or an empty array if none.
  */
 async function subject(parent, _, context) {
-  if (parent.subject_ids) {
-    // *************** Use the Subject Loader to load many subject documents by its ID
-    const toSubjectList = await context.dataLoaders.SubjectLoader.loadMany(
-      parent.subject_ids
-    );
+  if (!parent.subject_ids) {
     // *************** Return the loaded subject documents
-    return toSubjectList;
-  } else {
-    // *************** If no subject_id is present in the parent object, return empty
     return [];
   }
+  // *************** Use the Subject Loader to load many subject documents by its ID
+  const toSubjectList = await context.dataLoaders.SubjectLoader.loadMany(
+    parent.subject_ids
+  );
+  // *************** Return the loaded subject documents
+  return toSubjectList;
 }
 
 /**
@@ -266,17 +261,16 @@ async function subject(parent, _, context) {
  */
 async function school(parent, _, context) {
   // *************** Check if parent.school_id exists
-  if (parent.school) {
-    // *************** Use the School Loader to fetch school document by its ID
-    const toLoadedSchool = await context.dataLoaders.SchoolLoader.load(
-      parent.school
-    );
-    // *************** Return the loaded school ducument
-    return toLoadedSchool;
-  } else {
+  if (!parent.school) {
     // *************** If no school is present in the parent object, return null
     return null;
   }
+  // *************** Use the School Loader to fetch school document by its ID
+  const toLoadedSchool = await context.dataLoaders.SchoolLoader.load(
+    parent.school
+  );
+  // *************** Return the loaded school ducument
+  return toLoadedSchool;
 }
 
 /**
@@ -290,16 +284,15 @@ async function school(parent, _, context) {
  */
 async function created_by(parent, _, context) {
   // *************** Check if the parent object contains the created_by user ID
-  if (parent.created_by) {
-    // *************** Use the User Loader to load the user document based on parent.created_by ID
-    const toCreatedByUser = await context.dataLoaders.UserLoader.load(
-      parent.created_by
-    );
-    return toCreatedByUser;
-  } else {
+  if (!parent.created_by) {
     // *************** If no created_by is present in the parent object, return null
     return null;
   }
+  // *************** Use the User Loader to load the user document based on parent.created_by ID
+  const toCreatedByUser = await context.dataLoaders.UserLoader.load(
+    parent.created_by
+  );
+  return toCreatedByUser;
 }
 
 /**
@@ -313,16 +306,15 @@ async function created_by(parent, _, context) {
  */
 async function updated_by(parent, _, context) {
   // *************** Check if the parent object contains the updated_by user ID
-  if (parent.updated_by) {
-    // *************** Use the User Loader to load the user document based on parent.updated_by ID
-    const toUpdatedByUser = await context.dataLoaders.UserLoader.load(
-      parent.updated_by
-    );
-    return toUpdatedByUser;
-  } else {
+  if (!parent.updated_by) {
     // *************** If no updated_by is present in the parent object, return null
     return null;
   }
+  // *************** Use the User Loader to load the user document based on parent.updated_by ID
+  const toUpdatedByUser = await context.dataLoaders.UserLoader.load(
+    parent.updated_by
+  );
+  return toUpdatedByUser;
 }
 
 /**
@@ -336,16 +328,15 @@ async function updated_by(parent, _, context) {
  */
 async function deleted_by(parent, _, context) {
   // *************** Check if the parent object contains the deleted_by user ID
-  if (parent.deleted_by) {
-    // *************** If it exists, use User Loader to load and return the user document by ID
-    const toDeletedByUser = await context.dataLoaders.UserLoader.load(
-      parent.deleted_by
-    );
-    return toDeletedByUser;
-  } else {
+  if (!parent.deleted_by) {
     // *************** If deleted_by is not present, return null (no user to load)
     return null;
   }
+  // *************** If it exists, use User Loader to load and return the user document by ID
+  const toDeletedByUser = await context.dataLoaders.UserLoader.load(
+    parent.deleted_by
+  );
+  return toDeletedByUser;
 }
 
 // *************** EXPORT MODULE ***************
