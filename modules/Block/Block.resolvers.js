@@ -19,7 +19,7 @@ async function GetAllBlocks() {
   try {
     // *************** Attempt to fetch all blocks with block_status set to "ACTIVE"
     const activeBlocks = await BlockModel.find({
-      block_status: "ACTIVE",
+      block_status: "ACTIVE"
     }).lean();
 
     // *************** Return the list of active blocks
@@ -98,7 +98,7 @@ async function CreateBlock(_, { input }) {
       block_status,
       block_type,
       evaluation_assessment,
-      user_id,
+      user_id
     } = input;
     // *************** Map input fields to database schema
     const blockData = {
@@ -109,7 +109,7 @@ async function CreateBlock(_, { input }) {
       block_status: block_status.toUpperCase(),
       block_type: block_type.toUpperCase(),
       evaluation_assessment: evaluation_assessment.toUpperCase(),
-      created_by: user_id,
+      created_by: user_id
     };
     // *************** Save the block data to the database using Mongoose
     const toCreatedBlock = await BlockModel.create(blockData);

@@ -36,7 +36,7 @@ function ValidateBlockInput(input) {
     block_status,
     block_type,
     evaluation_assessment,
-    user_id,
+    user_id
   } = input;
   // *************** Validate that name is provided and not an empty string
   if (!name || Validator.isEmpty(name)) {
@@ -80,6 +80,12 @@ function ValidateBlockInput(input) {
       { field: "school_type" }
     );
   }
+  // *************** Validate that user_id is provided and not an empty string
+  if (!user_id || Validator.isEmpty(user_id)) {
+    throw new ApolloError("User id is required.", "BAD_USER_INPUT", {
+      field: "user_id",
+    });
+  }
   // *************** Validate evaluation_assessment
   const assessment = evaluation_assessment?.toUpperCase();
   if (!assessment || !ValidAssessment.includes(assessment)) {
@@ -92,7 +98,7 @@ function ValidateBlockInput(input) {
   // *************** Cross-field validation: evaluation_assessment vs block_type
   if (
     assessment === "COMPETENCY" &&
-    !["PROFESSIONAL", "SOFT_SKILL"].includes(type)
+    !["PROFESSIONAL", "SOFT_SKILL"].includes(block_type)
   ) {
     throw new ApolloError(
       "For COMPETENCY assessment, block type must be PROFESSIONAL or SOFT_SKILL.",
@@ -100,18 +106,12 @@ function ValidateBlockInput(input) {
       { field: "block_type" }
     );
   }
-  if (assessment === "SCORE" && !["REGULER", "RETAKE"].includes(type)) {
+  if (assessment === "SCORE" && !["REGULER", "RETAKE"].includes(block_type)) {
     throw new ApolloError(
       "For SCORE assessment, block type must be REGULER or RETAKE.",
       "BAD_USER_INPUT",
       { field: "block_type" }
     );
-  }
-  // *************** Validate that user_id is provided and not an empty string
-  if (!user_id || Validator.isEmpty(user_id)) {
-    throw new ApolloError("User id is required.", "BAD_USER_INPUT", {
-      field: "user_id",
-    });
   }
 }
 
