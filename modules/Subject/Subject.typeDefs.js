@@ -1,3 +1,4 @@
+// *************** IMPORT LIBRARY ***************
 const { gql } = require('apollo-server-express');
 
 const typeDefs = gql`
@@ -5,7 +6,7 @@ scalar Date
 
 enum SubjectStatus {
   ACTIVE
-  COMPLETED
+  DELETED
 }
 
 type Block {
@@ -35,6 +36,7 @@ type Subject {
     description: String!
     coefficient: Float!
     test_ids: [Test]
+    user_id: ID!
     subject_code: String!
     subject_status: SubjectStatus!
     created_by: User
@@ -51,6 +53,7 @@ input CreateSubjectInput {
   coefficient: Float!
   subject_code: String!
   subject_status: SubjectStatus!
+  user_id: ID!
 }
 
 input UpdateSubjectInput {
@@ -59,18 +62,21 @@ input UpdateSubjectInput {
   coefficient: Float!
   subject_code: String!
   subject_status: SubjectStatus!
+  user_id: ID!
 }
 
 type Query {
   GetAllSubjects: [Subject!]!
   GetOneSubject(id: ID!): Subject
+  GetStudentWeightedAverage(subject_id: ID!, student_id: ID!): Float!
 }
 
 type Mutation {
   CreateSubject(input: CreateSubjectInput!): Subject!
   UpdateSubject(id: ID!, input: UpdateSubjectInput!): Subject!
-  DeleteSubject(id: ID!): Subject!
+  DeleteSubject(id: ID!, user_id: ID!): Subject!
 }
 `;
 
+// *************** EXPORT MODULE ***************
 module.exports = typeDefs;
