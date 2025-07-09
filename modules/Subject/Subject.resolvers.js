@@ -166,7 +166,7 @@ async function GetStudentWeightedAverage(_, { subject_id, student_id }) {
  * @returns {Promise<Object>} - The created subject document.
  * @throws {ApolloError} - If validation fails or subject creation encounters an error.
  */
-async function CreateSubject(_, { input }) {
+async function CreateSubject(_, { user_id, input }) {
   try {
     // *************** Validate the input using exported function ValidateSubjectInput
     ValidateSubjectInput(input);
@@ -238,8 +238,8 @@ async function UpdateSubject(_, { id, input }) {
       created_by: user_id,
     };
     // *************** Perform the update in the database and return the updated document
-    const toUpdatedSubject = await SubjectModel.findOneAndUpdate(
-      { _id: id },
+    const toUpdatedSubject = await SubjectModel.findByIdAndUpdate(
+      id,
       { $set: subjectData },
       { new: true }
     ).lean();
@@ -264,7 +264,7 @@ async function UpdateSubject(_, { id, input }) {
  * @returns {Promise<string>} - The ID of the deleted subject.
  * @throws {ApolloError} - If validation fails or deletion cannot be completed.
  */
-async function DeleteSubject(_, { id }) {
+async function DeleteSubject(_, { id, user_id }) {
   try {
     // *************** Validate if the provided ID is a valid MongoDB ObjectId
     if (!Mongoose.Types.ObjectId.isValid(id)) {
