@@ -11,6 +11,21 @@ const ValidType = ["REGULER", "PROFESSIONAL", "SOFT_SKILL", "RETAKE"];
 // *************** Valid assessment for evaluation_assessment
 const ValidAssessment = ["COMPETENCY", "SCORE"];
 
+/**
+ * Validates the input data for creating or updating a block.
+ *
+ * @param {Object} input - The input object containing block data.
+ * @param {string} input.name - The name of the block (required).
+ * @param {string} input.description - The description of the block (required).
+ * @param {number|string} input.academic_year - The academic year (should be an integer).
+ * @param {string} input.block_code - The code for the block (required).
+ * @param {string} input.block_status - The status of the block, must be one of 'ACTIVE' or 'DELETED'.
+ * @param {string} input.block_type - The type of the block, must be one of 'REGULER', 'PROFESSIONAL', 'SOFT_SKILL', or 'RETAKE'.
+ * @param {string} input.evaluation_assessment - The assessment method, must be one of 'COMPETENCY' or 'SCORE'.
+ * @param {string} input.user_id - The ID of the user performing the action (required).
+ *
+ * @throws {ApolloError} If any validation rule is violated.
+ */
 function ValidateBlockInput(input) {
   // *************** Destructure expected fields from the input object
   const {
