@@ -194,7 +194,7 @@ async function UpdateBlock(_, { id, input }) {
  * @returns {Promise<Object>} A promise that resolves to the result of the update operation.
  * @throws {ApolloError} Throws an error if the ID is invalid, the block is not found, or the update fails.
  */
-async function DeleteBlock(_, { id }) {
+async function DeleteBlock(_, { id, user_id }) {
   try {
     // *************** Validate if the provided ID is a valid MongoDB ObjectId
     if (!Mongoose.Types.ObjectId.isValid(id)) {
