@@ -109,7 +109,7 @@ async function CreateBlock(_, { input }) {
       block_status: block_status.toUpperCase(),
       block_type: block_type.toUpperCase(),
       evaluation_assessment: evaluation_assessment.toUpperCase(),
-      user_id: user_id,
+      created_by: user_id,
     };
     // *************** Save the block data to the database using Mongoose
     const toCreatedBlock = await BlockModel.create(blockData);
@@ -168,11 +168,11 @@ async function UpdateBlock(_, { id, input }) {
       block_status: block_status.toUpperCase(),
       block_type: block_type.toUpperCase(),
       evaluation_assessment: evaluation_assessment.toUpperCase(),
-      user_id: user_id,
+      created_by: user_id,
     };
     // *************** Perform the update in the database and return the updated document
     const UpdatedBlock = await BlockModel.findByIdAndUpdate(
-      { _id: id },
+      id,
       { $set: blockData },
       { new: true }
     ).lean();
@@ -215,6 +215,7 @@ async function DeleteBlock(_, { id }) {
       { _id: id },
       {
         block_status: "DELETED",
+        deleted_by: user_id,
         deleted_at: new Date(),
       }
     );
