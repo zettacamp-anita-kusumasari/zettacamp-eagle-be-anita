@@ -3,8 +3,29 @@ const { ApolloError } = require('apollo-server');
 const Validator = require('validator');
 
 // *************** Valid status for test_status
-const ValidStatus = ['PUBLISHED', 'NOT_PUBLISHED'];
+const ValidStatus = ['NOT_PUBLISHED', 'PUBLISHED', 'DELETED'];
 
+/**
+ * Validates the input object for creating or updating a Test entity.
+ *
+ * This function checks required fields such as `name`, `description`, `weight`, `notations`,
+ * `test_status`, `for_retake`, `published_date`, and `user_id`. It throws an ApolloError
+ * if any validation fails, providing appropriate error messages and field references.
+ *
+ * @param {Object} input - The input object containing fields to validate.
+ * @param {string} input.name - The name of the test (required, non-empty string).
+ * @param {string} input.description - The description of the test (required, non-empty string).
+ * @param {number|string} [input.weight] - The weight of the test (optional, must be a valid float if provided).
+ * @param {Array<Object>} input.notations - An array of notation objects (required, non-empty array).
+ * @param {string} input.notations[].notation_text - Text description of the notation (required, non-empty string).
+ * @param {number|string} input.notations[].max_point - Maximum point value (required, must be non-negative number).
+ * @param {string} input.test_status - The status of the test ('PUBLISHED' or 'NOT_PUBLISHED', required).
+ * @param {boolean} input.for_retake - Indicates if the test is for retake (required, must be boolean).
+ * @param {string|Date} input.published_date - The published date of the test (required, must be a valid date).
+ * @param {string} input.user_id - ID of the user creating or updating the test (required, non-empty string).
+ *
+ * @throws {ApolloError} - Throws error if any field fails validation, with code 'BAD_USER_INPUT' and field metadata.
+ */
 function ValidateTestInput(input) {
     // *************** Destructure expected fields from the input object
     const {
@@ -14,7 +35,8 @@ function ValidateTestInput(input) {
         notations,
         test_status,
         for_retake,
-        published_date
+        published_date,
+        user_id
     } = input;
     // *************** Validate that name is provided and not an empty string
     if (!name || Validator.isEmpty(name)) {
@@ -59,6 +81,12 @@ function ValidateTestInput(input) {
     if (!published_date || isNaN(new Date(published_date).getTime())) {
         throw new ApolloError('Published Date is required and must be a valid date.', 'BAD_USER_INPUT', {field: 'published_date'});
     }
+    // *************** Validate that user_id is provided and not an empty string
+    if (!user_id || Validator.isEmpty(user_id)) {
+        throw new ApolloError("User id is required.", "BAD_USER_INPUT", {
+          field: "user_id",
+        });
+      }
 }
 
 // *************** EXPORT MODULE ***************
