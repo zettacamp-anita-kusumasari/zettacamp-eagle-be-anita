@@ -166,7 +166,7 @@ async function GetStudentWeightedAverage(_, { subject_id, student_id }) {
  * @returns {Promise<Object>} - The created subject document.
  * @throws {ApolloError} - If validation fails or subject creation encounters an error.
  */
-async function CreateSubject(_, { user_id, input }) {
+async function CreateSubject(_, { input }) {
   try {
     // *************** Validate the input using exported function ValidateSubjectInput
     ValidateSubjectInput(input);
@@ -186,7 +186,7 @@ async function CreateSubject(_, { user_id, input }) {
       coefficient: coefficient,
       subject_code: subject_code,
       subject_status: subject_status.toUpperCase(),
-      created_by: user_id,
+      user_id: user_id,
     };
     // *************** Save the subject data to the database using Mongoose
     const toCreatedSubject = await SubjectModel.create(subjectData);
@@ -235,7 +235,7 @@ async function UpdateSubject(_, { id, input }) {
       coefficient: coefficient,
       subject_code: subject_code,
       subject_status: subject_status.toUpperCase(),
-      created_by: user_id,
+      user_id: user_id,
     };
     // *************** Perform the update in the database and return the updated document
     const toUpdatedSubject = await SubjectModel.findByIdAndUpdate(
@@ -264,15 +264,15 @@ async function UpdateSubject(_, { id, input }) {
  * @returns {Promise<string>} - The ID of the deleted subject.
  * @throws {ApolloError} - If validation fails or deletion cannot be completed.
  */
-async function DeleteSubject(_, { id, user_id }) {
+async function DeleteSubject(_, { _id, user_id }) {
   try {
     // *************** Validate if the provided ID is a valid MongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(id)) {
-      throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
+    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+      throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Check if the subject exists and has an ACTIVE status
     const existingSubject = await SubjectModel.exists({
-      _id: id,
+      _id: _id,
       subject_status: "ACTIVE",
     });
     // *************** If subject is not found or already deleted, throw an error
@@ -284,14 +284,14 @@ async function DeleteSubject(_, { id, user_id }) {
     }
     // *************** Soft delete: update subject_status and set deleted_at timestamp
     await SubjectModel.updateOne(
-      { _id: id },
+      { _id: _id },
       {
         subject_status: "DELETED",
         deleted_by: user_id,
         deleted_at: new Date(),
       }
     );
-    return id;
+    return _id;
     // *************** If an error occurs during the update, throw an ApolloError with details
   } catch (error) {
     throw new ApolloError(

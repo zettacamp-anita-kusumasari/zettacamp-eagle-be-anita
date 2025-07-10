@@ -36,7 +36,6 @@ const SubjectSchema = new Mongoose.Schema(
     user_id: {
       type: Mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
     },
     // A short, unique code for internal or display use
     subject_code: {

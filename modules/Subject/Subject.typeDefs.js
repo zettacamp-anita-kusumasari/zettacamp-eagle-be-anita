@@ -36,7 +36,7 @@ const typeDefs = gql`
     description: String!
     coefficient: Float!
     test_ids: [Test]
-    user_id: ID!
+    user_id: ID
     subject_code: String!
     subject_status: SubjectStatus!
     created_by: User
@@ -53,7 +53,7 @@ const typeDefs = gql`
     coefficient: Float!
     subject_code: String!
     subject_status: SubjectStatus!
-    user_id: ID!
+    user_id: ID
   }
 
   input UpdateSubjectInput {
@@ -62,7 +62,7 @@ const typeDefs = gql`
     coefficient: Float!
     subject_code: String!
     subject_status: SubjectStatus!
-    user_id: ID!
+    user_id: ID
   }
 
   type Query {
@@ -74,7 +74,7 @@ const typeDefs = gql`
   type Mutation {
     CreateSubject(input: CreateSubjectInput!): Subject!
     UpdateSubject(id: ID!, input: UpdateSubjectInput!): Subject!
-    DeleteSubject(id: ID!, user_id: ID!): Subject!
+    DeleteSubject(_id: ID!, user_id: ID): ID!
   }
 `;
 
