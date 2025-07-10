@@ -8,19 +8,16 @@ const StudentTestResultSchema = new Mongoose.Schema(
     student_id: {
       type: Mongoose.Schema.Types.ObjectId,
       ref: "Student",
-      required: true,
     },
     // reference to the Test the result belongs to
     test_id: {
       type: Mongoose.Schema.Types.ObjectId,
       ref: "Test",
-      required: true,
     },
     // A list of ID referencing the User documents related to this Student Test Result
     user_id: {
       type: Mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
     },
     // Student Test Result's marks
     marks: [
@@ -47,10 +44,10 @@ const StudentTestResultSchema = new Mongoose.Schema(
       type: Date,
       required: true,
     },
-    // Status of the student test result, is it ‘IN_PROGRESS’, ‘GRADED’, and ‘DELETED’
+    // Status of the student test result, is it ‘PENDING’, ‘GRADED’, and ‘DELETED’
     student_test_result_status_status: {
       type: String,
-      enum: ["IN_PROGRESS", "GRADED", "DELETED"],
+      enum: ["PENDING", "GRADED", "DELETED"],
       required: true,
     },
     // Reference to the person who create the test data
