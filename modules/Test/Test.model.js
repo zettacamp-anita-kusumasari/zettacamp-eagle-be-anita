@@ -13,7 +13,6 @@ const TestSchema = new Mongoose.Schema(
     user_id: {
       type: Mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true
     },
     // Name of the test for identification
     name: {
