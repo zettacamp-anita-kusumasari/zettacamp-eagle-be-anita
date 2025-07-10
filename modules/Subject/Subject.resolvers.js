@@ -76,86 +76,6 @@ async function GetOneSubject(_, { id }) {
   }
 }
 
-/**
- * Calculates the weighted average mark of a student for a given subject.
- *
- * This function fetches all tests under the specified subject, retrieves the student's
- * corresponding test results, and computes the weighted average based on test weights.
- *
- * @param {Object} _ - Unused GraphQL resolver parent parameter.
- * @param {Object} args - Arguments containing subject and student identifiers.
- * @param {string} args.subject_id - The ID of the subject.
- * @param {string} args.student_id - The ID of the student.
- * @returns {Promise<number>} The calculated weighted average.
- * @throws {ApolloError} If input validation fails, tests or results are missing, or calculation errors occur.
- */
-async function GetStudentWeightedAverage(_, { subject_id, student_id }) {
-  try {
-    // *************** Validate that both subject_id and student_id are valid MongoDB ObjectIds
-    if (
-      !Mongoose.Types.ObjectId.isValid(subject_id) ||
-      !Mongoose.Types.ObjectId.isValid(student_id)
-    ) {
-      // *************** Throw a user input error if either ID is invalid
-      throw new ApolloError(
-        "Invalid subject_id or student_id",
-        "BAD_USER_INPUT"
-      );
-    }
-    // *************** Retrieve all tests associated with the specified subject
-    const tests = await TestModel.find({ subject_id }).lean();
-    // *************** If no tests are found, throw a not-found error
-    if (tests.length === 0) {
-      throw new ApolloError("No tests found for this subject", "NO_TEST_FOUND");
-    }
-    // *************** Extract the _id from each test into an array
-    const testIds = tests.map((test) => test._id);
-    // *************** Retrieve all student test results matching the student and the subject's tests
-    const studentResults = await StudentTestResultModel.find({
-      student_id,
-      test_id: { $in: testIds },
-    }).lean();
-    // *************** Build a map of test_id -> average_mark for quick access
-    const resultMap = new Map();
-    for (const result of studentResults) {
-      resultMap.set(result.test_id.toString(), result.average_mark);
-    }
-    // *************** Initialize total weighted score and total weight
-    let totalWeighted = 0;
-    let totalWeight = 0;
-    // *************** Iterate through each test to calculate the weighted sum
-    for (const test of tests) {
-      const average = resultMap.get(test._id.toString());
-      // *************** Include this test in weighted sum only if the student has a result and the test has a numeric weight
-      if (average !== undefined && typeof test.weight === "number") {
-        totalWeighted += test.weight * average;
-      }
-      // *************** Always include the test's weight in the total weight denominator
-      if (typeof test.weight === "number") {
-        totalWeight += test.weight;
-      }
-    }
-    // *************** Prevent division by zero if no weights were found
-    if (totalWeight === 0) {
-      throw new ApolloError(
-        "Total weight is zero. Can't compute average.",
-        "DIVISION_BY_ZERO"
-      );
-    }
-    // *************** Return the final weighted average value
-    return totalWeighted / totalWeight;
-  } catch (error) {
-    // *************** If any unexpected error occurs, throw a general ApolloError
-    throw new ApolloError(
-      "Failed to calculate weighted average",
-      "WEIGHTED_AVERAGE_FAILED",
-      {
-        error: error.message,
-      }
-    );
-  }
-}
-
 // *************** MUTATION ***************
 /**
  * Create a new subject and store it in the database.
@@ -431,7 +351,6 @@ module.exports = {
   Query: {
     GetAllSubjects,
     GetOneSubject,
-    GetStudentWeightedAverage,
   },
   Mutation: {
     CreateSubject,

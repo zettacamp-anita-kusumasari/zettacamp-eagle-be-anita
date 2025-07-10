@@ -68,7 +68,6 @@ const typeDefs = gql`
   type Query {
     GetAllSubjects: [Subject!]!
     GetOneSubject(id: ID!): Subject
-    GetStudentWeightedAverage(subject_id: ID!, student_id: ID!): Float!
   }
 
   type Mutation {
