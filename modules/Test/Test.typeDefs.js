@@ -32,7 +32,7 @@ const typeDefs = gql`
   type Test {
     _id: ID!
     subject_id: Subject
-    user_id: ID!
+    user_id: ID
     name: String!
     description: String!
     weight: Float!
@@ -55,7 +55,7 @@ const typeDefs = gql`
   }
 
   input CreateTestInput {
-    user_id: ID!
+    user_id: ID
     name: String!
     description: String!
     weight: Float!
@@ -66,7 +66,7 @@ const typeDefs = gql`
   }
 
   input UpdateTestInput {
-    user_id: ID!
+    user_id: ID
     name: String
     description: String
     weight: Float
@@ -77,7 +77,7 @@ const typeDefs = gql`
   }
 
   input PublishTestInput {
-    user_id: ID!
+    user_id: ID
     name: String!
     description: String
     weight: Float!
@@ -96,7 +96,7 @@ const typeDefs = gql`
     CreateTest(input: CreateTestInput!): Test!
     PublishTest(id: ID!, input: PublishTestInput!): Test!
     UpdateTest(id: ID!, input: UpdateTestInput!): Test!
-    DeleteTest(id: ID!, user_id: ID!): Test!
+    DeleteTest(_id: ID!, user_id: ID): ID!
   }
 `;
 
