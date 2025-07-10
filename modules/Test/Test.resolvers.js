@@ -20,7 +20,7 @@ async function GetAllTests() {
   try {
     // *************** Try to fetch all tests where status is PUBLISHED
     const activeTests = await TestModel.find({
-      test_status: "PUBLISHED",
+      test_status: "NOT_PUBLISHED",
     }).lean();
     // *************** Return the array of published tests
     return activeTests;
@@ -51,7 +51,7 @@ async function GetOneTest(_, { id }) {
     // *************** Try to find a test data that has PUBLISHED status by its mongoDB ObjectId
     const test = await TestModel.findOne({
       _id: id,
-      test_status: "PUBLISHED",
+      test_status: "NOT_PUBLISHED",
     }).lean();
     // *************** If no test is found, throw a NOT FOUND error
     if (!test) {
@@ -116,7 +116,7 @@ async function CreateTest(_, { input }) {
       test_status: test_status.toUpperCase(),
       for_retake: for_retake,
       published_date: published_date,
-      created_by: user_id,
+      user_id: user_id,
     };
     // *************** Save the test data to the database using Mongoose
     const toCreatedTest = await TestModel.create(testData);
@@ -179,17 +179,18 @@ async function PublishTest(_, { id, input }) {
       test_status: (test_status || "NOT_PUBLISHED").toUpperCase(),
       for_retake: for_retake,
       published_date: published_date,
-      created_by: user_id,
+      user_id: user_id,
     };
     const test = await TestModel.findById(id).lean();
     // *************** Update field in the instance test
     Object.assign(test, testData);
     // *************** Save the test that has been updated
-    const updatedTest = await test.save();
+    // const updatedTest = await test.create();
+    const updatedTest = await TestModel.create(testData);
     // *************** Assign new task: ASSIGN_CORRECTOR
     const assignTask = new TaskModel({
       test_id: updatedTest._id,
-      task_type: "Assign_Corrector",
+      task_type: "ASSIGN_CORRECTOR",
       task_status: "PENDING",
       user_id: user_id,
       due_date: new Date(new Date().setHours(0, 0, 0, 0) + 3 * 86400000),
@@ -256,7 +257,7 @@ async function UpdateTest(_, { id, input }) {
       test_status: test_status.toUpperCase(),
       for_retake: for_retake,
       published_date: published_date,
-      created_by: user_id,
+      user_id: user_id,
     };
     // *************** Perform the update in the database and return the updated document
     const toUpdatedTest = await TestModel.findByIdAndUpdate(
@@ -284,16 +285,16 @@ async function UpdateTest(_, { id, input }) {
  * @returns {Promise<string>} The ID of the deleted test.
  * @throws {ApolloError} If the ID is invalid, the test is not found, or deletion fails.
  */
-async function DeleteTest(_, { id }) {
+async function DeleteTest(_, { _id, user_id }) {
   try {
     // *************** Validate if the provided ID is a valid MongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(id)) {
-      throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
+    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+      throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Check if the test exists and has an ACTIVE status
     const existingTest = await TestModel.exists({
-      _id: id,
-      test_status: { $in: ["IN_PROGRESS", "GRADED"] },
+      _id: _id,
+      test_status: { $in: ["NOT_PUBLISHED", "PUBLISHED"] },
     });
     // *************** If test is not found or already deleted, throw an error
     if (!existingTest) {
@@ -301,14 +302,14 @@ async function DeleteTest(_, { id }) {
     }
     // *************** Soft delete: update test_status and set deleted_at timestamp
     await TestModel.updateOne(
-      { _id: id },
+      { _id: _id },
       {
         test_status: "DELETED",
         deleted_by: user_id,
         deleted_at: new Date(),
       }
     );
-    return id;
+    return _id;
     // *************** If an error occurs during the update, throw an ApolloError with details
   } catch (error) {
     throw new ApolloError("Failed to delete test", "TEST_DELETION_FAILED", {
