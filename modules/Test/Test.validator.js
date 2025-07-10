@@ -1,9 +1,10 @@
 // *************** IMPORT LIBRARY ***************
-const { ApolloError } = require('apollo-server');
-const Validator = require('validator');
+const { ApolloError } = require("apollo-server");
+const Validator = require("validator");
+const Mongoose = require("mongoose");
 
 // *************** Valid status for test_status
-const ValidStatus = ['NOT_PUBLISHED', 'PUBLISHED', 'DELETED'];
+const ValidStatus = ["NOT_PUBLISHED", "PUBLISHED", "DELETED"];
 
 /**
  * Validates the input object for creating or updating a Test entity.
@@ -27,69 +28,106 @@ const ValidStatus = ['NOT_PUBLISHED', 'PUBLISHED', 'DELETED'];
  * @throws {ApolloError} - Throws error if any field fails validation, with code 'BAD_USER_INPUT' and field metadata.
  */
 function ValidateTestInput(input) {
-    // *************** Destructure expected fields from the input object
-    const {
-        name,
-        description,
-        weight,
-        notations,
-        test_status,
-        for_retake,
-        published_date,
-        user_id
-    } = input;
-    // *************** Validate that name is provided and not an empty string
-    if (!name || Validator.isEmpty(name)) {
-        throw new ApolloError('Name is required.', 'BAD_USER_INPUT', { field: 'name' });
-    }
-    // *************** Validate that description is provided and not an empty string
-    if (!description || Validator.isEmpty(description)) {
-        throw new ApolloError('Description is required.', 'BAD_USER_INPUT', { field: 'description' });
-    }
-    // *************** Validate that weight is a valid float
-    if (weight && !Number.isFinite(Number(weight))) {
-        throw new ApolloError('Weight must be a valid float.', 'BAD_USER_INPUT', { field: 'weight' });
-    }
-    // *************** Validate notations: must be an array and not empty
-    if (!Array.isArray(notations) || notations.length === 0) {
-        throw new ApolloError('Notations is required and must be a non-empty array.', 'BAD_USER_INPUT', { field: 'notations' });
-    }
-    // *************** Validate each notation item
-    notations.forEach(function (notation, index) {
-        // *************** Validate that notation_text is provided and not an empty string
-        if (!notation.notation_text || Validator.isEmpty(notation.notation_text)) {
-            throw new ApolloError(`Notation Text at index ${index} is required.`, 'BAD_USER_INPUT', { field: `notations[${index}].notation_text` });
-        }
-        // *************** Validate that max_point is provided and float
-        if (notation.max_point === undefined || !Number.isFinite(Number(notation.max_point))) {
-            throw new ApolloError(`Max Point at index ${index} must be a valid number.`, 'BAD_USER_INPUT', { field: `notations[${index}].max_point` });
-        }
-        // *************** Validate that max_point is not negative
-        if (Number(notation.max_point) < 0) {
-            throw new ApolloError(`Max Point at index ${index} cannot be negative.`, 'BAD_USER_INPUT', { field: `notations[${index}].max_point` });
-        }
+  // *************** Destructure expected fields from the input object
+  const {
+    name,
+    description,
+    weight,
+    notations,
+    test_status,
+    for_retake,
+    published_date,
+    user_id,
+  } = input;
+  // *************** Validate that name is provided and not an empty string
+  if (!name || Validator.isEmpty(name)) {
+    throw new ApolloError("Name is required.", "BAD_USER_INPUT", {
+      field: "name",
     });
-    // *************** Validate that test status exists and is within the allowed values ('PUBLISHED', 'NOT_PUBLISHED')
-    if (!test_status || !ValidStatus.includes(test_status.toUpperCase())) {
-        throw new ApolloError(`Test status must be one of: ${ValidStatus.join(', ')}.`, 'BAD_USER_INPUT', {field: 'test_status'});
+  }
+  // *************** Validate that description is provided and not an empty string
+  if (!description || Validator.isEmpty(description)) {
+    throw new ApolloError("Description is required.", "BAD_USER_INPUT", {
+      field: "description",
+    });
+  }
+  // *************** Validate that weight is a valid float
+  if (weight && !Number.isFinite(Number(weight))) {
+    throw new ApolloError("Weight must be a valid float.", "BAD_USER_INPUT", {
+      field: "weight",
+    });
+  }
+  // *************** Validate notations: must be an array and not empty
+  if (!Array.isArray(notations) || notations.length === 0) {
+    throw new ApolloError(
+      "Notations is required and must be a non-empty array.",
+      "BAD_USER_INPUT",
+      { field: "notations" }
+    );
+  }
+  // *************** Validate each notation item
+  notations.forEach(function (notation, index) {
+    // *************** Validate that notation_text is provided and not an empty string
+    if (!notation.notation_text || Validator.isEmpty(notation.notation_text)) {
+      throw new ApolloError(
+        `Notation Text at index ${index} is required.`,
+        "BAD_USER_INPUT",
+        { field: `notations[${index}].notation_text` }
+      );
     }
-    // *************** Validate that for_retake must be a boolean (true or false)
-    if (typeof for_retake !== 'boolean') {
-        throw new ApolloError('For Retake must be a boolean value.', 'BAD_USER_INPUT', {field: 'for_retake'});
+    // *************** Validate that max_point is provided and float
+    if (
+      notation.max_point === undefined ||
+      !Number.isFinite(Number(notation.max_point))
+    ) {
+      throw new ApolloError(
+        `Max Point at index ${index} must be a valid number.`,
+        "BAD_USER_INPUT",
+        { field: `notations[${index}].max_point` }
+      );
     }
-    // *************** Validate that published_date is provided
-    if (!published_date || isNaN(new Date(published_date).getTime())) {
-        throw new ApolloError('Published Date is required and must be a valid date.', 'BAD_USER_INPUT', {field: 'published_date'});
+    // *************** Validate that max_point is not negative
+    if (Number(notation.max_point) < 0) {
+      throw new ApolloError(
+        `Max Point at index ${index} cannot be negative.`,
+        "BAD_USER_INPUT",
+        { field: `notations[${index}].max_point` }
+      );
     }
-    // *************** Validate that user_id is provided and not an empty string
-    if (!user_id || Validator.isEmpty(user_id)) {
-        throw new ApolloError("User id is required.", "BAD_USER_INPUT", {
-          field: "user_id",
-        });
-      }
+  });
+  // *************** Validate that test status exists and is within the allowed values ('PUBLISHED', 'NOT_PUBLISHED')
+  if (!test_status || !ValidStatus.includes(test_status.toUpperCase())) {
+    throw new ApolloError(
+      `Test status must be one of: ${ValidStatus.join(", ")}.`,
+      "BAD_USER_INPUT",
+      { field: "test_status" }
+    );
+  }
+  // *************** Validate that for_retake must be a boolean (true or false)
+  if (typeof for_retake !== "boolean") {
+    throw new ApolloError(
+      "For Retake must be a boolean value.",
+      "BAD_USER_INPUT",
+      { field: "for_retake" }
+    );
+  }
+  // *************** Validate that published_date is provided
+  if (!published_date || isNaN(new Date(published_date).getTime())) {
+    throw new ApolloError(
+      "Published Date is required and must be a valid date.",
+      "BAD_USER_INPUT",
+      { field: "published_date" }
+    );
+  }
+  // *************** Validate that user_id is a valid MongoDB ObjectId
+  if (!Mongoose.Types.ObjectId.isValid(user_id)) {
+    throw new ApolloError(`Invalid user_id: ${user_id}`, "BAD_USER_INPUT", {
+      field: "user_id",
+    });
+  }
 }
 
 // *************** EXPORT MODULE ***************
 module.exports = {
-    ValidateTestInput
+  ValidateTestInput,
 };
