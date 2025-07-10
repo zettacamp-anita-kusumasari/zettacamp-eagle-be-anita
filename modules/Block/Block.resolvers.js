@@ -86,8 +86,8 @@ async function GetOneBlock(_, { id }) {
  * @throws {ApolloError} Throws an error if validation fails or if database insertion fails.
  */
 async function CreateBlock(_, { input }) {
-  try {
-    // *************** Validate the input using exported function ValidateBlockInput
+  try {  
+  // *************** Validate the input using exported function ValidateBlockInput
     ValidateBlockInput(input);
     // *************** Destructure the necessary fields from the input object
     const {
@@ -109,7 +109,7 @@ async function CreateBlock(_, { input }) {
       block_status: block_status.toUpperCase(),
       block_type: block_type.toUpperCase(),
       evaluation_assessment: evaluation_assessment.toUpperCase(),
-      created_by: user_id
+      user_id: user_id
     };
     // *************** Save the block data to the database using Mongoose
     const toCreatedBlock = await BlockModel.create(blockData);
@@ -168,7 +168,7 @@ async function UpdateBlock(_, { id, input }) {
       block_status: block_status.toUpperCase(),
       block_type: block_type.toUpperCase(),
       evaluation_assessment: evaluation_assessment.toUpperCase(),
-      created_by: user_id,
+      user_id: user_id,
     };
     // *************** Perform the update in the database and return the updated document
     const UpdatedBlock = await BlockModel.findByIdAndUpdate(
@@ -194,15 +194,15 @@ async function UpdateBlock(_, { id, input }) {
  * @returns {Promise<Object>} A promise that resolves to the result of the update operation.
  * @throws {ApolloError} Throws an error if the ID is invalid, the block is not found, or the update fails.
  */
-async function DeleteBlock(_, { id, user_id }) {
+async function DeleteBlock(_, { _id, user_id }) {
   try {
     // *************** Validate if the provided ID is a valid MongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(id)) {
-      throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
+    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+      throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Check if the block exists and has an ACTIVE status
     const existingBlock = await BlockModel.exists({
-      _id: id,
+      _id: _id,
       block_status: "ACTIVE",
     });
     // *************** If block is not found or already deleted, throw an error
@@ -212,16 +212,16 @@ async function DeleteBlock(_, { id, user_id }) {
 
     // *************** Soft delete: update block_status and set deleted_at timestamp
     await BlockModel.updateOne(
-      { _id: id },
+      { _id: _id },
       {
         block_status: "DELETED",
         deleted_by: user_id,
         deleted_at: new Date(),
       }
     );
-    return id;
+    return _id;
     // *************** If an error occurs during the update, throw an ApolloError with details
-  } catch (error) {
+  }catch (error) {
     throw new ApolloError("Failed to delete block", "BLOCK_DELETION_FAILED", {
       error: error.message,
     });

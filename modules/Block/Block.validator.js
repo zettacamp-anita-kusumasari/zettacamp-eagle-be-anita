@@ -1,6 +1,7 @@
 // *************** IMPORT LIBRARY ***************
 const { ApolloError } = require("apollo-server");
 const Validator = require("validator");
+const Mongoose = require("mongoose");
 
 // *************** Valid status for block_status
 const ValidStatus = ["ACTIVE", "DELETED"];
@@ -36,7 +37,7 @@ function ValidateBlockInput(input) {
     block_status,
     block_type,
     evaluation_assessment,
-    user_id
+    user_id,
   } = input;
   // *************** Validate that name is provided and not an empty string
   if (!name || Validator.isEmpty(name)) {
@@ -80,11 +81,9 @@ function ValidateBlockInput(input) {
       { field: "school_type" }
     );
   }
-  // *************** Validate that user_id is provided and not an empty string
-  if (!user_id || Validator.isEmpty(user_id)) {
-    throw new ApolloError("User id is required.", "BAD_USER_INPUT", {
-      field: "user_id",
-    });
+  // *************** Validate that user_id is a Valid ObjectId Mongoose
+  if (!Mongoose.Types.ObjectId.isValid(user_id)) {
+    throw new ApolloError(`Invalid ID: ${user_id}`, "BAD_USER_INPUT");
   }
   // *************** Validate evaluation_assessment
   const assessment = evaluation_assessment?.toUpperCase();

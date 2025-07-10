@@ -41,7 +41,7 @@ const typeDefs = gql`
     description: String!
     subject_ids: [Subject]
     school_id: ID
-    user_id: ID!
+    user_id: ID
     academic_year: Int!
     block_code: String!
     block_status: BlockStatus!
@@ -63,7 +63,7 @@ const typeDefs = gql`
     block_status: BlockStatus!
     block_type: BlockType!
     evaluation_assessment: EvaluationAssessment!
-    user_id: ID!
+    user_id: ID
   }
 
   input UpdateBlockInput {
@@ -74,7 +74,7 @@ const typeDefs = gql`
     block_status: BlockStatus!
     block_type: BlockType!
     evaluation_assessment: EvaluationAssessment!
-    user_id: ID!
+    user_id: ID
   }
 
   type Query {
@@ -85,7 +85,7 @@ const typeDefs = gql`
   type Mutation {
     CreateBlock(input: CreateBlockInput!): Block!
     UpdateBlock(id: ID!, input: UpdateBlockInput!): Block!
-    DeleteBlock(id: ID!, user_id: ID!): Block!
+    DeleteBlock(_id: ID!, user_id: ID): ID!
   }
 `;
 
