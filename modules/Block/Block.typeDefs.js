@@ -21,26 +21,12 @@ const typeDefs = gql`
     SCORE
   }
 
-  type Subject {
-    id: ID!
-    name: String!
-    description: String
-    coefficient: Float!
-  }
-
-  type User {
-    id: ID!
-    firstName: String!
-    lastName: String!
-    email: String!
-  }
-
   type Block {
     _id: ID!
     name: String!
     description: String!
     subject_ids: [Subject]
-    school_id: ID
+    school_id: School
     user_id: ID
     academic_year: Int!
     block_code: String!

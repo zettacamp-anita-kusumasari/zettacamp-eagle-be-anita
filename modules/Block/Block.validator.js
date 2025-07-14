@@ -85,8 +85,9 @@ function ValidateBlockInput(input) {
   if (!Mongoose.Types.ObjectId.isValid(user_id)) {
     throw new ApolloError(`Invalid ID: ${user_id}`, "BAD_USER_INPUT");
   }
-  // *************** Validate evaluation_assessment
+  // *************** Validate evaluation_assessment is it Upper Case
   const assessment = evaluation_assessment?.toUpperCase();
+  // *************** Validate evaluation_assessment is it according to ValidAssessment enum
   if (!assessment || !ValidAssessment.includes(assessment)) {
     throw new ApolloError(
       `Evaluation assessment must be one of: ${ValidAssessment.join(", ")}.`,
@@ -94,7 +95,7 @@ function ValidateBlockInput(input) {
       { field: "evaluation_assessment" }
     );
   }
-  // *************** Cross-field validation: evaluation_assessment vs block_type
+  // *************** Cross-field validation: evaluation_assessment (COMPETENCY) vs block_type
   if (
     assessment === "COMPETENCY" &&
     !["PROFESSIONAL", "SOFT_SKILL"].includes(block_type)
@@ -105,6 +106,7 @@ function ValidateBlockInput(input) {
       { field: "block_type" }
     );
   }
+  // *************** Cross-field validation: evaluation_assessment (SCORE) vs block_type
   if (assessment === "SCORE" && !["REGULER", "RETAKE"].includes(block_type)) {
     throw new ApolloError(
       "For SCORE assessment, block type must be REGULER or RETAKE.",

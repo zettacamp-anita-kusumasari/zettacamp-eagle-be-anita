@@ -19,9 +19,8 @@ async function GetAllBlocks() {
   try {
     // *************** Attempt to fetch all blocks with block_status set to "ACTIVE"
     const activeBlocks = await BlockModel.find({
-      block_status: "ACTIVE"
+      block_status: "ACTIVE",
     }).lean();
-
     // *************** Return the list of active blocks
     return activeBlocks;
   } catch (error) {
@@ -70,24 +69,27 @@ async function GetOneBlock(_, { id }) {
 
 // *************** MUTATION ***************
 /**
- * CreateBlock - Creates a new block document in the database.
+ * Creates a new block document in the database.
  *
- * @param {Object} _ - Unused first parameter (parent/root resolver).
- * @param {Object} args - GraphQL arguments object.
- * @param {Object} args.input - The input fields for creating a block.
- * @param {string} args.input.name - The name of the block.
- * @param {string} args.input.description - A description of the block.
- * @param {string} args.input.academic_year - The academic year of the block.
- * @param {string} args.input.block_code - The code assigned to the block.
- * @param {string} args.input.block_status - The current status of the block.
- * @param {string} args.input.block_type - The type/category of the block.
- * @param {string} args.input.evaluation_assessment - The evaluation method used.
- * @returns {Promise<Object>} A promise that resolves to the newly created block document.
- * @throws {ApolloError} Throws an error if validation fails or if database insertion fails.
+ * @function
+ * @async
+ * @param {object} _ - Unused first argument, reserved by GraphQL resolver signature.
+ * @param {object} args - The argument object containing `input`.
+ * @param {object} args.input - The input object for creating a block.
+ * @param {string} args.input.name - Name of the block.
+ * @param {string} args.input.description - Description of the block.
+ * @param {number} args.input.academic_year - Academic year the block belongs to.
+ * @param {string} args.input.block_code - Unique code for the block.
+ * @param {string} args.input.block_status - Status of the block (e.g., "ACTIVE", "INACTIVE").
+ * @param {string} args.input.block_type - Type of the block (e.g., "MANDATORY", "ELECTIVE").
+ * @param {string} args.input.evaluation_assessment - Type of assessment (e.g., "EXAM", "PROJECT").
+ * @param {string} args.input.user_id - ID of the user who created the block.
+ * @returns {Promise<object>} The created block document.
+ * @throws {ApolloError} If validation fails or database operation encounters an error.
  */
 async function CreateBlock(_, { input }) {
-  try {  
-  // *************** Validate the input using exported function ValidateBlockInput
+  try {
+    // *************** Validate the input using exported function ValidateBlockInput
     ValidateBlockInput(input);
     // *************** Destructure the necessary fields from the input object
     const {
@@ -98,7 +100,7 @@ async function CreateBlock(_, { input }) {
       block_status,
       block_type,
       evaluation_assessment,
-      user_id
+      user_id,
     } = input;
     // *************** Map input fields to database schema
     const blockData = {
@@ -109,13 +111,13 @@ async function CreateBlock(_, { input }) {
       block_status: block_status.toUpperCase(),
       block_type: block_type.toUpperCase(),
       evaluation_assessment: evaluation_assessment.toUpperCase(),
-      user_id: user_id
+      user_id: user_id,
     };
     // *************** Save the block data to the database using Mongoose
     const toCreatedBlock = await BlockModel.create(blockData);
     return toCreatedBlock;
   } catch (error) {
-    // *************** If an error occurs during the query, throw an ApolloError
+    // *************** If an error occurs during the create, throw an ApolloError with the error message
     throw new ApolloError("Failed to create block:", "BLOCK_CREATION_FAILED", {
       error: error.message,
     });
@@ -123,21 +125,24 @@ async function CreateBlock(_, { input }) {
 }
 
 /**
- * UpdateBlock - Updates an existing block document by its ID.
+ * Updates an existing block document in the database by its ID.
  *
- * @param {Object} _ - Unused first parameter (parent/root resolver).
- * @param {Object} args - GraphQL arguments object.
- * @param {string} args.id - The MongoDB ObjectId of the block to be updated.
- * @param {Object} args.input - The input fields for updating the block.
- * @param {string} args.input.name - The updated name of the block.
- * @param {string} args.input.description - The updated description of the block.
- * @param {string} args.input.academic_year - The updated academic year.
- * @param {string} args.input.block_code - The updated block code.
- * @param {string} args.input.block_status - The updated status of the block.
- * @param {string} args.input.block_type - The updated type of the block.
- * @param {string} args.input.evaluation_assessment - The updated evaluation method.
- * @returns {Promise<Object|null>} A promise that resolves to the updated block document, or null if not found.
- * @throws {ApolloError} Throws an error if the ID is invalid, validation fails, or the update operation fails.
+ * @function
+ * @async
+ * @param {object} _ - Unused first argument, required by GraphQL resolver signature.
+ * @param {object} args - Arguments object containing `id` and `input`.
+ * @param {string} args.id - The ID of the block to update.
+ * @param {object} args.input - The input object containing updated block fields.
+ * @param {string} args.input.name - Updated name of the block.
+ * @param {string} args.input.description - Updated description of the block.
+ * @param {number} args.input.academic_year - Updated academic year.
+ * @param {string} args.input.block_code - Updated block code.
+ * @param {string} args.input.block_status - Updated block status (e.g., "ACTIVE", "INACTIVE").
+ * @param {string} args.input.block_type - Updated block type (e.g., "MANDATORY", "ELECTIVE").
+ * @param {string} args.input.evaluation_assessment - Updated type of assessment.
+ * @param {string} args.input.user_id - ID of the user performing the update.
+ * @returns {Promise<object|null>} The updated block document, or null if not found.
+ * @throws {ApolloError} If the ID is invalid, validation fails, or the update operation encounters an error.
  */
 async function UpdateBlock(_, { id, input }) {
   try {
@@ -170,15 +175,16 @@ async function UpdateBlock(_, { id, input }) {
       evaluation_assessment: evaluation_assessment.toUpperCase(),
       user_id: user_id,
     };
-    // *************** Perform the update in the database and return the updated document
+    // *************** Perform the update in the database
     const UpdatedBlock = await BlockModel.findByIdAndUpdate(
       id,
       { $set: blockData },
       { new: true }
     ).lean();
+    // *************** Return the updated document
     return UpdatedBlock;
   } catch (error) {
-    // *************** If an error occurs during the update, throw an ApolloError with details
+    // *************** If an error occurs during the update, throw an ApolloError with the error message
     throw new ApolloError("Failed to update block:", "BLOCK_UPDATE_FAILED", {
       error: error.message,
     });
@@ -220,8 +226,8 @@ async function DeleteBlock(_, { _id, user_id }) {
       }
     );
     return _id;
-    // *************** If an error occurs during the update, throw an ApolloError with details
-  }catch (error) {
+    // *************** If an error occurs during the deletion, throw an ApolloError with the error message
+  } catch (error) {
     throw new ApolloError("Failed to delete block", "BLOCK_DELETION_FAILED", {
       error: error.message,
     });
@@ -232,19 +238,21 @@ async function DeleteBlock(_, { _id, user_id }) {
 /**
  * subject - Resolver to load multiple Subject documents based on subject_ids in the parent Block object.
  *
- * @param {Object} parent - The parent object, typically a Block, which contains subject_ids.
- * @param {Object} _ - Unused GraphQL args parameter.
- * @param {Object} context - The GraphQL context object containing the SubjectLoader instance.
- * @param {Object} context.dataLoaders.SubjectLoader - DataLoader for batching and caching Subject fetches.
- * @returns {Promise<Array>} A promise that resolves to an array of Subject documents, or an empty array if none.
+ * @function
+ * @async
+ * @param {object} parent - The parent object, usually a Block document, containing `subject_ids`.
+ * @param {object} _ - Unused argument, reserved by GraphQL resolver signature.
+ * @param {object} context - The GraphQL context containing the `subjectLoader` DataLoader instance.
+ * @param {DataLoader} context.subjectLoader - DataLoader instance for batching and caching subject fetches.
+ * @returns {Promise<Array<object>>} A promise that resolves to an array of subject documents.
  */
-async function subject(parent, _, context) {
+async function subject_ids(parent, _, context) {
   if (!parent.subject_ids) {
     // *************** Return the loaded subject documents
     return [];
   }
   // *************** Use the Subject Loader to load many subject documents by its ID
-  const toSubjectList = await context.dataLoaders.SubjectLoader.loadMany(
+  const toSubjectList = await context.subjectLoader.loadMany(
     parent.subject_ids
   );
   // *************** Return the loaded subject documents
@@ -254,22 +262,22 @@ async function subject(parent, _, context) {
 /**
  * school - Resolver to load a single School document based on the school ID in the parent Block object.
  *
- * @param {Object} parent - The parent object (typically a Block), which contains the school ID.
- * @param {Object} _ - Unused GraphQL args parameter.
- * @param {Object} context - The GraphQL context object containing the SchoolLoader instance.
- * @param {Object} context.dataLoaders.SchoolLoader - DataLoader for batching and caching School fetches.
- * @returns {Promise<Object|null>} A promise that resolves to the School document, or null if not found or not provided.
+ * @function
+ * @async
+ * @param {object} parent - The parent object (e.g., a Student or Block) containing the `school_id` field.
+ * @param {object} _ - Unused argument, required by GraphQL resolver signature.
+ * @param {object} context - The GraphQL context containing the `schoolLoader` DataLoader instance.
+ * @param {DataLoader} context.schoolLoader - DataLoader instance used to load a school document by its ID.
+ * @returns {Promise<object|null>} A promise that resolves to the loaded school document, or `null` if `school_id` is not present.
  */
-async function school(parent, _, context) {
+async function school_id(parent, _, context) {
   // *************** Check if parent.school_id exists
-  if (!parent.school) {
+  if (!parent.school_id) {
     // *************** If no school is present in the parent object, return null
     return null;
   }
   // *************** Use the School Loader to fetch school document by its ID
-  const toLoadedSchool = await context.dataLoaders.SchoolLoader.load(
-    parent.school
-  );
+  const toLoadedSchool = await context.schoolLoader.load(parent.school_id);
   // *************** Return the loaded school ducument
   return toLoadedSchool;
 }
@@ -290,9 +298,7 @@ async function created_by(parent, _, context) {
     return null;
   }
   // *************** Use the User Loader to load the user document based on parent.created_by ID
-  const toCreatedByUser = await context.dataLoaders.UserLoader.load(
-    parent.created_by
-  );
+  const toCreatedByUser = await context.userLoader.load(parent.created_by);
   return toCreatedByUser;
 }
 
@@ -312,9 +318,7 @@ async function updated_by(parent, _, context) {
     return null;
   }
   // *************** Use the User Loader to load the user document based on parent.updated_by ID
-  const toUpdatedByUser = await context.dataLoaders.UserLoader.load(
-    parent.updated_by
-  );
+  const toUpdatedByUser = await context.userLoader.load(parent.updated_by);
   return toUpdatedByUser;
 }
 
@@ -334,9 +338,7 @@ async function deleted_by(parent, _, context) {
     return null;
   }
   // *************** If it exists, use User Loader to load and return the user document by ID
-  const toDeletedByUser = await context.dataLoaders.UserLoader.load(
-    parent.deleted_by
-  );
+  const toDeletedByUser = await context.userLoader.load(parent.deleted_by);
   return toDeletedByUser;
 }
 
@@ -352,8 +354,8 @@ module.exports = {
     DeleteBlock,
   },
   Block: {
-    subject,
-    school,
+    subject_ids,
+    school_id,
     created_by,
     updated_by,
     deleted_by,
