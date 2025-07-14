@@ -63,13 +63,16 @@ const SubjectSchema = new Mongoose.Schema(
       type: Mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    // Reference to the date when the subject is deleted
+    deleted_at: {
+      type: Date,
+    },
   },
   {
-    // Automatically adds created_at, updateAt, and deleted_at fields
+    // Automatically adds createdAt and updateAt fields
     timestamps: {
-      created_at: "Created_At",
-      updated_at: "Updated_At",
-      deleted_at: "Deleted_At",
+      createdAt: "created_at",
+      updatedAt: "updated_at",
     },
   }
 );

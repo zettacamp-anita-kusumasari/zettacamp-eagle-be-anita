@@ -1,6 +1,7 @@
 // *************** IMPORT LIBRARY ***************
 const { ApolloError } = require("apollo-server");
 const Validator = require("validator");
+const Mongoose = require("mongoose");
 
 // *************** Valid status for subject_status
 const ValidStatus = ["ACTIVE", "DELETED"];
@@ -21,6 +22,7 @@ function ValidateSubjectInput(input) {
   // *************** Destructure expected fields from the input object
   const {
     name,
+    block_id,
     description,
     coefficient,
     subject_code,
@@ -33,6 +35,11 @@ function ValidateSubjectInput(input) {
       field: "name",
     });
   }
+  // *************** Validate that block_id is a Valid ObjectId Mongoose
+  if (!Mongoose.Types.ObjectId.isValid(block_id)) {
+    throw new ApolloError(`Invalid ID: ${block_id}`, "BAD_USER_INPUT");
+  }
+
   // *************** Validate that description is provided and not an empty string
   if (!description || Validator.isEmpty(description)) {
     throw new ApolloError("Description is required.", "BAD_USER_INPUT", {

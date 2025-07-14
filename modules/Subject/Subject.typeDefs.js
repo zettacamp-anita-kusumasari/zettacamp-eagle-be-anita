@@ -9,26 +9,6 @@ const typeDefs = gql`
     DELETED
   }
 
-  type Block {
-    id: ID!
-    name: String!
-    description: String
-    academic_year: Int
-  }
-
-  type Test {
-    id: ID!
-    title: String!
-    date: Date
-  }
-
-  type User {
-    id: ID!
-    firstName: String!
-    lastName: String!
-    email: String!
-  }
-
   type Subject {
     _id: ID!
     block_id: Block
@@ -48,6 +28,7 @@ const typeDefs = gql`
   }
 
   input CreateSubjectInput {
+    block_id: ID
     name: String!
     description: String!
     coefficient: Float!
@@ -57,6 +38,7 @@ const typeDefs = gql`
   }
 
   input UpdateSubjectInput {
+    block_id: ID
     name: String!
     description: String!
     coefficient: Float!

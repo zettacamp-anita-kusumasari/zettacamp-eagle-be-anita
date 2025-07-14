@@ -4,8 +4,7 @@ const Mongoose = require("mongoose");
 
 // *************** IMPORT MODULE ***************
 const SubjectModel = require("./Subject.model");
-const TestModel = require("../Test/Test.model");
-const StudentTestResultModel = require("../StudentTestResult/StudentTestResult.model");
+const BlockModel = require("../Block/Block.model");
 
 // *************** IMPORT VALIDATOR ***************
 const { ValidateSubjectInput } = require("./Subject.validator");
@@ -27,6 +26,7 @@ async function GetAllSubjects() {
     const activeSubjects = await SubjectModel.find({
       subject_status: "ACTIVE",
     }).lean();
+    // *************** If the system is successful, then return the fetched subject data
     return activeSubjects;
   } catch (error) {
     // *************** If an error occurs, throw an ApolloError with a message and error code
@@ -93,6 +93,7 @@ async function CreateSubject(_, { input }) {
     // *************** Destructure the necessary fields from the input object
     const {
       name,
+      block_id,
       description,
       coefficient,
       subject_code,
@@ -102,6 +103,7 @@ async function CreateSubject(_, { input }) {
     // *************** Map input fields to database schema
     const subjectData = {
       name: name,
+      block_id: block_id,
       description: description,
       coefficient: coefficient,
       subject_code: subject_code,
@@ -110,6 +112,12 @@ async function CreateSubject(_, { input }) {
     };
     // *************** Save the subject data to the database using Mongoose
     const toCreatedSubject = await SubjectModel.create(subjectData);
+    // *************** Push the subject _id into the related block's subject_ids array
+    await BlockModel.updateOne(
+      { _id: block_id },
+      { $push: { subject_ids: toCreatedSubject._id } }
+    );
+    // *************** Return toCreatedSubject to created a subject
     return toCreatedSubject;
   } catch (error) {
     // *************** If an error occurs during the query, throw an ApolloError
@@ -142,6 +150,7 @@ async function UpdateSubject(_, { id, input }) {
     // *************** Destructure necessary fields from the input object
     const {
       name,
+      block_id,
       description,
       coefficient,
       subject_code,
@@ -151,6 +160,7 @@ async function UpdateSubject(_, { id, input }) {
     // *************** Map input fields to database schema
     const subjectData = {
       name: name,
+      block_id: block_id,
       description: description,
       coefficient: coefficient,
       subject_code: subject_code,
@@ -163,6 +173,7 @@ async function UpdateSubject(_, { id, input }) {
       { $set: subjectData },
       { new: true }
     ).lean();
+    // *************** Return toUpdatedSubject to Update a subject
     return toUpdatedSubject;
   } catch (error) {
     // *************** If an error occurs during the update, throw an ApolloError with details
@@ -234,16 +245,14 @@ async function DeleteSubject(_, { _id, user_id }) {
  * @param {DataLoader} context.dataLoaders.TestLoader - DataLoader instance for batching Test queries.
  * @returns {Promise<Array<Object>>} - A promise that resolves to an array of Test documents or an empty array.
  */
-async function test(parent, _, context) {
+async function test_ids(parent, _, context) {
   // *************** Check if parent.test_id exists
   if (!parent.test_ids) {
     // *************** If no test_id is present in the parent object, return null
     return [];
   }
   // *************** Use the TestLoader to load many test documents by its ID
-  const toTestList = await context.dataLoaders.TestLoader.loadMany(
-    parent.test_ids
-  );
+  const toTestList = await context.testLoader.loadMany(parent.test_ids);
   // *************** Return the loaded test documents
   return toTestList;
 }
@@ -257,16 +266,14 @@ async function test(parent, _, context) {
  * @param {DataLoader} context.dataLoaders.BlockLoader - DataLoader instance for batching Block queries.
  * @returns {Promise<Object|null>} - A promise that resolves to the Block document or null if `block_id` is missing.
  */
-async function block(parent, _, context) {
+async function block_id(parent, _, context) {
   // *************** Check if parent.block_id exists
   if (!parent.block_id) {
     // *************** If no block_id is present in the parent object, return null
     return null;
   }
   // *************** Use the BlockLoader to fetch block document by its ID
-  const toLoadedBlock = await context.dataLoaders.BlockLoader.load(
-    parent.block_id
-  );
+  const toLoadedBlock = await context.blockLoader.load(parent.block_id);
   // *************** Return the loaded block ducument
   return toLoadedBlock;
 }
@@ -289,9 +296,7 @@ async function created_by(parent, _, context) {
     return null;
   }
   // *************** Use the UserLoader to load the user document based on parent.created_by ID
-  const toCreatedByUser = await context.dataLoaders.UserLoader.load(
-    parent.created_by
-  );
+  const toCreatedByUser = await context.userLoader.load(parent.created_by);
   // *************** Return the loaded user document
   return toCreatedByUser;
 }
@@ -314,9 +319,7 @@ async function updated_by(parent, _, context) {
     return null;
   }
   // *************** Use the UserLoader to load the user document based on parent.updated_by ID
-  const toUpdatedByUser = await context.dataLoaders.UserLoader.load(
-    parent.updated_by
-  );
+  const toUpdatedByUser = await context.userLoader.load(parent.updated_by);
   // *************** Return the loaded user document
   return toUpdatedByUser;
 }
@@ -339,9 +342,7 @@ async function deleted_by(parent, _, context) {
     return null;
   }
   // *************** Use the UserLoader to load the user document based on parent.deleted_by ID
-  const toDeletedByUser = await context.dataLoaders.UserLoader.load(
-    parent.deleted_by
-  );
+  const toDeletedByUser = await context.userLoader.load(parent.deleted_by);
   // *************** Return the loaded user document
   return toDeletedByUser;
 }
@@ -358,8 +359,8 @@ module.exports = {
     DeleteSubject,
   },
   Subject: {
-    test,
-    block,
+    test_ids,
+    block_id,
     created_by,
     updated_by,
     deleted_by,
