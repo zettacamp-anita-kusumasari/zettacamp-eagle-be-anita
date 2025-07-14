@@ -19,6 +19,7 @@
   "homepage": "https://github.com/zettacamp-anita-kusumasari/zettacamp-eagle-be-anita#readme",
   "dependencies": {
     "@apollo/server": "^4.12.2",
+    "@graphql-tools/merge": "^9.0.24",
     "apollo-server": "^3.13.0",
     "apollo-server-express": "^3.13.0",
     "dataloader": "^2.2.3",
