@@ -10,20 +10,6 @@ const typeDefs = gql`
     DELETED
   }
 
-  type User {
-    id: ID!
-    firstName: String!
-    lastName: String!
-    email: String!
-  }
-
-  type Subject {
-    id: ID!
-    name: String!
-    description: String!
-    coefficient: Float!
-  }
-
   type Notation {
     notation_text: String!
     max_point: Float!
@@ -49,6 +35,25 @@ const typeDefs = gql`
     deleted_at: Date
   }
 
+  type PublishTestPayload {
+    test: ReturnTest!
+    task: ReturnTask!
+  }
+
+  type ReturnTest {
+    _id: ID!
+    test_status: TestStatus!
+    published_date: Date
+  }
+
+  type ReturnTask {
+    _id: ID!
+    test_id: Test
+    task_type: TaskType
+    task_status: TaskStatus
+    due_date: Date
+  }
+
   input NotationInput {
     notation_text: String!
     max_point: Float!
@@ -56,6 +61,7 @@ const typeDefs = gql`
 
   input CreateTestInput {
     user_id: ID
+    subject_id: ID
     name: String!
     description: String!
     weight: Float!
@@ -67,6 +73,7 @@ const typeDefs = gql`
 
   input UpdateTestInput {
     user_id: ID
+    subject_id: ID
     name: String
     description: String
     weight: Float
@@ -77,14 +84,7 @@ const typeDefs = gql`
   }
 
   input PublishTestInput {
-    user_id: ID
-    name: String!
-    description: String
-    weight: Float!
-    notations: [NotationInput!]!
     test_status: TestStatus!
-    for_retake: Boolean!
-    published_date: Date
   }
 
   type Query {
@@ -94,7 +94,7 @@ const typeDefs = gql`
 
   type Mutation {
     CreateTest(input: CreateTestInput!): Test!
-    PublishTest(id: ID!, input: PublishTestInput!): Test!
+    PublishTest(_id: ID!): PublishTestPayload!
     UpdateTest(id: ID!, input: UpdateTestInput!): Test!
     DeleteTest(_id: ID!, user_id: ID): ID!
   }

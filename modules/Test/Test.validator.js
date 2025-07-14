@@ -31,6 +31,7 @@ function ValidateTestInput(input) {
   // *************** Destructure expected fields from the input object
   const {
     name,
+    subject_id,
     description,
     weight,
     notations,
@@ -44,6 +45,16 @@ function ValidateTestInput(input) {
     throw new ApolloError("Name is required.", "BAD_USER_INPUT", {
       field: "name",
     });
+  }
+  // *************** Validate that subject_id is a valid MongoDB ObjectId
+  if (!Mongoose.Types.ObjectId.isValid(subject_id)) {
+    throw new ApolloError(
+      `Invalid subject_id: ${subject_id}`,
+      "BAD_USER_INPUT",
+      {
+        field: "subject_id",
+      }
+    );
   }
   // *************** Validate that description is provided and not an empty string
   if (!description || Validator.isEmpty(description)) {

@@ -4,6 +4,7 @@ const Mongoose = require("mongoose");
 
 // *************** IMPORT MODULE ***************
 const TestModel = require("./Test.model");
+const SubjectModel = require("../Subject/Subject.model");
 const TaskModel = require("../Task/Task.model");
 
 // *************** IMPORT VALIDATOR ***************
@@ -11,16 +12,22 @@ const { ValidateTestInput } = require("./Test.validator");
 
 // *************** QUERY ***************
 /**
- * Retrieves all tests with the status 'PUBLISHED'.
+ * Retrieves all tests with status "NOT_PUBLISHED" or "PUBLISHED".
  *
- * @returns {Promise<Array<Object>>} A promise that resolves to an array of published test documents.
- * @throws {ApolloError} If the query fails or encounters an error.
+ * This function queries the database for all test documents where the
+ * `test_status` is either "NOT_PUBLISHED" or "PUBLISHED". It returns
+ * an array of matching test documents in plain JavaScript object format.
+ *
+ * @async
+ * @function GetAllTests
+ * @returns {Promise<Array<Object>>} An array of test documents.
+ * @throws {ApolloError} If there is a database error or query failure.
  */
 async function GetAllTests() {
   try {
-    // *************** Try to fetch all tests where status is PUBLISHED
+    // *************** Try to fetch all tests where status is PUBLISHED and NOT_PUBLISHED 
     const activeTests = await TestModel.find({
-      test_status: "NOT_PUBLISHED",
+      test_status: { $in: ["NOT_PUBLISHED", "PUBLISHED"] },
     }).lean();
     // *************** Return the array of published tests
     return activeTests;
@@ -34,13 +41,19 @@ async function GetAllTests() {
 }
 
 /**
- * Retrieves a single test document by its ID, only if its status is 'PUBLISHED'.
+ * Retrieves a single test document by its MongoDB ObjectId.
  *
- * @param {Object} _ - Unused parent resolver argument.
- * @param {Object} args - The arguments object containing the test ID.
- * @param {string} args.id - The ID of the test to retrieve.
+ * This function validates the provided `id` to ensure it is a valid MongoDB ObjectId,
+ * then searches for a test document with that `_id` and a `test_status` of either
+ * "NOT_PUBLISHED" or "PUBLISHED". If found, the test document is returned.
+ *
+ * @async
+ * @function GetOneTest
+ * @param {Object} _ - Parent resolver (unused).
+ * @param {Object} args - Arguments passed to the resolver.
+ * @param {string} args.id - The MongoDB ObjectId of the test to retrieve.
  * @returns {Promise<Object>} The test document if found.
- * @throws {ApolloError} If the ID is invalid, the test is not found, or a database error occurs.
+ * @throws {ApolloError} If the ID is invalid, test not found, or query fails.
  */
 async function GetOneTest(_, { id }) {
   try {
@@ -51,7 +64,7 @@ async function GetOneTest(_, { id }) {
     // *************** Try to find a test data that has PUBLISHED status by its mongoDB ObjectId
     const test = await TestModel.findOne({
       _id: id,
-      test_status: "NOT_PUBLISHED",
+      test_status: { $in: ["NOT_PUBLISHED", "PUBLISHED"] },
     }).lean();
     // *************** If no test is found, throw a NOT FOUND error
     if (!test) {
@@ -94,6 +107,7 @@ async function CreateTest(_, { input }) {
     // *************** Destructure the necessary fields from the input object
     const {
       name,
+      subject_id,
       description,
       weight,
       notations,
@@ -105,6 +119,7 @@ async function CreateTest(_, { input }) {
     // *************** Map input fields to database schema
     const testData = {
       name: name,
+      subject_id: subject_id,
       description: description,
       weight: weight,
       notations: notations.map(function (n) {
@@ -120,9 +135,15 @@ async function CreateTest(_, { input }) {
     };
     // *************** Save the test data to the database using Mongoose
     const toCreatedTest = await TestModel.create(testData);
+    // *************** Push the test _id into the related block's test_ids array
+    await SubjectModel.updateOne(
+      { _id: subject_id },
+      { $push: { test_ids: toCreatedTest._id } }
+    );
+    // *************** Return toCreatedTest to created a test
     return toCreatedTest;
   } catch (error) {
-    // *************** If an error occurs during the query, throw an ApolloError
+    // *************** If an error occurs during the mutation, throw an ApolloError
     throw new ApolloError("Failed to create test:", "TEST_CREATION_FAILED", {
       error: error.message,
     });
@@ -130,75 +151,62 @@ async function CreateTest(_, { input }) {
 }
 
 /**
- * Publishes a test by updating its details and assigning an initial task (ASSIGN_CORRECTOR).
+ * Publishes a test and creates an associated ASSIGN_CORRECTOR task.
  *
- * @param {Object} _ - Unused parent resolver argument.
- * @param {Object} args - GraphQL mutation arguments.
- * @param {string} args.id - The ID of the test to publish.
- * @param {Object} args.input - The updated test data.
- * @param {string} args.input.name - Name of the test.
- * @param {string} args.input.description - Description of the test.
- * @param {number} args.input.weight - Weight of the test.
- * @param {Array<{ notation_text: string, max_point: number }>} args.input.notations - Notation criteria for grading.
- * @param {string} args.input.test_status - The status of the test ("PUBLISHED", etc.).
- * @param {boolean} args.input.for_retake - Indicates if this test is for a retake.
- * @param {Date} args.input.published_date - The scheduled date to publish.
- * @param {string} args.input.user_id - The user ID performing the operation.
+ * Steps performed:
+ * - Validates the provided test ID.
+ * - Finds a test with status "NOT_PUBLISHED" and the matching ID.
+ * - Updates the test's `test_status` to "PUBLISHED" and sets the `published_date`.
+ * - Creates a task with `task_type: ASSIGN_CORRECTOR` and due date set to 3 days from today.
+ * - Returns the updated test and the newly created task.
  *
- * @returns {Promise<Object>} The updated test document.
- * @throws {ApolloError} If validation or update fails.
+ * @async
+ * @function PublishTest
+ * @param {Object} _ - Parent resolver (not used).
+ * @param {Object} args - Arguments object.
+ * @param {string} args._id - The MongoDB ObjectId of the test to publish.
+ * @returns {Promise<{ test: Object, task: Object }>} An object containing the updated test and the created task.
+ * @throws {ApolloError} If the ID is invalid, test not found, or any operation fails.
  */
-async function PublishTest(_, { id, input }) {
+async function PublishTest(_, { _id }) {
   try {
     // *************** Check if the given ID is a valid mongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(id)) {
-      throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
+    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+      throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
-    // *************** Destructure input
-    const {
-      name,
-      description,
-      weight,
-      notations,
-      test_status,
-      for_retake,
-      published_date,
-      user_id,
-    } = input;
-    // *************** Validate the input
-    ValidateTestInput(input);
-    // *************** Prepare the new test data
-    const testData = {
-      name: name,
-      description: description,
-      weight: weight,
-      notations: notations.map((n) => ({
-        notation_text: n.notation_text,
-        max_point: n.max_point,
-      })),
-      test_status: (test_status || "NOT_PUBLISHED").toUpperCase(),
-      for_retake: for_retake,
-      published_date: published_date,
-      user_id: user_id,
-    };
-    const test = await TestModel.findById(id).lean();
-    // *************** Update field in the instance test
-    Object.assign(test, testData);
-    // *************** Save the test that has been updated
-    // const updatedTest = await test.create();
-    const updatedTest = await TestModel.create(testData);
-    // *************** Assign new task: ASSIGN_CORRECTOR
-    const assignTask = new TaskModel({
-      test_id: updatedTest._id,
+    // *************** Find test with NOT_PUBLISHED status and matching ID
+    const existingTest = await TestModel.findOne({
+      _id,
+      test_status: "NOT_PUBLISHED",
+    });
+    // *************** Check if the test is exist
+    if (!existingTest) {
+      throw new ApolloError("Test not found or already published.", "NOT_FOUND");
+    }
+    // *************** Update the Test
+    await TestModel.updateOne(
+      { _id },
+      {
+        published_date: new Date(),
+        test_status: "PUBLISHED",
+      }
+    );
+    // *************** Assign ASSIGN_CORRECTOR Task
+    const assignTask = await TaskModel.create({
+      test_id: _id,
       task_type: "ASSIGN_CORRECTOR",
       task_status: "PENDING",
-      user_id: user_id,
       due_date: new Date(new Date().setHours(0, 0, 0, 0) + 3 * 86400000),
     });
-    await assignTask.save();
-    // *************** Return updated test
-    return updatedTest;
+    // *************** Get the test data that has been updated
+    const updatedTest = await TestModel.findById(_id);
+    // *************** Return the updated test and assined task
+    return {
+      test: updatedTest,
+      task: assignTask,
+    };;
   } catch (error) {
+    // *************** If an error occurs during the mutation, throw an ApolloError
     throw new ApolloError("Failed to publish test.", "TEST_PUBLISH_FAILED", {
       error: error.message,
     });
@@ -235,6 +243,7 @@ async function UpdateTest(_, { id, input }) {
     // *************** Destructure necessary fields from the input object
     const {
       name,
+      subject_id,
       description,
       weight,
       notations,
@@ -246,6 +255,7 @@ async function UpdateTest(_, { id, input }) {
     // *************** (Map input fields to database schema) Construct a new block data object to be used for update
     const testData = {
       name: name,
+      subject_id: subject_id,
       description: description,
       weight: weight,
       notations: notations.map(function (n) {
@@ -265,6 +275,7 @@ async function UpdateTest(_, { id, input }) {
       { $set: testData },
       { new: true }
     ).lean();
+    // *************** Return toUpdatedTest to Updated a Test
     return toUpdatedTest;
   } catch (error) {
     // *************** If an error occurs during the update, throw an ApolloError with details
@@ -320,57 +331,6 @@ async function DeleteTest(_, { _id, user_id }) {
 
 // *************** LOADER ***************
 /**
- * Resolver function to load Multiple Student Test Result Documents in the Test Model.
- *
- * @param {Object} parent - The parent object that contains the studentTestResults field.
- * @param {Object} _ - Unused GraphQL argument (placeholder for args).
- * @param {Object} context - The context object that holds shared utilities like DataLoaders.
- * @param {Object} context.dataLoaders - An object containing all DataLoaders.
- * @param {DataLoader} context.dataLoaders.StudentTestResultLoader - DataLoader instance for batching StudentTestResult fetches.
- *
- * @returns {Promise<Array<Object>>} - Returns a promise that resolves to an array of StudentTestResult documents.
- */
-async function studentTestResult(parent, _, context) {
-  // *************** Check if parent.subject_id exists
-  if (!parent.studentTestResults) {
-    // *************** If no subject_id is present in the parent object, return null
-    return [];
-  }
-  // *************** Use the StudentTestResultLoader to load many student test result documents by its ID
-  const toStudentTestResultList =
-    await context.dataLoaders.StudentTestResultLoader.loadMany(
-      parent.studentTestResults
-    );
-  // *************** Return the loaded student test result documents
-  return toStudentTestResultList;
-}
-
-/**
- * Resolver function to load multiple Task documents in the Test Model.
- *
- * @param {Object} parent - The parent Test object that contains the `tasks` field (array of Task IDs).
- * @param {Object} _ - Unused GraphQL argument (placeholder for args).
- * @param {Object} context - The context object that holds shared utilities like DataLoaders.
- * @param {Object} context.dataLoaders - An object containing all DataLoader instances.
- * @param {DataLoader} context.dataLoaders.TaskLoader - DataLoader instance for batching Task fetches.
- *
- * @returns {Promise<Array<Object>>} - Returns a promise that resolves to an array of Task documents.
- */
-async function task(parent, _, context) {
-  // *************** Check if parent.tasks exists
-  if (!parent.tasks) {
-    // *************** If no tasks is present in the parent object, return null
-    return [];
-  }
-  // *************** Use the TaskLoader to load many task documents by its ID
-  const toTaskList = await context.dataLoaders.TaskLoader.loadMany(
-    parent.tasks
-  );
-  // *************** Return the loaded task documents
-  return toTaskList;
-}
-
-/**
  * Resolver function to load one Subject Document in the Test Model.
  *
  * @param {Object} parent - The parent object that contains the `subject_id` field.
@@ -381,16 +341,14 @@ async function task(parent, _, context) {
  *
  * @returns {Promise<Object|null>} - Returns a promise that resolves to the Subject document or null if not found.
  */
-async function subject(parent, _, context) {
+async function subject_id(parent, _, context) {
   // *************** Check if parent.subject_id exists
   if (!parent.subject_id) {
     // *************** If no subject_id is present in the parent object, return null
     return null;
   }
   // *************** Use the SubjectLoader to fetch subject document by its ID
-  const toLoadedSubject = await context.dataLoaders.SubjectLoader.load(
-    parent.subject_id
-  );
+  const toLoadedSubject = await context.subjectLoader.load(parent.subject_id);
   // *************** Return the loaded subject document
   return toLoadedSubject;
 }
@@ -413,9 +371,7 @@ async function created_by(parent, _, context) {
     return null;
   }
   // *************** Use the UserLoader to load the user document based on parent.created_by ID
-  const toCreatedByUser = await context.dataLoaders.UserLoader.load(
-    parent.created_by
-  );
+  const toCreatedByUser = await context.userLoader.load(parent.created_by);
   // *************** Return the loaded user document
   return toCreatedByUser;
 }
@@ -438,9 +394,7 @@ async function updated_by(parent, _, context) {
     return null;
   }
   // *************** Use the UserLoader to load the user document based on parent.updated_by ID
-  const toUpdatedByUser = await context.dataLoaders.UserLoader.load(
-    parent.updated_by
-  );
+  const toUpdatedByUser = await context.userLoader.load(parent.updated_by);
   // *************** Return the loaded user document
   return toUpdatedByUser;
 }
@@ -463,9 +417,7 @@ async function deleted_by(parent, _, context) {
     return null;
   }
   // *************** Use the UserLoader to load the user document based on parent.deleted_by ID
-  const toDeletedByUser = await context.dataLoaders.UserLoader.load(
-    parent.deleted_by
-  );
+  const toDeletedByUser = await context.userLoader.load(parent.deleted_by);
   // *************** Return the loaded user document
   return toDeletedByUser;
 }
@@ -483,9 +435,7 @@ module.exports = {
     DeleteTest,
   },
   Test: {
-    studentTestResult,
-    task,
-    subject,
+    subject_id,
     created_by,
     updated_by,
     deleted_by,
