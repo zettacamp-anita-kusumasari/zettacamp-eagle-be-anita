@@ -3,7 +3,7 @@ const { ApolloError } = require("apollo-server");
 const Validator = require("validator");
 const Mongoose = require("mongoose");
 
-// *************** Valid status for subject_status
+// *************** GLOBAL VARIABLE ***************
 const ValidStatus = ["ACTIVE", "DELETED"];
 
 /**

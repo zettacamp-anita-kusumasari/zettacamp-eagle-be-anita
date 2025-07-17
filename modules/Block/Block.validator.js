@@ -3,7 +3,7 @@ const { ApolloError } = require("apollo-server");
 const Validator = require("validator");
 const Mongoose = require("mongoose");
 
-// *************** Valid Enum for the Block.validator
+// *************** GLOBAL VARIABLE ***************
 const ValidStatus = ["ACTIVE", "DELETED"];
 const ValidType = ["REGULER", "PROFESSIONAL", "SOFT_SKILL", "RETAKE"];
 const ValidAssessment = ["COMPETENCY", "SCORE"];

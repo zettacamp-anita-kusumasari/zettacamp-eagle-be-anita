@@ -3,9 +3,8 @@ const { ApolloError } = require("apollo-server");
 const Validator = require("validator");
 const Mongoose = require("mongoose");
 
-// *************** Valid status for test_type
+// *************** GLOBAL VARIABLE ***************
 const ValidType = ["ASSIGN_CORRECTOR", "ENTER_MARKS", "VALIDATE_MARKS"];
-// *************** Valid status for test_status
 const ValidStatus = ["PENDING", "COMPLETED", "DELETED"];
 
 /**
