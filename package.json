@@ -20,6 +20,8 @@
   "dependencies": {
     "@apollo/server": "^4.12.2",
     "@graphql-tools/merge": "^9.0.24",
+    "@sendgrid/client": "^8.1.5",
+    "@sendgrid/mail": "^8.1.5",
     "apollo-server": "^3.13.0",
     "apollo-server-express": "^3.13.0",
     "dataloader": "^2.2.3",
