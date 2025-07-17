@@ -27,11 +27,11 @@ const typeDefs = gql`
     for_retake: Boolean!
     published_by: User
     published_date: Date
-    created_by: User
+    created_by: ID
     created_at: Date
-    updated_by: User
+    updated_by: ID
     updated_at: Date
-    deleted_by: User
+    deleted_by: ID
     deleted_at: Date
   }
 

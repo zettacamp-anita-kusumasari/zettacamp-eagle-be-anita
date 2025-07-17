@@ -21,9 +21,9 @@ const typeDefs = gql`
     marks: [MarkEntry!]!
     average_mark: Float!
     mark_entry_date: Date!
-    updated_by: User
+    updated_by: ID
     updated_at: Date
-    deleted_by: User
+    deleted_by: ID
     deleted_at: Date
   }
 

@@ -413,75 +413,6 @@ async function test_id(parent, _, context) {
   return toLoadedTest;
 }
 
-/**
- * Resolver for fetching the User document associated with the `created_by` field in a StudentTestResult.
- *
- * @param {Object} parent - The parent StudentTestResult object.
- * @param {string} parent.created_by - The ID of the user who created the student test result.
- * @param {any} _ - Unused GraphQL resolver argument (args).
- * @param {Object} context - GraphQL context containing DataLoaders.
- * @param {Object} context.dataLoaders - A collection of DataLoader instances.
- * @param {DataLoader<string, Object|null>} context.dataLoaders.UserLoader - DataLoader to fetch User documents.
- * @returns {Promise<Object|null>} The corresponding User document, or null if `created_by` is not present.
- */
-async function created_by(parent, _, context) {
-  // *************** Check if the parent object contains the created_by user ID
-  if (!parent.created_by) {
-    // *************** If created_by is not present, return null (no user to load)
-    return null;
-  }
-  // *************** Use the UserLoader to load the user document based on parent.created_by ID
-  const toCreatedByUser = await context.userLoader.load(parent.created_by);
-  // *************** Return the loaded user document
-  return toCreatedByUser;
-}
-
-/**
- * Resolver for fetching the User document associated with the `updated_by` field in a StudentTestResult.
- *
- * @param {Object} parent - The parent StudentTestResult object.
- * @param {string} parent.updated_by - The ID of the user who last updated the student test result.
- * @param {any} _ - Unused GraphQL resolver argument (args).
- * @param {Object} context - GraphQL context containing DataLoaders.
- * @param {Object} context.dataLoaders - A collection of DataLoader instances.
- * @param {DataLoader<string, Object|null>} context.dataLoaders.UserLoader - DataLoader to fetch User documents.
- * @returns {Promise<Object|null>} The corresponding User document, or null if `updated_by` is not present.
- */
-async function updated_by(parent, _, context) {
-  // *************** Check if the parent object contains the updated_by user ID
-  if (!parent.updated_by) {
-    // *************** If updated_by is not present, return null (no user to load)
-    return null;
-  }
-  // *************** Use the UserLoader to load the user document based on parent.updated_by ID
-  const toUpdatedByUser = await context.userLoader.load(parent.updated_by);
-  // *************** Return the loaded user document
-  return toUpdatedByUser;
-}
-
-/**
- * Resolver for fetching the User document associated with the `deleted_by` field in a StudentTestResult.
- *
- * @param {Object} parent - The parent StudentTestResult object.
- * @param {string} parent.deleted_by - The ID of the user who deleted the student test result.
- * @param {any} _ - Unused GraphQL resolver argument (args).
- * @param {Object} context - GraphQL context containing DataLoaders.
- * @param {Object} context.dataLoaders - A collection of DataLoader instances.
- * @param {DataLoader<string, Object|null>} context.dataLoaders.UserLoader - DataLoader to fetch User documents.
- * @returns {Promise<Object|null>} The corresponding User document, or null if `deleted_by` is not present.
- */
-async function deleted_by(parent, _, context) {
-  // *************** Check if the parent object contains the deleted_by user ID
-  if (!parent.deleted_by) {
-    // *************** If deleted_by is not present, return null (no user to load)
-    return null;
-  }
-  // *************** Use the UserLoader to load the user document based on parent.deleted_by ID
-  const toDeletedByUser = await context.userLoader.load(parent.deleted_by);
-  // *************** Return the loaded user document
-  return toDeletedByUser;
-}
-
 // *************** EXPORT MODULE ***************
 module.exports = {
   Query: {
@@ -498,8 +429,5 @@ module.exports = {
   Task: {
     student_id,
     test_id,
-    created_by,
-    updated_by,
-    deleted_by,
   },
 };

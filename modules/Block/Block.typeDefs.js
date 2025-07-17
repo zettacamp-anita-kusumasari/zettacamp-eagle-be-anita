@@ -33,11 +33,11 @@ const typeDefs = gql`
     block_status: BlockStatus!
     block_type: BlockType!
     evaluation_assessment: EvaluationAssessment!
-    created_by: User
+    created_by: ID
     created_at: Date
-    updated_by: User
+    updated_by: ID
     updated_at: Date
-    deleted_by: User
+    deleted_by: ID
     deleted_at: Date
   }
 

@@ -24,9 +24,9 @@ const typeDefs = gql`
     task_type: TaskType!
     task_status: TaskStatus!
     due_date: Date!
-    created_by: User
-    updated_by: User
-    deleted_by: User
+    created_by: ID
+    updated_by: ID
+    deleted_by: ID
     created_at: Date
     updated_at: Date
     deleted_at: Date

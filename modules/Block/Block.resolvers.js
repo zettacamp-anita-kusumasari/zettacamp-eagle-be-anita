@@ -111,7 +111,7 @@ async function CreateBlock(_, { input }) {
       block_status: block_status.toUpperCase(),
       block_type: block_type.toUpperCase(),
       evaluation_assessment: evaluation_assessment.toUpperCase(),
-      user_id: user_id,
+      created_by: user_id,
     };
     // *************** Save the block data to the database using Mongoose
     const toCreatedBlock = await BlockModel.create(blockData);
@@ -173,7 +173,7 @@ async function UpdateBlock(_, { id, input }) {
       block_status: block_status.toUpperCase(),
       block_type: block_type.toUpperCase(),
       evaluation_assessment: evaluation_assessment.toUpperCase(),
-      user_id: user_id,
+      updated_by: user_id,
     };
     // *************** Perform the update in the database
     const UpdatedBlock = await BlockModel.findByIdAndUpdate(
@@ -282,66 +282,6 @@ async function school_id(parent, _, context) {
   return toLoadedSchool;
 }
 
-/**
- * created_by - Resolver to load the User document who created the current parent entity.
- *
- * @param {Object} parent - The parent object that contains the `created_by` field (User ID).
- * @param {Object} _ - Unused GraphQL args parameter.
- * @param {Object} context - The GraphQL context object containing the UserLoader instance.
- * @param {Object} context.dataLoaders.UserLoader - DataLoader for batching and caching User fetches.
- * @returns {Promise<Object|null>} A promise that resolves to the User document, or null if not available.
- */
-async function created_by(parent, _, context) {
-  // *************** Check if the parent object contains the created_by user ID
-  if (!parent.created_by) {
-    // *************** If no created_by is present in the parent object, return null
-    return null;
-  }
-  // *************** Use the User Loader to load the user document based on parent.created_by ID
-  const toCreatedByUser = await context.userLoader.load(parent.created_by);
-  return toCreatedByUser;
-}
-
-/**
- * updated_by - Resolver to load the User document who last updated the current parent entity.
- *
- * @param {Object} parent - The parent object that contains the `updated_by` field (User ID).
- * @param {Object} _ - Unused GraphQL args parameter.
- * @param {Object} context - The GraphQL context object containing the UserLoader instance.
- * @param {Object} context.dataLoaders.UserLoader - DataLoader for batching and caching User fetches.
- * @returns {Promise<Object|null>} A promise that resolves to the User document, or null if not available.
- */
-async function updated_by(parent, _, context) {
-  // *************** Check if the parent object contains the updated_by user ID
-  if (!parent.updated_by) {
-    // *************** If no updated_by is present in the parent object, return null
-    return null;
-  }
-  // *************** Use the User Loader to load the user document based on parent.updated_by ID
-  const toUpdatedByUser = await context.userLoader.load(parent.updated_by);
-  return toUpdatedByUser;
-}
-
-/**
- * deleted_by - Resolver to load the User document who deleted the current parent entity.
- *
- * @param {Object} parent - The parent object that contains the `deleted_by` field (User ID).
- * @param {Object} _ - Unused GraphQL args parameter.
- * @param {Object} context - The GraphQL context object containing the UserLoader instance.
- * @param {Object} context.dataLoaders.UserLoader - DataLoader for batching and caching User fetches.
- * @returns {Promise<Object|null>} A promise that resolves to the User document who deleted the entity, or null if not available.
- */
-async function deleted_by(parent, _, context) {
-  // *************** Check if the parent object contains the deleted_by user ID
-  if (!parent.deleted_by) {
-    // *************** If deleted_by is not present, return null (no user to load)
-    return null;
-  }
-  // *************** If it exists, use User Loader to load and return the user document by ID
-  const toDeletedByUser = await context.userLoader.load(parent.deleted_by);
-  return toDeletedByUser;
-}
-
 // *************** EXPORT MODULE ***************
 module.exports = {
   Query: {
@@ -356,8 +296,5 @@ module.exports = {
   Block: {
     subject_ids,
     school_id,
-    created_by,
-    updated_by,
-    deleted_by,
   },
 };
