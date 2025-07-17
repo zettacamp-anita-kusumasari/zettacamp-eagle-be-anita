@@ -242,7 +242,10 @@ async function EnterMarks(_, { _id, input }, context) {
     }
     // *************** Validate the student_id
     if (!Mongoose.Types.ObjectId.isValid(student_id)) {
-      throw new ApolloError(`Invalid student ID: ${student_id}`, "BAD_USER_INPUT");
+      throw new ApolloError(
+        `Invalid student ID: ${student_id}`,
+        "BAD_USER_INPUT"
+      );
     }
     // *************** Check for duplicate student-test result
     const existing = await StudentTestResultModel.findOne({
@@ -299,10 +302,7 @@ async function EnterMarks(_, { _id, input }, context) {
       throw new ApolloError("Task not found.", "NOT_FOUND");
     }
     // *************** Mark the ENTER_MARKS task as COMPLETED
-    await TaskModel.updateOne(
-      { _id },
-      { task_status: "COMPLETED" }
-    );
+    await TaskModel.updateOne({ _id }, { task_status: "COMPLETED" });
     // *************** Create a VALIDATE_MARKS task
     const validateMarksTask = await TaskModel.create({
       test_id: task.test_id,
@@ -418,7 +418,10 @@ async function student_test_result_ids(parent, _, context) {
     return [];
   }
   // *************** Use the TestLoader to load many test documents by its ID
-  const toStudentTestResultList = await context.studentTestResultLoader.loadMany(parent.student_test_result_ids);
+  const toStudentTestResultList =
+    await context.studentTestResultLoader.loadMany(
+      parent.student_test_result_ids
+    );
   // *************** Return the loaded test documents
   return toStudentTestResultList;
 }
