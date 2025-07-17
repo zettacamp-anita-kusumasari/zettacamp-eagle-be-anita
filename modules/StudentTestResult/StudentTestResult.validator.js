@@ -2,32 +2,25 @@
 const { ApolloError } = require("apollo-server");
 const Validator = require("validator");
 
-// *************** Valid status for test_status
-const ValidStatus = ["IN_PROGRESS", "GRADED", "DELETED"];
-
 /**
- * Validates the input for creating or updating a Student Test Result.
+ * Validates the input object for creating or updating a StudentTestResult.
  *
- * @param {Object} input - The input object containing student test result fields.
+ * This function checks:
+ * - That `marks` is a non-empty array.
+ * - Each item in `marks` has a valid `notation_text` and a numeric `mark`.
+ * - If provided, `average_mark` must be a valid number.
+ *
+ * @function ValidateStudentTestResultInput
+ * @param {Object} input - The input object to validate.
  * @param {Array<Object>} input.marks - An array of mark objects.
- * @param {string} input.marks[].notation_text - The name or description of the notation.
- * @param {number|string} input.marks[].mark - The mark/score for the notation.
- * @param {number|string} input.average_mark - The overall average mark (optional, but must be a valid float if provided).
- * @param {string|Date} input.mark_entry_date - The date when the mark was entered.
- * @param {string} input.student_test_result_status - The status of the student test result (must be one of 'IN_PROGRESS', 'GRADED', 'DELETED').
- * @param {string} input.user_id - The ID of the user making the update.
- *
- * @throws {ApolloError} If any validation rule fails. The error contains the field name in the `extensions.field` property.
+ * @param {string} input.marks[].notation_text - The name of the notation category.
+ * @param {number|string} input.marks[].mark - The numeric mark (can be string or number).
+ * @param {number|string} [input.average_mark] - Optional average mark to validate.
+ * @throws {ApolloError} Throws an ApolloError if validation fails.
  */
 function ValidateStudentTestResultInput(input) {
   // *************** Destructure expected fields from the input object
-  const {
-    marks,
-    average_mark,
-    mark_entry_date,
-    student_test_result_status,
-    user_id,
-  } = input;
+  const { marks, average_mark } = input;
   // *************** Validate marks: must be an array and not empty
   if (!Array.isArray(marks) || marks.length === 0) {
     throw new ApolloError(
@@ -62,31 +55,6 @@ function ValidateStudentTestResultInput(input) {
       "BAD_USER_INPUT",
       { field: "average_mark" }
     );
-  }
-  // *************** Validate that mark_entry_date is provided
-  if (!mark_entry_date || isNaN(new Date(mark_entry_date).getTime())) {
-    throw new ApolloError(
-      "Mark Entry Date is required and must be a valid date.",
-      "BAD_USER_INPUT",
-      { field: "mark_entry_date" }
-    );
-  }
-  // *************** Validate that student_test_result_status exists and is within the allowed values ('IN_PROGRESS' | 'GRADED' | 'DELETED')
-  if (
-    !student_test_result_status ||
-    !ValidStatus.includes(student_test_result_status.toUpperCase())
-  ) {
-    throw new ApolloError(
-      `Student Test Result Status must be one of: ${ValidStatus.join(", ")}.`,
-      "BAD_USER_INPUT",
-      { field: "student_test_result_status" }
-    );
-  }
-  // *************** Validate that user_id is provided and not an empty string
-  if (!user_id || Validator.isEmpty(user_id)) {
-    throw new ApolloError("User id is required.", "BAD_USER_INPUT", {
-      field: "user_id",
-    });
   }
 }
 

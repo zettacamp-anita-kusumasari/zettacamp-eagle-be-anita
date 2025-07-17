@@ -37,23 +37,10 @@ const StudentTestResultSchema = new Mongoose.Schema(
     // The calculated average mark
     average_mark: {
       type: Number,
-      required: true,
     },
     // The date the marks were entered
     mark_entry_date: {
       type: Date,
-      required: true,
-    },
-    // Status of the student test result, is it ‘PENDING’, ‘GRADED’, and ‘DELETED’
-    student_test_result_status_status: {
-      type: String,
-      enum: ["PENDING", "GRADED", "DELETED"],
-      required: true,
-    },
-    // Reference to the person who create the test data
-    created_by: {
-      type: Mongoose.Schema.Types.ObjectId,
-      ref: "User",
     },
     // Reference to the person who update the test data
     updated_by: {
@@ -65,13 +52,16 @@ const StudentTestResultSchema = new Mongoose.Schema(
       type: Mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    // Reference to the time when task deleted
+    due_date: {
+      type: Date,
+      default: null,
+    },
   },
   {
-    // Automatically adds created_at, updateAt, deleted_at, and published_date fields
+    // Automatically adds update_at fields
     timestamps: {
-      created_at: "Created_At",
-      updated_at: "Updated_At",
-      deleted_at: "Deleted_At",
+      updatedAt: "updated_at",
     },
   }
 );
