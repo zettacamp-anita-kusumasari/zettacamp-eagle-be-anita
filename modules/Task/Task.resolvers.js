@@ -5,7 +5,6 @@ require("dotenv").config();
 const SendGridMail = require("@sendgrid/mail");
 
 // *************** IMPORT MODULE ***************
-const UserModel = require("../User/User.model");
 const StudentModel = require("../Student/Student.model");
 const SubjectModel = require("../Subject/Subject.model");
 const TestModel = require("../Test/Test.model");
@@ -14,7 +13,6 @@ const TaskModel = require("./Task.model");
 
 // *************** IMPORT VALIDATOR ***************
 const { ValidateTaskInput } = require("./Task.validator");
-const { text } = require("express");
 
 // *************** QUERY ***************
 /**
@@ -28,7 +26,7 @@ async function GetAllTasks() {
     // *************** Try to fetch all tasks where type is ASSIGN_CORRECTOR, ENTER_MARK, and VALIDATE_MARKS
     const tasks = await TaskModel.find({
       task_type: { $in: ["ASSIGN_CORRECTOR", "ENTER_MARKS", "VALIDATE_MARKS"] },
-      task_status: { $in: ["PENDING", "IN_PROGRESS", "COMPLETED"] },
+      task_status: { $in: ["PENDING", "COMPLETED"] },
     }).lean();
     // *************** Return the conditions to get all the tasks
     return tasks;
@@ -86,7 +84,7 @@ async function GetOneTask(_, { id }) {
  * @param {string} args.id - The MongoDB ObjectId of the task to update.
  * @param {Object} args.input - The input fields used to update the task.
  * @param {string} args.input.task_type - The type of task (e.g. "ENTER_MARKS", "VALIDATE_MARKS").
- * @param {string} args.input.task_status - The status of the task (e.g. "PENDING", "IN_PROGRESS", "COMPLETED").
+ * @param {string} args.input.task_status - The status of the task (e.g. "PENDING", "DELETED", "COMPLETED").
  * @param {string|Date} args.input.due_date - The due date of the task.
  * @returns {Promise<Object>} - Returns the updated task document.
  * @throws {ApolloError} - Throws error if validation fails or update operation fails.
@@ -148,12 +146,7 @@ async function AssignCorrector(_, { _id }, context) {
       throw new ApolloError("Task not found.", "NOT_FOUND");
     }
     // *************** Update the ASSIGN_CORRECTOR task
-    await TaskModel.updateOne(
-      { _id },
-      {
-        task_status: "COMPLETED",
-      }
-    );
+    await TaskModel.updateOne({ _id }, { task_status: "COMPLETED" });
     // *************** Create ENTER_MARK task
     const enterMarks = await TaskModel.create({
       test_id: task.test_id,
@@ -169,7 +162,7 @@ async function AssignCorrector(_, { _id }, context) {
     const studentDocs = await StudentModel.find({
       _id: { $in: test.student_ids || [] },
     }).lean();
-    // *************** Get student names (assuming test.student_ids exists)
+    // *************** Get student names
     const studentNames =
       studentDocs.map((s) => `${s.first_name} ${s.last_name}`).join(", ") ||
       "No students assigned.";
@@ -258,39 +251,17 @@ async function EnterMarks(_, { _id, input }, context) {
         "DUPLICATE_ENTRY"
       );
     }
-    // *************** Group and calculate average per notation
-    const grouped = {};
-    marks.forEach(({ notation_text, mark }) => {
-      if (!grouped[notation_text]) {
-        grouped[notation_text] = { total: 0, count: 0 };
-      }
-      grouped[notation_text].total += mark;
-      grouped[notation_text].count += 1;
-    });
-    // *************** Calculate the average mark per notation
-    const averageMarksPerNotation = Object.entries(grouped).map(
-      ([notation_text, { total, count }]) => ({
-        notation_text,
-        average_mark: parseFloat((total / count).toFixed(2)),
-      })
-    );
     // *************** Calculate overall average
     const totalMarks = marks.reduce((sum, entry) => sum + entry.mark, 0);
     const overallAverage = parseFloat((totalMarks / marks.length).toFixed(2));
     // *************** Save the student test result
-    await StudentTestResultModel.create({
+    const createSTD = await StudentTestResultModel.create({
       test_id,
       student_id,
       marks,
       average_mark: overallAverage,
-      average_marks: averageMarksPerNotation,
       mark_entry_date: new Date(),
     });
-    // *************** Update the Test Model
-    await TestModel.updateOne(
-      { _id: test_id },
-      { $push: { student_test_result_ids: createdResult._id } }
-    );
     // *************** Find the ENTER_MARKS task
     const task = await TaskModel.findOne({
       _id,
@@ -309,7 +280,6 @@ async function EnterMarks(_, { _id, input }, context) {
       task_type: "VALIDATE_MARKS",
       task_status: "PENDING",
       due_date: new Date(new Date().setHours(0, 0, 0, 0) + 3 * 86400000),
-      created_at: new Date(),
     });
     // *************** return the validateMarksTask
     return validateMarksTask;
@@ -360,7 +330,7 @@ async function ValidateMarks(_, { _id }, context) {
 /**
  * Mutation resolver to soft delete a Task by setting its status to "DELETED".
  *
- * This function validates the input ID, ensures the task exists with a valid status (`PENDING`, `IN_PROGRESS`, or `COMPLETED`),
+ * This function validates the input ID, ensures the task exists with a valid status (`PENDING`, `DELETED`, or `COMPLETED`),
  * and then performs a soft delete by updating the task status to `DELETED` and adding a `deleted_at` timestamp.
  *
  * @param {Object} _ - GraphQL root object (not used).
@@ -375,10 +345,10 @@ async function DeleteTask(_, { _id }) {
     if (!Mongoose.Types.ObjectId.isValid(_id)) {
       throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
-    // *************** Check if the task exists and PENDING and IN_PROGRESS status
+    // *************** Check if the task exists and PENDING and COMPLETED status
     const existingTask = await TaskModel.exists({
       _id: _id,
-      task_status: { $in: ["PENDING", "IN_PROGRESS", "COMPLETED"] },
+      task_status: { $in: ["PENDING", "COMPLETED"] },
     }).lean();
     // *************** If task is not found or already deleted, throw an error
     if (!existingTask) {
@@ -403,29 +373,6 @@ async function DeleteTask(_, { _id }) {
 }
 
 // *************** LOADER ***************
-/**
- * Field resolver to load multiple StudentTestResult documents by their IDs.
- *
- * @param {Object} parent - The parent object that contains the `student_test_result_ids` array.
- * @param {Object} _ - Unused GraphQL args.
- * @param {Object} context - The GraphQL context containing the `studentTestResultLoader`.
- * @returns {Promise<Array<Object>>} - Returns an array of StudentTestResult documents.
- */
-async function student_test_result_ids(parent, _, context) {
-  // *************** Check if parent.test_id exists
-  if (!parent.student_test_result_ids) {
-    // *************** If no test_id is present in the parent object, return null
-    return [];
-  }
-  // *************** Use the TestLoader to load many test documents by its ID
-  const toStudentTestResultList =
-    await context.studentTestResultLoader.loadMany(
-      parent.student_test_result_ids
-    );
-  // *************** Return the loaded test documents
-  return toStudentTestResultList;
-}
-
 /**
  * Field resolver to load a Student document by its ID.
  *
@@ -549,7 +496,6 @@ module.exports = {
     DeleteTask,
   },
   Task: {
-    student_test_result_ids,
     student_id,
     test_id,
     created_by,

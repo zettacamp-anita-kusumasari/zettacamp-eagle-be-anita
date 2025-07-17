@@ -6,21 +6,22 @@ const Mongoose = require("mongoose");
 // *************** Valid status for test_type
 const ValidType = ["ASSIGN_CORRECTOR", "ENTER_MARKS", "VALIDATE_MARKS"];
 // *************** Valid status for test_status
-const ValidStatus = ["PENDING", "IN_PROGRESS", "COMPLETED", "DELETED"];
+const ValidStatus = ["PENDING", "COMPLETED", "DELETED"];
 
 /**
- * Validates the input object for creating or updating a Task entity.
+ * Validates the input object for creating or updating a Task.
  *
- * This function checks required fields such as `task_type`, `task_status`, `due_date`, and `user_id`.
- * It throws an ApolloError if any validation fails, with a descriptive message and field reference.
+ * This function checks:
+ * - That `task_type` exists and is one of the allowed values.
+ * - That `task_status` exists and is one of the allowed values.
+ * - That `due_date` is a valid date.
  *
- * @param {Object} input - The input object containing fields to validate.
- * @param {string} input.task_type - The type of task (required, must be one of ValidType).
- * @param {string} input.task_status - The status of the task (required, must be one of ValidStatus).
- * @param {string|Date} input.due_date - The due date for the task (required, must be a valid date).
- * @param {string} input.user_id - The ID of the user creating the task (required, non-empty string).
- *
- * @throws {ApolloError} - Throws error if any field fails validation, with code 'BAD_USER_INPUT' and field metadata.
+ * @function ValidateTaskInput
+ * @param {Object} input - The input object to validate.
+ * @param {string} input.task_type - The type of task (e.g., 'ASSIGN_CORRECTOR', 'ENTER_MARKS', 'VALIDATE_MARKS').
+ * @param {string} input.task_status - The status of the task (e.g., 'PENDING', 'COMPLETED', 'DELETED').
+ * @param {string|Date} input.due_date - The due date for the task (must be a valid date).
+ * @throws {ApolloError} Throws an ApolloError if validation fails.
  */
 function ValidateTaskInput(input) {
   // *************** Destructure expected fields from the input object
@@ -33,7 +34,7 @@ function ValidateTaskInput(input) {
       { field: "task_type" }
     );
   }
-  // *************** Validate that task status exists and is within the allowed values ('PENDING', 'IN_PROGRESS', 'DELETED')
+  // *************** Validate that task status exists and is within the allowed values ('PENDING', 'COMPLETED', 'DELETED')
   if (!task_status || !ValidStatus.includes(task_status.toUpperCase())) {
     throw new ApolloError(
       `Task status must be one of: ${ValidStatus.join(", ")}.`,

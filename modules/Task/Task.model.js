@@ -4,22 +4,17 @@ const Mongoose = require("mongoose");
 // *************** Define Mongoose schema for the Task collection
 const TaskSchema = new Mongoose.Schema(
   {
-    // Reference to the task this task belongs to
+    // Reference to the test this task belongs to
     test_id: {
       type: Mongoose.Schema.Types.ObjectId,
       ref: "Test",
     },
-    // Reference to the User this task belongs to
+    // Reference to the user this task belongs to
     user_id: {
       type: Mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-    // Reference to the student test result this task belongs to
-    student_test_result_ids: {
-      type: Mongoose.Schema.Types.ObjectId,
-      ref: "StudentTestResult",
-    },
-    // reference to the Student who took the test
+    // reference to the student who took the test
     student_id: {
       type: Mongoose.Schema.Types.ObjectId,
       ref: "Student",
@@ -30,10 +25,10 @@ const TaskSchema = new Mongoose.Schema(
       enum: ["ASSIGN_CORRECTOR", "ENTER_MARKS", "VALIDATE_MARKS"],
       required: true,
     },
-    // Status of the task, is it ‘PENDING’, ‘IN_PROGRESS’, or ‘DELETED’
+    // Status of the task, is it ‘PENDING’, ‘COMPLETED’, or ‘DELETED’
     task_status: {
       type: String,
-      enum: ["PENDING", "IN_PROGRESS", "COMPLETED", "DELETED"],
+      enum: ["PENDING", "COMPLETED", "DELETED"],
       required: true,
     },
     // Due date of the task

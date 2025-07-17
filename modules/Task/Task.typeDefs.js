@@ -12,7 +12,6 @@ const typeDefs = gql`
 
   enum TaskStatus {
     PENDING
-    IN_PROGRESS
     COMPLETED
     DELETED
   }
@@ -25,7 +24,6 @@ const typeDefs = gql`
     task_type: TaskType!
     task_status: TaskStatus!
     due_date: Date!
-    student_test_result_ids: StudentTestResult
     created_by: User
     updated_by: User
     deleted_by: User
@@ -44,16 +42,6 @@ const typeDefs = gql`
   type AverageMark {
     notation_text: String!
     average_mark: Float!
-  }
-
-  type StudentTestResult {
-    id: ID!
-    student_id: Student
-    test_id: Test
-    marks: [MarkEntry!]!
-    average_mark: Float!
-    average_marks: [AverageMark!]!
-    mark_entry_date: Date!
   }
 
   type MarkEntry {
