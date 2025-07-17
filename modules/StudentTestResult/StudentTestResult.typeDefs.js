@@ -36,12 +36,6 @@ const typeDefs = gql`
     marks: [MarkInput!]!
   }
 
-  input StudentTestResultInput {
-    student_id: ID!
-    test_id: ID!
-    marks: [MarkInput!]!
-  }
-
   type Query {
     GetAllStudentTestResults: [StudentTestResult!]!
     GetOneStudentTestResult(_id: ID!): StudentTestResult
