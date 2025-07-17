@@ -1,78 +1,96 @@
-const { gql } = require('apollo-server-express');
+// *************** IMPORT LIBRARY ***************
+const { gql } = require("apollo-server-express");
 
 const typeDefs = gql`
-    scalar Date
+  scalar Date
 
-    enum TaskType {
-        Assign_Corrector
-        Enter_Marks
-        Validate_Marks
-    }
+  enum TaskType {
+    ASSIGN_CORRECTOR
+    ENTER_MARKS
+    VALIDATE_MARKS
+  }
 
-    enum TaskStatus {
-        PENDING
-        IN_PROGRESS
-        COMPLETED
-    }
+  enum TaskStatus {
+    PENDING
+    IN_PROGRESS
+    COMPLETED
+    DELETED
+  }
 
-    type Task {
-        id: ID!
-        test_id: ID!
-        user_id: ID!
-        task_type: TaskType!
-        task_status: TaskStatus!
-        due_date: Date!
-        created_by: ID
-        updated_by: ID
-        deleted_by: ID
-        Created_At: Date
-        Updated_At: Date
-    }
+  type Task {
+    _id: ID!
+    test_id: Test
+    user_id: ID
+    student_id: Student
+    task_type: TaskType!
+    task_status: TaskStatus!
+    due_date: Date!
+    student_test_result_ids: StudentTestResult
+    created_by: User
+    updated_by: User
+    deleted_by: User
+    created_at: Date
+    updated_at: Date
+    deleted_at: Date
+  }
 
-    type StudentTestResult {
-        id: ID!
-        student_id: ID!
-        test_id: ID!
-        marks: [MarkEntry!]!
-        average_mark: Float!
-        mark_entry_date: Date!
-    }
+  type User {
+    id: ID!
+    firstName: String!
+    lastName: String!
+    email: String!
+  }
 
-    type MarkEntry {
-        notation_text: String!
-        mark: Float!
-    }
+  type AverageMark {
+    notation_text: String!
+    average_mark: Float!
+  }
 
-    input AssignCorrectorInput {
-        task_id: ID!
-        corrector_id: ID!
-    }
+  type StudentTestResult {
+    id: ID!
+    student_id: Student
+    test_id: Test
+    marks: [MarkEntry!]!
+    average_mark: Float!
+    average_marks: [AverageMark!]!
+    mark_entry_date: Date!
+  }
 
-    input MarkEntryInput {
-        notation_text: String!
-        mark: Float!
-    }
+  type MarkEntry {
+    notation_text: String!
+    mark: Float!
+  }
 
-    input EnterMarksInput {
-        test_id: ID!
-        student_id: ID!
-        marks: [MarkEntryInput!]!
-    }
+  input UpdateTaskInput {
+    task_type: TaskType!
+    task_status: TaskStatus!
+    due_date: Date!
+  }
 
-    input ValidateMarksInput {
-        task_id: ID!
-    }
+  input MarkEntryInput {
+    notation_text: String!
+    mark: Float!
+  }
 
-    type Query {
-        GetTasksByUser(user_id: ID!): [Task!]!
-        GetTasksByTest(test_id: ID!): [Task!]!
-    }
+  input EnterMarksInput {
+    test_id: ID
+    student_id: ID
+    marks: [MarkEntryInput!]!
+  }
 
-    type Mutation {
-        AssignCorrector(input: AssignCorrectorInput!): Task!
-        EnterMarks(input: EnterMarksInput!): StudentTestResult!
-        ValidateMarks(input: ValidateMarksInput!): Task!
-    }
+  type Query {
+    GetAllTasks: [Task!]!
+    GetOneTask(id: ID!): Task!
+  }
+
+  type Mutation {
+    UpdateTask(id: ID!, input: UpdateTaskInput!): Task!
+    AssignCorrector(_id: ID!): Task!
+    EnterMarks(_id: ID!, input: EnterMarksInput!): Task!
+    ValidateMarks(_id: ID!): Task!
+    DeleteTask(_id: ID!): ID!
+  }
 `;
 
+// *************** EXPORT MODULE ***************
 module.exports = typeDefs;
