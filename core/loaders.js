@@ -1,12 +1,12 @@
 // *************** IMPORT MODULE ***************
-const createSchoolLoader = require("../modules/School/School.loader.js");
-const createUserLoader = require("../modules/User/User.loader.js");
-const createStudentLoader = require("../modules/Student/Student.loader.js");
-const createBlockLoader = require("../modules/Block/Block.loader.js");
-const createSubjectLoader = require("../modules/Subject/Subject.loader.js");
-const createTestLoader = require("../modules/Test/Test.loader.js");
-const createTaskLoader = require("../modules/Task/Task.loader.js");
-const createStudentTestResultLoader = require("../modules/StudentTestResult/StudentTestResult.loader.js");
+const CreateSchoolLoader = require("../modules/School/School.loader.js");
+const CreateUserLoader = require("../modules/User/User.loader.js");
+const CreateStudentLoader = require("../modules/Student/Student.loader.js");
+const CreateBlockLoader = require("../modules/Block/Block.loader.js");
+const CreateSubjectLoader = require("../modules/Subject/Subject.loader.js");
+const CreateTestLoader = require("../modules/Test/Test.loader.js");
+const CreateTaskLoader = require("../modules/Task/Task.loader.js");
+const CreateStudentTestResultLoader = require("../modules/StudentTestResult/StudentTestResult.loader.js");
 
 /**
  * Creates and returns an object containing all DataLoaders for batching and caching database requests.
@@ -20,14 +20,14 @@ const createStudentTestResultLoader = require("../modules/StudentTestResult/Stud
 function Loaders() {
   // *************** Returns an object containing all DataLoaders
   return {
-    schoolLoader: createSchoolLoader(),
-    userLoader: createUserLoader(),
-    studentLoader: createStudentLoader(),
-    blockLoader: createBlockLoader(),
-    subjectLoader: createSubjectLoader(),
-    testLoader: createTestLoader(),
-    taskLoader: createTaskLoader(),
-    studentTestResult: createStudentTestResultLoader(),
+    schoolLoader: CreateSchoolLoader(),
+    userLoader: CreateUserLoader(),
+    studentLoader: CreateStudentLoader(),
+    blockLoader: CreateBlockLoader(),
+    subjectLoader: CreateSubjectLoader(),
+    testLoader: CreateTestLoader(),
+    taskLoader: CreateTaskLoader(),
+    studentTestResult: CreateStudentTestResultLoader(),
   };
 }
 
