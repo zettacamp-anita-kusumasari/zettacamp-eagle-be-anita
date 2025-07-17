@@ -3,13 +3,9 @@ const { ApolloError } = require("apollo-server");
 const Validator = require("validator");
 const Mongoose = require("mongoose");
 
-// *************** Valid status for block_status
+// *************** Valid Enum for the Block.validator
 const ValidStatus = ["ACTIVE", "DELETED"];
-
-// *************** Valid type for block_type
 const ValidType = ["REGULER", "PROFESSIONAL", "SOFT_SKILL", "RETAKE"];
-
-// *************** Valid assessment for evaluation_assessment
 const ValidAssessment = ["COMPETENCY", "SCORE"];
 
 /**
