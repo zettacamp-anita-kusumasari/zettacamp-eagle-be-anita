@@ -49,13 +49,13 @@ const typeDefs = gql`
 
   type Query {
     GetAllSubjects: [Subject!]!
-    GetOneSubject(id: ID!): Subject
+    GetOneSubject(_id: ID!): Subject
   }
 
   type Mutation {
     CreateSubject(input: CreateSubjectInput!): Subject!
-    UpdateSubject(id: ID!, input: UpdateSubjectInput!): Subject!
-    DeleteSubject(_id: ID!, user_id: ID): ID!
+    UpdateSubject(_id: ID!, input: UpdateSubjectInput!): Subject!
+    DeleteSubject(_id: ID!): ID!
   }
 `;
 

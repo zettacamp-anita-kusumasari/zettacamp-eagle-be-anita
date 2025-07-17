@@ -347,22 +347,14 @@ async function DeleteTask(_, { _id }) {
     }
     // *************** Check if the task exists and PENDING and COMPLETED status
     const existingTask = await TaskModel.exists({
-      _id: _id,
       task_status: { $in: ["PENDING", "COMPLETED"] },
     }).lean();
     // *************** If task is not found or already deleted, throw an error
     if (!existingTask) {
       throw new ApolloError("Task not found or already deleted", "NOT_FOUND");
     }
-
     // *************** Soft delete: update task_status and set deleted_at timestamp
-    await TaskModel.updateOne(
-      { _id: _id },
-      {
-        task_status: "DELETED",
-        deleted_at: new Date(),
-      }
-    );
+    await TaskModel.updateOne({ _id: _id }, { task_status: "DELETED" });
     return _id;
     // *************** If an error occurs during the update, throw an ApolloError with details
   } catch (error) {

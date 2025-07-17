@@ -41,15 +41,15 @@ async function GetAllBlocks() {
  * @returns {Promise<Object>} A promise that resolves to the block document if found.
  * @throws {ApolloError} Throws an error if the ID is invalid or if the query fails.
  */
-async function GetOneBlock(_, { id }) {
+async function GetOneBlock(_, { _id }) {
   try {
     // *************** Check if the given ID is a valid mongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(id)) {
-      throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
+    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+      throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Try to find a block data that has ACTIVE status by its mongoDB ObjectId
     const block = await BlockModel.findOne({
-      _id: id,
+      _id: _id,
       block_status: "ACTIVE",
     }).lean();
     // *************** If no block is found, throw a NOT FOUND error
@@ -144,12 +144,12 @@ async function CreateBlock(_, { input }) {
  * @returns {Promise<object|null>} The updated block document, or null if not found.
  * @throws {ApolloError} If the ID is invalid, validation fails, or the update operation encounters an error.
  */
-async function UpdateBlock(_, { id, input }) {
+async function UpdateBlock(_, { _id, input }) {
   try {
     // *************** Check if the provided ID is a valid MongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(id)) {
+    if (!Mongoose.Types.ObjectId.isValid(_id)) {
       // *************** If the ID is invalid, throw an ApolloError with a BAD_USER_INPUT code
-      throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
+      throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Validate the input using exported function ValidateBlockInput
     ValidateBlockInput(input);
@@ -177,7 +177,7 @@ async function UpdateBlock(_, { id, input }) {
     };
     // *************** Perform the update in the database
     const UpdatedBlock = await BlockModel.findByIdAndUpdate(
-      id,
+      _id,
       { $set: blockData },
       { new: true }
     ).lean();
@@ -200,30 +200,22 @@ async function UpdateBlock(_, { id, input }) {
  * @returns {Promise<Object>} A promise that resolves to the result of the update operation.
  * @throws {ApolloError} Throws an error if the ID is invalid, the block is not found, or the update fails.
  */
-async function DeleteBlock(_, { _id, user_id }) {
+async function DeleteBlock(_, { _id }) {
   try {
     // *************** Validate if the provided ID is a valid MongoDB ObjectId
     if (!Mongoose.Types.ObjectId.isValid(_id)) {
       throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Check if the block exists and has an ACTIVE status
-    const existingBlock = await BlockModel.exists({
-      _id: _id,
-      block_status: "ACTIVE",
-    });
+    const existingBlock = await BlockModel.exists({ block_status: "ACTIVE" });
     // *************** If block is not found or already deleted, throw an error
     if (!existingBlock) {
       throw new ApolloError("Block not found or already deleted", "NOT_FOUND");
     }
-
-    // *************** Soft delete: update block_status and set deleted_at timestamp
+    // *************** Soft delete: update block_status
     await BlockModel.updateOne(
       { _id: _id },
-      {
-        block_status: "DELETED",
-        deleted_by: user_id,
-        deleted_at: new Date(),
-      }
+      { block_status: "DELETED" }
     );
     return _id;
     // *************** If an error occurs during the deletion, throw an ApolloError with the error message

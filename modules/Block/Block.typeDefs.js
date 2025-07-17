@@ -65,13 +65,13 @@ const typeDefs = gql`
 
   type Query {
     GetAllBlocks: [Block!]!
-    GetOneBlock(id: ID!): Block
+    GetOneBlock(_id: ID!): Block
   }
 
   type Mutation {
     CreateBlock(input: CreateBlockInput!): Block!
-    UpdateBlock(id: ID!, input: UpdateBlockInput!): Block!
-    DeleteBlock(_id: ID!, user_id: ID): ID!
+    UpdateBlock(_id: ID!, input: UpdateBlockInput!): Block!
+    DeleteBlock(_id: ID!): ID!
   }
 `;
 

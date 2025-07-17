@@ -50,15 +50,15 @@ async function GetAllSubjects() {
  * @returns {Promise<Object>} A promise that resolves to the subject document.
  * @throws {ApolloError} If the ID is invalid, the subject is not found, or a database error occurs.
  */
-async function GetOneSubject(_, { id }) {
+async function GetOneSubject(_, { _id }) {
   try {
     // *************** Check if the given ID is a valid mongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(id)) {
-      throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
+    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+      throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Try to find a subject data that has ACTIVE status by its mongoDB ObjectId
     const subject = await SubjectModel.findOne({
-      _id: id,
+      _id: _id,
       subject_status: "ACTIVE",
     }).lean();
     // *************** If no subject is found, throw a NOT FOUND error
@@ -139,11 +139,11 @@ async function CreateSubject(_, { input }) {
  * @returns {Promise<Object|null>} - The updated subject document or null if not found.
  * @throws {ApolloError} - If validation fails or the update operation encounters an error.
  */
-async function UpdateSubject(_, { id, input }) {
+async function UpdateSubject(_, { _id, input }) {
   try {
     // *************** Check if the provided ID is a valid MongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(id)) {
-      throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
+    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+      throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Validate the input using exported function ValidateSubjectInput
     ValidateSubjectInput(input);
@@ -169,7 +169,7 @@ async function UpdateSubject(_, { id, input }) {
     };
     // *************** Perform the update in the database and return the updated document
     const toUpdatedSubject = await SubjectModel.findByIdAndUpdate(
-      id,
+      _id,
       { $set: subjectData },
       { new: true }
     ).lean();
@@ -195,17 +195,14 @@ async function UpdateSubject(_, { id, input }) {
  * @returns {Promise<string>} - The ID of the deleted subject.
  * @throws {ApolloError} - If validation fails or deletion cannot be completed.
  */
-async function DeleteSubject(_, { _id, user_id }) {
+async function DeleteSubject(_, { _id }) {
   try {
     // *************** Validate if the provided ID is a valid MongoDB ObjectId
     if (!Mongoose.Types.ObjectId.isValid(_id)) {
       throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Check if the subject exists and has an ACTIVE status
-    const existingSubject = await SubjectModel.exists({
-      _id: _id,
-      subject_status: "ACTIVE",
-    });
+    const existingSubject = await SubjectModel.exists({ subject_status: "ACTIVE" });
     // *************** If subject is not found or already deleted, throw an error
     if (!existingSubject) {
       throw new ApolloError(
@@ -214,23 +211,14 @@ async function DeleteSubject(_, { _id, user_id }) {
       );
     }
     // *************** Soft delete: update subject_status and set deleted_at timestamp
-    await SubjectModel.updateOne(
-      { _id: _id },
-      {
-        subject_status: "DELETED",
-        deleted_by: user_id,
-        deleted_at: new Date(),
-      }
-    );
+    await SubjectModel.updateOne({ _id: _id }, { subject_status: "DELETED" });
     return _id;
     // *************** If an error occurs during the update, throw an ApolloError with details
   } catch (error) {
     throw new ApolloError(
       "Failed to delete subject",
       "SUBJECT_DELETION_FAILED",
-      {
-        error: error.message,
-      }
+      { error: error.message }
     );
   }
 }

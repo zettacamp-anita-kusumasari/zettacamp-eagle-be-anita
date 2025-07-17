@@ -55,15 +55,15 @@ async function GetAllTests() {
  * @returns {Promise<Object>} The test document if found.
  * @throws {ApolloError} If the ID is invalid, test not found, or query fails.
  */
-async function GetOneTest(_, { id }) {
+async function GetOneTest(_, { _id }) {
   try {
     // *************** Check if the given ID is a valid mongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(id)) {
-      throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
+    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+      throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Try to find a test data that has PUBLISHED status by its mongoDB ObjectId
     const test = await TestModel.findOne({
-      _id: id,
+      _id: _id,
       test_status: { $in: ["NOT_PUBLISHED", "PUBLISHED"] },
     }).lean();
     // *************** If no test is found, throw a NOT FOUND error
@@ -232,11 +232,11 @@ async function PublishTest(_, { _id }) {
  * @returns {Promise<Object>} The updated test document.
  * @throws {ApolloError} If ID is invalid, validation fails, or update operation fails.
  */
-async function UpdateTest(_, { id, input }) {
+async function UpdateTest(_, { _id, input }) {
   try {
     // *************** Check if the provided ID is a valid MongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(id)) {
-      throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
+    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+      throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Validate the input using exported function ValidateTestInput
     ValidateTestInput(input);
@@ -271,7 +271,7 @@ async function UpdateTest(_, { id, input }) {
     };
     // *************** Perform the update in the database and return the updated document
     const toUpdatedTest = await TestModel.findByIdAndUpdate(
-      id,
+      _id,
       { $set: testData },
       { new: true }
     ).lean();
@@ -296,7 +296,7 @@ async function UpdateTest(_, { id, input }) {
  * @returns {Promise<string>} The ID of the deleted test.
  * @throws {ApolloError} If the ID is invalid, the test is not found, or deletion fails.
  */
-async function DeleteTest(_, { _id, user_id }) {
+async function DeleteTest(_, { _id }) {
   try {
     // *************** Validate if the provided ID is a valid MongoDB ObjectId
     if (!Mongoose.Types.ObjectId.isValid(_id)) {
@@ -304,7 +304,6 @@ async function DeleteTest(_, { _id, user_id }) {
     }
     // *************** Check if the test exists and has an ACTIVE status
     const existingTest = await TestModel.exists({
-      _id: _id,
       test_status: { $in: ["NOT_PUBLISHED", "PUBLISHED"] },
     });
     // *************** If test is not found or already deleted, throw an error
@@ -312,14 +311,7 @@ async function DeleteTest(_, { _id, user_id }) {
       throw new ApolloError("Test not found or already deleted", "NOT_FOUND");
     }
     // *************** Soft delete: update test_status and set deleted_at timestamp
-    await TestModel.updateOne(
-      { _id: _id },
-      {
-        test_status: "DELETED",
-        deleted_by: user_id,
-        deleted_at: new Date(),
-      }
-    );
+    await TestModel.updateOne({ _id: _id }, { test_status: "DELETED" });
     return _id;
     // *************** If an error occurs during the update, throw an ApolloError with details
   } catch (error) {

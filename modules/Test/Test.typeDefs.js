@@ -89,14 +89,14 @@ const typeDefs = gql`
 
   type Query {
     GetAllTests: [Test!]!
-    GetOneTest(id: ID!): Test
+    GetOneTest(_id: ID!): Test
   }
 
   type Mutation {
     CreateTest(input: CreateTestInput!): Test!
     PublishTest(_id: ID!): PublishTestPayload!
-    UpdateTest(id: ID!, input: UpdateTestInput!): Test!
-    DeleteTest(_id: ID!, user_id: ID): ID!
+    UpdateTest(_id: ID!, input: UpdateTestInput!): Test!
+    DeleteTest(_id: ID!): ID!
   }
 `;
 
