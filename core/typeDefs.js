@@ -2,25 +2,25 @@
 const { mergeTypeDefs } = require("@graphql-tools/merge");
 
 // *************** IMPORT MODULE ***************
-const schoolTypeDefs = require("../modules/School/School.typeDefs.js");
-const studentTypeDefs = require("../modules/Student/Student.typeDefs.js");
-const userTypeDefs = require("../modules/User/User.typeDefs.js");
-const blockTypeDefs = require("../modules/Block/Block.typeDefs.js");
-const subjectTypeDefs = require("../modules/Subject/Subject.typeDefs.js");
-const testTypeDefs = require("../modules/Test/Test.typeDefs.js");
-const studentTestResultTypeDefs = require("../modules/StudentTestResult/StudentTestResult.typeDefs.js");
-const taskTypeDefs = require("../modules/Task/Task.typeDefs.js");
+const SchoolTypeDefs = require("../modules/School/School.typeDefs.js");
+const StudentTypeDefs = require("../modules/Student/Student.typeDefs.js");
+const UserTypeDefs = require("../modules/User/User.typeDefs.js");
+const BlockTypeDefs = require("../modules/Block/Block.typeDefs.js");
+const SubjectTypeDefs = require("../modules/Subject/Subject.typeDefs.js");
+const TestTypeDefs = require("../modules/Test/Test.typeDefs.js");
+const StudentTestResultTypeDefs = require("../modules/StudentTestResult/StudentTestResult.typeDefs.js");
+const TaskTypeDefs = require("../modules/Task/Task.typeDefs.js");
 
 // *************** Merge all GraphQL type definitions modules
 const TypeDefs = mergeTypeDefs([
-  schoolTypeDefs,
-  studentTypeDefs,
-  userTypeDefs,
-  blockTypeDefs,
-  subjectTypeDefs,
-  testTypeDefs,
-  taskTypeDefs,
-  studentTestResultTypeDefs,
+  SchoolTypeDefs,
+  StudentTypeDefs,
+  UserTypeDefs,
+  BlockTypeDefs,
+  SubjectTypeDefs,
+  TestTypeDefs,
+  TaskTypeDefs,
+  StudentTestResultTypeDefs,
 ]);
 
 // *************** EXPORT MODULE ***************
