@@ -34,7 +34,7 @@ const BlockSchema = new Mongoose.Schema(
     // The academic year for this block
     academic_year: {
       type: Number,
-      required: true,
+      default: null,
     },
     // A short, unique code for internal or display use
     block_code: {

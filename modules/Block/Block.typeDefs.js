@@ -28,7 +28,7 @@ const typeDefs = gql`
     subject_ids: [Subject]
     school_id: School
     user_id: ID
-    academic_year: Int!
+    academic_year: Int
     block_code: String!
     block_status: BlockStatus!
     block_type: BlockType!
@@ -44,7 +44,7 @@ const typeDefs = gql`
   input CreateBlockInput {
     name: String!
     description: String!
-    academic_year: Int!
+    academic_year: Int
     block_code: String!
     block_status: BlockStatus!
     block_type: BlockType!
@@ -55,7 +55,7 @@ const typeDefs = gql`
   input UpdateBlockInput {
     name: String!
     description: String!
-    academic_year: Int!
+    academic_year: Int
     block_code: String!
     block_status: BlockStatus!
     block_type: BlockType!
