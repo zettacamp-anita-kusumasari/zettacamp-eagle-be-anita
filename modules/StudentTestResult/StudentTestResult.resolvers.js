@@ -43,7 +43,7 @@ async function GetAllStudentTestResults() {
 async function GetOneStudentTestResult(_, { _id }) {
   try {
     // *************** Validate if the provided ID is a valid MongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+    if (!_id || !Mongoose.Types.ObjectId.isValid(_id)) {
       throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Try to find the student test result with the given ID
@@ -83,7 +83,7 @@ async function GetOneStudentTestResult(_, { _id }) {
 async function UpdateStudentTestResult(_, { _id, input }, context) {
   try {
     // *************** Validate ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+    if (!_id || !Mongoose.Types.ObjectId.isValid(_id)) {
       throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Validate input
@@ -137,7 +137,7 @@ async function UpdateStudentTestResult(_, { _id, input }, context) {
 async function DeleteStudentTestResult(_, { _id }) {
   try {
     // *************** Validate if the provided ID is a valid MongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+    if (!_id || !Mongoose.Types.ObjectId.isValid(_id)) {
       throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Perform soft delete and set deleted_at timestamp

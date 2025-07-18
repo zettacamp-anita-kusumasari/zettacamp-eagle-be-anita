@@ -53,7 +53,7 @@ async function GetAllSubjects() {
 async function GetOneSubject(_, { _id }) {
   try {
     // *************** Check if the given ID is a valid mongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+    if (!_id || !Mongoose.Types.ObjectId.isValid(_id)) {
       throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Try to find a subject data that has ACTIVE status by its mongoDB ObjectId
@@ -142,7 +142,7 @@ async function CreateSubject(_, { input }) {
 async function UpdateSubject(_, { _id, input }) {
   try {
     // *************** Check if the provided ID is a valid MongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+    if (!_id || !Mongoose.Types.ObjectId.isValid(_id)) {
       throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Validate the input using exported function ValidateSubjectInput
@@ -198,7 +198,7 @@ async function UpdateSubject(_, { _id, input }) {
 async function DeleteSubject(_, { _id }) {
   try {
     // *************** Validate if the provided ID is a valid MongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+    if (!_id || !Mongoose.Types.ObjectId.isValid(_id)) {
       throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Check if the subject exists and has an ACTIVE status

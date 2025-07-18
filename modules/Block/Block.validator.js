@@ -78,7 +78,7 @@ function ValidateBlockInput(input) {
     );
   }
   // *************** Validate that user_id is a Valid ObjectId Mongoose
-  if (!Mongoose.Types.ObjectId.isValid(user_id)) {
+  if (!user_id || !Mongoose.Types.ObjectId.isValid(user_id)) {
     throw new ApolloError(`Invalid ID: ${user_id}`, "BAD_USER_INPUT");
   }
   // *************** Validate evaluation_assessment is it Upper Case

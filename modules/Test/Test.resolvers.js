@@ -58,7 +58,7 @@ async function GetAllTests() {
 async function GetOneTest(_, { _id }) {
   try {
     // *************** Check if the given ID is a valid mongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+    if (!_id || !Mongoose.Types.ObjectId.isValid(_id)) {
       throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Try to find a test data that has PUBLISHED status by its mongoDB ObjectId
@@ -171,7 +171,7 @@ async function CreateTest(_, { input }) {
 async function PublishTest(_, { _id }) {
   try {
     // *************** Check if the given ID is a valid mongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+    if (!_id || !Mongoose.Types.ObjectId.isValid(_id)) {
       throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Find test with NOT_PUBLISHED status and matching ID
@@ -235,7 +235,7 @@ async function PublishTest(_, { _id }) {
 async function UpdateTest(_, { _id, input }) {
   try {
     // *************** Check if the provided ID is a valid MongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+    if (!_id || !Mongoose.Types.ObjectId.isValid(_id)) {
       throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Validate the input using exported function ValidateTestInput
@@ -299,7 +299,7 @@ async function UpdateTest(_, { _id, input }) {
 async function DeleteTest(_, { _id }) {
   try {
     // *************** Validate if the provided ID is a valid MongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+    if (!_id || !Mongoose.Types.ObjectId.isValid(_id)) {
       throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Check if the test exists and has an ACTIVE status

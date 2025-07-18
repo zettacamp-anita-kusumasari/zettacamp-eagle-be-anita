@@ -36,7 +36,7 @@ function ValidateSubjectInput(input) {
     });
   }
   // *************** Validate that block_id is a Valid ObjectId Mongoose
-  if (!Mongoose.Types.ObjectId.isValid(block_id)) {
+  if (!block_id || !Mongoose.Types.ObjectId.isValid(block_id)) {
     throw new ApolloError(`Invalid ID: ${block_id}`, "BAD_USER_INPUT");
   }
 

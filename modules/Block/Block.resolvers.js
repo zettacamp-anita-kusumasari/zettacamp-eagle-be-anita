@@ -44,7 +44,7 @@ async function GetAllBlocks() {
 async function GetOneBlock(_, { _id }) {
   try {
     // *************** Check if the given ID is a valid mongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+    if (!_id || !Mongoose.Types.ObjectId.isValid(_id)) {
       throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Try to find a block data that has ACTIVE status by its mongoDB ObjectId
@@ -147,7 +147,7 @@ async function CreateBlock(_, { input }) {
 async function UpdateBlock(_, { _id, input }) {
   try {
     // *************** Check if the provided ID is a valid MongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+    if (!_id || !Mongoose.Types.ObjectId.isValid(_id)) {
       // *************** If the ID is invalid, throw an ApolloError with a BAD_USER_INPUT code
       throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
@@ -203,7 +203,7 @@ async function UpdateBlock(_, { _id, input }) {
 async function DeleteBlock(_, { _id }) {
   try {
     // *************** Validate if the provided ID is a valid MongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+    if (!_id || !Mongoose.Types.ObjectId.isValid(_id)) {
       throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Check if the block exists and has an ACTIVE status

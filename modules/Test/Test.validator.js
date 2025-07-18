@@ -47,7 +47,7 @@ function ValidateTestInput(input) {
     });
   }
   // *************** Validate that subject_id is a valid MongoDB ObjectId
-  if (!Mongoose.Types.ObjectId.isValid(subject_id)) {
+  if (!subject_id || !Mongoose.Types.ObjectId.isValid(subject_id)) {
     throw new ApolloError(
       `Invalid subject_id: ${subject_id}`,
       "BAD_USER_INPUT",
@@ -131,7 +131,7 @@ function ValidateTestInput(input) {
     );
   }
   // *************** Validate that user_id is a valid MongoDB ObjectId
-  if (!Mongoose.Types.ObjectId.isValid(user_id)) {
+  if (!user_id || !Mongoose.Types.ObjectId.isValid(user_id)) {
     throw new ApolloError(`Invalid user_id: ${user_id}`, "BAD_USER_INPUT", {
       field: "user_id",
     });

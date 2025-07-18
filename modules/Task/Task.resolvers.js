@@ -53,7 +53,7 @@ async function GetAllTasks() {
 async function GetOneTask(_, { id }) {
   try {
     // *************** Validate if the provided ID is a valid MongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(id)) {
+    if (!_id || !Mongoose.Types.ObjectId.isValid(id)) {
       throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
     }
     // *************** Try to find the task with the given ID
@@ -92,7 +92,7 @@ async function GetOneTask(_, { id }) {
 async function UpdateTask(_, { id, input }) {
   try {
     // *************** Check if the provided ID is a valid MongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(id)) {
+    if (!_id || !Mongoose.Types.ObjectId.isValid(id)) {
       throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
     }
     // *************** Destructure necessary fields from the input object
@@ -132,7 +132,7 @@ async function UpdateTask(_, { id, input }) {
 async function AssignCorrector(_, { _id }, context) {
   try {
     // *************** Check if the given ID is a valid mongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+    if (!_id || !Mongoose.Types.ObjectId.isValid(_id)) {
       throw new ApolloError(`Invalid task ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Find the ASSIGN_CORRECTOR task
@@ -226,15 +226,15 @@ async function EnterMarks(_, { _id, input }, context) {
   try {
     const { marks, test_id, student_id } = input;
     // *************** Validate the _id
-    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+    if (!_id || !Mongoose.Types.ObjectId.isValid(_id)) {
       throw new ApolloError(`Invalid task ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Validate the test_id
-    if (!Mongoose.Types.ObjectId.isValid(test_id)) {
+    if (!test_id || !Mongoose.Types.ObjectId.isValid(test_id)) {
       throw new ApolloError(`Invalid test ID: ${test_id}`, "BAD_USER_INPUT");
     }
     // *************** Validate the student_id
-    if (!Mongoose.Types.ObjectId.isValid(student_id)) {
+    if (!student_id || !Mongoose.Types.ObjectId.isValid(student_id)) {
       throw new ApolloError(
         `Invalid student ID: ${student_id}`,
         "BAD_USER_INPUT"
@@ -306,7 +306,7 @@ async function EnterMarks(_, { _id, input }, context) {
  */
 async function ValidateMarks(_, { _id }, context) {
   // *************** Check if the given ID is a valid MongoDB ObjectId
-  if (!Mongoose.Types.ObjectId.isValid(_id)) {
+  if (!_id || !Mongoose.Types.ObjectId.isValid(_id)) {
     throw new ApolloError("Invalid task_id", "BAD_USER_INPUT");
   }
   // *************** Find the valid task
@@ -342,7 +342,7 @@ async function ValidateMarks(_, { _id }, context) {
 async function DeleteTask(_, { _id }) {
   try {
     // *************** Validate if the provided ID is a valid MongoDB ObjectId
-    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+    if (!_id || !Mongoose.Types.ObjectId.isValid(_id)) {
       throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
     // *************** Check if the task exists and PENDING and COMPLETED status
