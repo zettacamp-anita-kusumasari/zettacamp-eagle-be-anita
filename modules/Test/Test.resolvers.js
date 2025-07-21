@@ -122,12 +122,10 @@ async function CreateTest(_, { input }) {
       subject_id: subject_id,
       description: description,
       weight: weight,
-      notations: notations.map(function (n) {
-        return {
-          notation_text: n.notation_text,
-          max_point: n.max_point,
-        };
-      }),
+      notations: notations.map(n => ({
+        notation_text: n.notation_text,
+        max_point: n.max_point,
+      })),
       test_status: test_status.toUpperCase(),
       for_retake: for_retake,
       published_date: published_date,
@@ -258,12 +256,10 @@ async function UpdateTest(_, { _id, input }) {
       subject_id: subject_id,
       description: description,
       weight: weight,
-      notations: notations.map(function (n) {
-        return {
-          notation_text: n.notation_text,
-          max_point: n.max_point,
-        };
-      }),
+      notations: notations.map(n => ({
+        notation_text: n.notation_text,
+        max_point: n.max_point,
+      })),
       test_status: test_status.toUpperCase(),
       for_retake: for_retake,
       published_date: published_date,
