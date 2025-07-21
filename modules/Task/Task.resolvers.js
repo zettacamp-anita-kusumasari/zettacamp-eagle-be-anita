@@ -252,14 +252,14 @@ async function EnterMarks(_, { _id, input }, context) {
       );
     }
     // *************** Calculate overall average
-    const totalMarks = marks.reduce((sum, entry) => sum + entry.mark, 0);
-    const overallAverage = parseFloat((totalMarks / marks.length).toFixed(2));
+    const average_mark =
+      marks.reduce((acc, m) => acc + m.mark, 0) / marks.length;
     // *************** Save the student test result
-    const createSTD = await StudentTestResultModel.create({
+    await StudentTestResultModel.create({
       test_id,
       student_id,
       marks,
-      average_mark: overallAverage,
+      average_mark: average_mark,
       mark_entry_date: new Date(),
     });
     // *************** Find the ENTER_MARKS task
