@@ -29,20 +29,11 @@ const PORT = process.env.PORT || 4000;
 ConnectDB();
 
 /**
- * Asynchronously starts an Apollo Server instance and integrates it with the Express application.
- *
- * This function initializes the Apollo Server with the defined GraphQL type definitions and resolvers
- * for schools, students, and users. It also sets up the context with DataLoaders for batching and caching
- * database requests efficiently.
- *
- * The `context` provides:
- * - `userLoader`: A DataLoader for batching user data requests.
- * - `schoolLoader`: A DataLoader for batching school data requests.
- * - `studentLoader`: A DataLoader for batching student data requests.
+ * Starts the Apollo Server with provided type definitions, resolvers, and context (including DataLoaders).
  *
  * @async
  * @function StartApolloServer
- * @returns {Promise<void>} A promise that resolves once the Apollo Server is successfully started.
+ * @returns {Promise<void>} A promise that resolves when the Apollo Server has started successfully.
  */
 async function StartApolloServer() {
   // ****************** Create a new Apollo Server instance with type definitions, resolvers, and context
