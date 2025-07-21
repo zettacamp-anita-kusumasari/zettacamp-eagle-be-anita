@@ -6,18 +6,18 @@ const Resolvers = require('./core/resolvers.js');
 const TypeDefs = require('./core/typeDefs.js');
 
 // *************** IMPORT LIBRARY ***************
-const express = require('express');
-const dotenv = require('dotenv');
+const Express = require('express');
+const Dotenv = require('dotenv');
 const { ApolloServer } = require('apollo-server-express');
 
 // *************** LOADER ***************
 const Loaders = require('./core/loaders.js');
 
 // *************** Initialize the Express application
-const index = express();
+const index = Express();
 
 // *************** Load environment variables from .env file into process.env
-dotenv.config();
+Dotenv.config();
 
 // *************** Get the MONGODB_URI (Uniform Resource Identifier) value from Environment
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -41,10 +41,10 @@ ConnectDB();
  * - `studentLoader`: A DataLoader for batching student data requests.
  *
  * @async
- * @function startApolloServer
+ * @function StartApolloServer
  * @returns {Promise<void>} A promise that resolves once the Apollo Server is successfully started.
  */
-async function startApolloServer() {
+async function StartApolloServer() {
   // ****************** Create a new Apollo Server instance with type definitions, resolvers, and context
   const server = new ApolloServer({
     typeDefs: TypeDefs,
@@ -65,4 +65,4 @@ async function startApolloServer() {
 }
 
 // *************** Call the function to launch server
-startApolloServer();
+StartApolloServer();
