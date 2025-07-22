@@ -203,8 +203,8 @@ async function PublishTest(_, { _id }) {
     const updatedTest = await TestModel.findById(_id);
     // *************** Return the updated test and assined task
     return {
-      test: updatedTest,
-      task: assignTask,
+      updatedTest,
+      assignTask,
     };
   } catch (error) {
     // *************** If an error occurs during the mutation, throw an ApolloError
@@ -253,7 +253,7 @@ async function UpdateTest(_, { _id, input }) {
       published_date,
       user_id,
     } = input;
-    // *************** (Map input fields to database schema) Construct a new block data object to be used for update
+    // *************** Map input fields to database schema
     const testData = {
       name: name,
       subject_id: subject_id,
@@ -301,7 +301,7 @@ async function DeleteTest(_, { _id }) {
     if (!_id || !Mongoose.Types.ObjectId.isValid(_id)) {
       throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
-    // *************** Check if the test exists and has an ACTIVE status
+    // *************** Check if the test exists and has an NOT_PUBLISHED and PUBLISHED status
     const existingTest = await TestModel.exists({
       test_status: { $in: ["NOT_PUBLISHED", "PUBLISHED"] },
     });

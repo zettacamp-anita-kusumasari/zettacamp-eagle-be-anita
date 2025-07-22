@@ -36,8 +36,8 @@ const typeDefs = gql`
   }
 
   type PublishTestPayload {
-    test: ReturnTest!
-    task: ReturnTask!
+    updatedTest: ReturnTest!
+    assignTask: ReturnTask!
   }
 
   type ReturnTest {
