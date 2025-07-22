@@ -21,8 +21,8 @@ async function BatchSubjects(ids) {
     subjectMap.set(String(subject._id), subject);
   });
   // *************** Return subjects in the same order as input IDs
-  const toOrderedSubjects = ids.map((id) => subjectMap.get(String(id)) || null);
-  return toOrderedSubjects;
+  const OrderedSubjects = ids.map((id) => subjectMap.get(String(id)) || null);
+  return OrderedSubjects;
 }
 
 /**
@@ -33,8 +33,8 @@ async function BatchSubjects(ids) {
  */
 function CreateSubjectLoader() {
   // *************** Return DataLoader to BatchSubjects
-  const toSubjectLoader = new DataLoader(BatchSubjects);
-  return toSubjectLoader;
+  const SubjectLoader = new DataLoader(BatchSubjects);
+  return SubjectLoader;
 }
 
 // *************** EXPORT MODULE ***************

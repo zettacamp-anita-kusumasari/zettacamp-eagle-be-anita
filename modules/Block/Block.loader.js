@@ -23,8 +23,8 @@ async function BatchBlocks(ids) {
     blockMap.set(String(block._id), block);
   });
   // *************** Return blocks in the same order as input IDs
-  const toOrderedBlocks = ids.map((id) => blockMap.get(String(id)) || null);
-  return toOrderedBlocks;
+  const OrderedBlocks = ids.map((id) => blockMap.get(String(id)) || null);
+  return OrderedBlocks;
 }
 
 /**
@@ -35,8 +35,8 @@ async function BatchBlocks(ids) {
  */
 function CreateBlockLoader() {
   // *************** Return DataLoader to BatchSchools
-  const toBlockLoader = new DataLoader(BatchBlocks);
-  return toBlockLoader;
+  const BlockLoader = new DataLoader(BatchBlocks);
+  return BlockLoader;
 }
 
 // *************** EXPORT MODULE ***************

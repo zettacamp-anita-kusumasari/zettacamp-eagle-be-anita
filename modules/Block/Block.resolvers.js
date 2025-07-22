@@ -114,8 +114,8 @@ async function CreateBlock(_, { input }) {
       created_by: user_id,
     };
     // *************** Save the block data to the database using Mongoose
-    const toCreatedBlock = await BlockModel.create(blockData);
-    return toCreatedBlock;
+    const CreatedBlock = await BlockModel.create(blockData);
+    return CreatedBlock;
   } catch (error) {
     // *************** If an error occurs during the create, throw an ApolloError with the error message
     throw new ApolloError("Failed to create block:", "BLOCK_CREATION_FAILED", {
@@ -244,11 +244,11 @@ async function subject_ids(parent, _, context) {
     return [];
   }
   // *************** Use the Subject Loader to load many subject documents by its ID
-  const toSubjectList = await context.subjectLoader.loadMany(
+  const SubjectList = await context.subjectLoader.loadMany(
     parent.subject_ids
   );
   // *************** Return the loaded subject documents
-  return toSubjectList;
+  return SubjectList;
 }
 
 /**
@@ -269,9 +269,9 @@ async function school_id(parent, _, context) {
     return null;
   }
   // *************** Use the School Loader to fetch school document by its ID
-  const toLoadedSchool = await context.schoolLoader.load(parent.school_id);
+  const LoadedSchool = await context.schoolLoader.load(parent.school_id);
   // *************** Return the loaded school ducument
-  return toLoadedSchool;
+  return LoadedSchool;
 }
 
 // *************** EXPORT MODULE ***************

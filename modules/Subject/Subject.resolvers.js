@@ -111,14 +111,14 @@ async function CreateSubject(_, { input }) {
       created_by: user_id,
     };
     // *************** Save the subject data to the database using Mongoose
-    const toCreatedSubject = await SubjectModel.create(subjectData);
+    const CreatedSubject = await SubjectModel.create(subjectData);
     // *************** Push the subject _id into the related block's subject_ids array
     await BlockModel.updateOne(
       { _id: block_id },
-      { $push: { subject_ids: toCreatedSubject._id } }
+      { $push: { subject_ids: CreatedSubject._id } }
     );
-    // *************** Return toCreatedSubject to created a subject
-    return toCreatedSubject;
+    // *************** Return CreatedSubject to created a subject
+    return CreatedSubject;
   } catch (error) {
     // *************** If an error occurs during the query, throw an ApolloError
     throw new ApolloError(
@@ -168,13 +168,13 @@ async function UpdateSubject(_, { _id, input }) {
       updated_by: user_id,
     };
     // *************** Perform the update in the database and return the updated document
-    const toUpdatedSubject = await SubjectModel.findByIdAndUpdate(
+    const UpdatedSubject = await SubjectModel.findByIdAndUpdate(
       _id,
       { $set: subjectData },
       { new: true }
     ).lean();
-    // *************** Return toUpdatedSubject to Update a subject
-    return toUpdatedSubject;
+    // *************** Return UpdatedSubject to Update a subject
+    return UpdatedSubject;
   } catch (error) {
     // *************** If an error occurs during the update, throw an ApolloError with details
     throw new ApolloError(
@@ -240,9 +240,9 @@ async function test_ids(parent, _, context) {
     return [];
   }
   // *************** Use the TestLoader to load many test documents by its ID
-  const toTestList = await context.testLoader.loadMany(parent.test_ids);
+  const TestList = await context.testLoader.loadMany(parent.test_ids);
   // *************** Return the loaded test documents
-  return toTestList;
+  return TestList;
 }
 
 /**
@@ -261,9 +261,9 @@ async function block_id(parent, _, context) {
     return null;
   }
   // *************** Use the BlockLoader to fetch block document by its ID
-  const toLoadedBlock = await context.blockLoader.load(parent.block_id);
+  const LoadedBlock = await context.blockLoader.load(parent.block_id);
   // *************** Return the loaded block ducument
-  return toLoadedBlock;
+  return LoadedBlock;
 }
 
 // *************** EXPORT MODULE ***************

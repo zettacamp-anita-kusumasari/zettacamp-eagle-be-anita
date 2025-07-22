@@ -18,9 +18,9 @@ async function ConnectDB(){
     // *************** Get the MongoDB URI from environment variables
     const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/zettacamp';
     // *************** Attempt to connect to MongoDB using Mongoose
-    const conn = await Mongoose.connect(mongoURI);
+    const connecting = await Mongoose.connect(mongoURI);
     // *************** Log successful connection details (host and database name)
-    console.log(`MongoDB Connected: ${conn.connection.host}/${conn.connection.name}`);
+    console.log(`MongoDB Connected: ${connecting.connection.host}/${conn.connection.name}`);
   } catch (error) {
     // *************** Log connection error message and exit the process with failure code
     console.error('MongoDB connection failed:', error.message);

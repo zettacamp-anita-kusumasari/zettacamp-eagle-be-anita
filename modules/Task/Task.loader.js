@@ -21,8 +21,8 @@ async function BatchTasks(ids) {
     taskMap.set(String(task._id), task);
   });
   // *************** Return tasks in the same order as input IDs
-  const toOrderedTasks = ids.map((id) => taskMap.get(String(id)) || null);
-  return toOrderedTasks;
+  const OrderedTasks = ids.map((id) => taskMap.get(String(id)) || null);
+  return OrderedTasks;
 }
 
 /**
@@ -33,8 +33,8 @@ async function BatchTasks(ids) {
  */
 function CreateTaskLoader() {
   // *************** Return DataLoader to BatchTasks
-  const toTaskLoader = new DataLoader(BatchTasks);
-  return toTaskLoader;
+  const TaskLoader = new DataLoader(BatchTasks);
+  return TaskLoader;
 }
 
 // *************** EXPORT MODULE ***************

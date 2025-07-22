@@ -110,14 +110,14 @@ async function UpdateStudentTestResult(_, { _id, input }, context) {
       average_mark,
     };
     // *************** Perform update
-    const toUpdatedStudentTestResult =
+    const UpdatedStudentTestResult =
       await StudentTestResultModel.findByIdAndUpdate(
         _id,
         { $set: studentTestResultData },
         { new: true }
       ).lean();
     // *************** return the Updated student test result
-    return toUpdatedStudentTestResult;
+    return UpdatedStudentTestResult;
     // *************** If an error is accure, then throw Apollo Error
   } catch (error) {
     throw new ApolloError(
@@ -176,9 +176,9 @@ async function test_id(parent, _, context) {
     return null;
   }
   // *************** Use the testLoader to fetch test document by its ID
-  const toLoadedTest = await context.testLoader.load(parent.test_id);
+  const LoadedTest = await context.testLoader.load(parent.test_id);
   // *************** Return the loaded student document
-  return toLoadedTest;
+  return LoadedTest;
 }
 
 /**
@@ -197,9 +197,9 @@ async function student_id(parent, _, context) {
     return null;
   }
   // *************** Use the StudentLoader to fetch test document by its ID
-  const toLoadedStudent = await context.studentLoader.load(parent.student_id);
+  const LoadedStudent = await context.studentLoader.load(parent.student_id);
   // *************** Return the loaded student document
-  return toLoadedStudent;
+  return LoadedStudent;
 }
 
 // *************** EXPORT MODULE ***************

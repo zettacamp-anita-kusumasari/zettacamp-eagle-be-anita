@@ -23,10 +23,10 @@ async function BatchStudentTestResults(ids) {
     studentTestResultMap.set(String(studentTestResult._id), studentTestResult);
   });
   // *************** Return student test results in the same order as input IDs
-  const toOrderedStudentTestResults = ids.map((id) =>
+  const OrderedStudentTestResults = ids.map((id) =>
     studentTestResultMap.get(String(id) || null)
   );
-  return toOrderedStudentTestResults;
+  return OrderedStudentTestResults;
 }
 
 /**
@@ -37,8 +37,8 @@ async function BatchStudentTestResults(ids) {
  */
 function CreateStudentTestResultLoader() {
   // *************** Return DataLoader to BatchStudentTestResults
-  const toStudentTestResultLoader = new DataLoader(BatchStudentTestResults);
-  return toStudentTestResultLoader;
+  const StudentTestResultLoader = new DataLoader(BatchStudentTestResults);
+  return StudentTestResultLoader;
 }
 
 // *************** EXPORT MODULE ***************

@@ -21,8 +21,8 @@ async function BatchTests(ids) {
     testMap.set(String(test._id), test);
   });
   // *************** Return tests in the same order as input IDs
-  const toOrderedTests = ids.map((id) => testMap.get(String(id)) || null);
-  return toOrderedTests;
+  const OrderedTests = ids.map((id) => testMap.get(String(id)) || null);
+  return OrderedTests;
 }
 
 /**
@@ -33,8 +33,8 @@ async function BatchTests(ids) {
  */
 function CreateTestLoader() {
   // *************** Return DataLoader to BatchTests
-  const toTestLoader = new DataLoader(BatchTests);
-  return toTestLoader;
+  const TestLoader = new DataLoader(BatchTests);
+  return TestLoader;
 }
 
 // *************** EXPORT MODULE ***************

@@ -106,12 +106,12 @@ async function UpdateTask(_, { id, input }) {
       due_date: due_date,
     };
     // *************** Perform the update in the database and return the updated document
-    const toUpdatedTask = await TaskModel.findByIdAndUpdate(
+    const UpdatedTask = await TaskModel.findByIdAndUpdate(
       id,
       { $set: taskData },
       { new: true }
     ).lean();
-    return toUpdatedTask;
+    return UpdatedTask;
   } catch (error) {
     // *************** If an error occurs during the update, throw an ApolloError with details
     throw new ApolloError("Failed to update task:", "TASK_UPDATE_FAILED", {
@@ -385,9 +385,9 @@ async function student_id(parent, _, context) {
     return null;
   }
   // *************** Use the StudentLoader to fetch student document by its ID
-  const toLoadedStudent = await context.studentLoader.load(parent.student_id);
+  const LoadedStudent = await context.studentLoader.load(parent.student_id);
   // *************** Return the loaded student document
-  return toLoadedStudent;
+  return LoadedStudent;
 }
 
 /**
@@ -405,9 +405,9 @@ async function test_id(parent, _, context) {
     return null;
   }
   // *************** Use the TestLoader to fetch test document by its ID
-  const toLoadedTest = await context.testLoader.load(parent.test_id);
+  const LoadedTest = await context.testLoader.load(parent.test_id);
   // *************** Return the loaded test document
-  return toLoadedTest;
+  return LoadedTest;
 }
 
 // *************** EXPORT MODULE ***************

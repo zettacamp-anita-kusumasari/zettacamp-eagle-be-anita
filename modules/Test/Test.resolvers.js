@@ -132,14 +132,14 @@ async function CreateTest(_, { input }) {
       created_by: user_id,
     };
     // *************** Save the test data to the database using Mongoose
-    const toCreatedTest = await TestModel.create(testData);
+    const CreatedTest = await TestModel.create(testData);
     // *************** Push the test _id into the related block's test_ids array
     await SubjectModel.updateOne(
       { _id: subject_id },
-      { $push: { test_ids: toCreatedTest._id } }
+      { $push: { test_ids: CreatedTest._id } }
     );
-    // *************** Return toCreatedTest to created a test
-    return toCreatedTest;
+    // *************** Return CreatedTest to created a test
+    return CreatedTest;
   } catch (error) {
     // *************** If an error occurs during the mutation, throw an ApolloError
     throw new ApolloError("Failed to create test:", "TEST_CREATION_FAILED", {
@@ -269,13 +269,13 @@ async function UpdateTest(_, { _id, input }) {
       updated_by: user_id,
     };
     // *************** Perform the update in the database and return the updated document
-    const toUpdatedTest = await TestModel.findByIdAndUpdate(
+    const UpdatedTest = await TestModel.findByIdAndUpdate(
       _id,
       { $set: testData },
       { new: true }
     ).lean();
-    // *************** Return toUpdatedTest to Updated a Test
-    return toUpdatedTest;
+    // *************** Return UpdatedTest to Updated a Test
+    return UpdatedTest;
   } catch (error) {
     // *************** If an error occurs during the update, throw an ApolloError with details
     throw new ApolloError("Failed to update test:", "TEST_UPDATE_FAILED", {
@@ -339,9 +339,9 @@ async function subject_id(parent, _, context) {
     return null;
   }
   // *************** Use the SubjectLoader to fetch subject document by its ID
-  const toLoadedSubject = await context.subjectLoader.load(parent.subject_id);
+  const LoadedSubject = await context.subjectLoader.load(parent.subject_id);
   // *************** Return the loaded subject document
-  return toLoadedSubject;
+  return LoadedSubject;
 }
 
 // *************** EXPORT MODULE ***************
