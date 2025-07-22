@@ -164,8 +164,9 @@ async function AssignCorrector(_, { _id }, context) {
     }).lean();
     // *************** Get student names
     const studentNames =
-      studentDocs.map((s) => `${s.first_name} ${s.last_name}`).join(", ") ||
-      "No students assigned.";
+      studentDocs
+        .map((studentDoc) => `${studentDoc.first_name} ${studentDoc.last_name}`)
+        .join(", ") || "No students assigned.";
     // *************** Set your SendGrid API key
     SendGridMail.setApiKey(process.env.SENDGRID_API_KEY);
     // *************** Define the email message
@@ -253,10 +254,10 @@ async function EnterMarks(_, { _id, input }, context) {
     }
     // *************** Calculate overall average
     const average_mark =
-      marks.reduce((accumulator, oneMark) => accumulator + oneMark.mark, 0) /
+      marks.reduce((accumulator, currentMark) => accumulator + currentMark.mark, 0) /
       marks.length;
     // *************** Save the student test result
-    await StudentTestResultModel.create({
+    const createStudentTestResult = await StudentTestResultModel.create({
       test_id,
       student_id,
       marks,
@@ -283,7 +284,10 @@ async function EnterMarks(_, { _id, input }, context) {
       due_date: new Date(new Date().setHours(0, 0, 0, 0) + 3 * 86400000),
     });
     // *************** return the validateMarksTask
-    return validateMarksTask;
+    return {
+      validateMarksTask,
+      createStudentTestResult
+    } 
   } catch (error) {
     // *************** If an error occur, throw apollo error
     throw new ApolloError("Failed to enter marks.", "ENTER_MARKS_FAILED", {

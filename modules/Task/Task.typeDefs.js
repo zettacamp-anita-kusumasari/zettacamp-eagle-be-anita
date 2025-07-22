@@ -49,6 +49,26 @@ const typeDefs = gql`
     mark: Float!
   }
 
+  type EnterMarkPayload {
+    validateMarksTask: ReturnTask!
+    createStudentTestResult: ReturnStudentTestResult!
+  }
+
+  type ReturnTask {
+    _id: ID
+    task_type: TaskType
+    task_status: TaskStatus
+    due_date: Date
+    test_id: Test
+  }
+
+  type ReturnStudentTestResult {
+    _id: ID
+    marks: [MarkEntry!]!
+    average_mark: Float
+    mark_entry_date: Date
+  }
+
   input UpdateTaskInput {
     task_type: TaskType!
     task_status: TaskStatus!
@@ -74,7 +94,7 @@ const typeDefs = gql`
   type Mutation {
     UpdateTask(id: ID!, input: UpdateTaskInput!): Task!
     AssignCorrector(_id: ID!): Task!
-    EnterMarks(_id: ID!, input: EnterMarksInput!): Task!
+    EnterMarks(_id: ID!, input: EnterMarksInput!): EnterMarkPayload!
     ValidateMarks(_id: ID!): Task!
     DeleteTask(_id: ID!): ID!
   }
