@@ -25,7 +25,7 @@ const { ValidateTestInput } = require("./Test.validator");
  */
 async function GetAllTests() {
   try {
-    // *************** Try to fetch all tests where status is PUBLISHED and NOT_PUBLISHED 
+    // *************** Try to fetch all tests where status is PUBLISHED and NOT_PUBLISHED
     const activeTests = await TestModel.find({
       test_status: { $in: ["NOT_PUBLISHED", "PUBLISHED"] },
     }).lean();
@@ -122,9 +122,9 @@ async function CreateTest(_, { input }) {
       subject_id: subject_id,
       description: description,
       weight: weight,
-      notations: notations.map(n => ({
-        notation_text: n.notation_text,
-        max_point: n.max_point,
+      notations: notations.map((notation) => ({
+        notation_text: notation.notation_text,
+        max_point: notation.max_point,
       })),
       test_status: test_status.toUpperCase(),
       for_retake: for_retake,
@@ -179,7 +179,10 @@ async function PublishTest(_, { _id }) {
     });
     // *************** Check if the test is exist
     if (!existingTest) {
-      throw new ApolloError("Test not found or already published.", "NOT_FOUND");
+      throw new ApolloError(
+        "Test not found or already published.",
+        "NOT_FOUND"
+      );
     }
     // *************** Update the Test
     await TestModel.updateOne(
@@ -202,7 +205,7 @@ async function PublishTest(_, { _id }) {
     return {
       test: updatedTest,
       task: assignTask,
-    };;
+    };
   } catch (error) {
     // *************** If an error occurs during the mutation, throw an ApolloError
     throw new ApolloError("Failed to publish test.", "TEST_PUBLISH_FAILED", {
@@ -256,9 +259,9 @@ async function UpdateTest(_, { _id, input }) {
       subject_id: subject_id,
       description: description,
       weight: weight,
-      notations: notations.map(n => ({
-        notation_text: n.notation_text,
-        max_point: n.max_point,
+      notations: notations.map((notation) => ({
+        notation_text: notation.notation_text,
+        max_point: notation.max_point,
       })),
       test_status: test_status.toUpperCase(),
       for_retake: for_retake,

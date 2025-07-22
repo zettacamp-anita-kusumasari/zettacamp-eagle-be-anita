@@ -253,7 +253,8 @@ async function EnterMarks(_, { _id, input }, context) {
     }
     // *************** Calculate overall average
     const average_mark =
-      marks.reduce((acc, m) => acc + m.mark, 0) / marks.length;
+      marks.reduce((accumulator, oneMark) => accumulator + oneMark.mark, 0) /
+      marks.length;
     // *************** Save the student test result
     await StudentTestResultModel.create({
       test_id,
