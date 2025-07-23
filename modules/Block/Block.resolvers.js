@@ -83,11 +83,11 @@ async function GetOneBlock(_, { _id }) {
  * @param {string} args.input.block_status - Status of the block (e.g., "ACTIVE", "INACTIVE").
  * @param {string} args.input.block_type - Type of the block (e.g., "MANDATORY", "ELECTIVE").
  * @param {string} args.input.evaluation_assessment - Type of assessment (e.g., "EXAM", "PROJECT").
- * @param {string} args.input.user_id - ID of the user who created the block.
+ * @param {string} args.input.created_by - ID of the user who created the block.
  * @returns {Promise<object>} The created block document.
  * @throws {ApolloError} If validation fails or database operation encounters an error.
  */
-async function CreateBlock(_, { input }) {
+async function CreateBlock(_, { created_by, input }) {
   try {
     // *************** Validate the input using exported function ValidateBlockInput
     ValidateBlockInput(input);
@@ -100,7 +100,6 @@ async function CreateBlock(_, { input }) {
       block_status,
       block_type,
       evaluation_assessment,
-      user_id,
     } = input;
     // *************** Map input fields to database schema
     const blockData = {
@@ -111,7 +110,7 @@ async function CreateBlock(_, { input }) {
       block_status: block_status.toUpperCase(),
       block_type: block_type.toUpperCase(),
       evaluation_assessment: evaluation_assessment.toUpperCase(),
-      created_by: user_id,
+      created_by: created_by,
     };
     // *************** Save the block data to the database using Mongoose
     const CreatedBlock = await BlockModel.create(blockData);
@@ -140,11 +139,11 @@ async function CreateBlock(_, { input }) {
  * @param {string} args.input.block_status - Updated block status (e.g., "ACTIVE", "INACTIVE").
  * @param {string} args.input.block_type - Updated block type (e.g., "MANDATORY", "ELECTIVE").
  * @param {string} args.input.evaluation_assessment - Updated type of assessment.
- * @param {string} args.input.user_id - ID of the user performing the update.
+ * @param {string} args.input.updated_by - ID of the user performing the update.
  * @returns {Promise<object|null>} The updated block document, or null if not found.
  * @throws {ApolloError} If the ID is invalid, validation fails, or the update operation encounters an error.
  */
-async function UpdateBlock(_, { _id, input }) {
+async function UpdateBlock(_, { _id, updated_by, input }) {
   try {
     // *************** Check if the provided ID is a valid MongoDB ObjectId
     if (!_id || !Mongoose.Types.ObjectId.isValid(_id)) {
@@ -162,7 +161,6 @@ async function UpdateBlock(_, { _id, input }) {
       block_status,
       block_type,
       evaluation_assessment,
-      user_id,
     } = input;
     // *************** Map input fields to database schema
     const blockData = {
@@ -173,7 +171,7 @@ async function UpdateBlock(_, { _id, input }) {
       block_status: block_status.toUpperCase(),
       block_type: block_type.toUpperCase(),
       evaluation_assessment: evaluation_assessment.toUpperCase(),
-      updated_by: user_id,
+      updated_by: updated_by,
     };
     // *************** Perform the update in the database
     const UpdatedBlock = await BlockModel.findByIdAndUpdate(

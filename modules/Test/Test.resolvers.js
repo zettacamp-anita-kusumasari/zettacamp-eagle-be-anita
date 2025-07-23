@@ -95,12 +95,12 @@ async function GetOneTest(_, { _id }) {
  * @param {string} args.input.test_status - Status of the test (e.g., "DRAFT", "PUBLISHED").
  * @param {boolean} args.input.for_retake - Indicates if the test is for retake.
  * @param {Date} args.input.published_date - Scheduled published date.
- * @param {string} args.input.user_id - The ID of the user creating the test.
+ * @param {string} args.input.created_by - The ID of the user creating the test.
  *
  * @returns {Promise<Object>} The created test document.
  * @throws {ApolloError} If input validation fails or database operation fails.
  */
-async function CreateTest(_, { input }) {
+async function CreateTest(_, { input, created_by}) {
   try {
     // *************** Validate the input using exported function ValidateTestInput
     ValidateTestInput(input);
@@ -114,7 +114,6 @@ async function CreateTest(_, { input }) {
       test_status,
       for_retake,
       published_date,
-      user_id,
     } = input;
     // *************** Map input fields to database schema
     const testData = {
@@ -129,7 +128,7 @@ async function CreateTest(_, { input }) {
       test_status: test_status.toUpperCase(),
       for_retake: for_retake,
       published_date: published_date,
-      created_by: user_id,
+      created_by: created_by,
     };
     // *************** Save the test data to the database using Mongoose
     const CreatedTest = await TestModel.create(testData);
@@ -228,12 +227,12 @@ async function PublishTest(_, { _id }) {
  * @param {string} args.input.test_status - Status of the test (e.g., "PUBLISHED").
  * @param {boolean} args.input.for_retake - Whether this test is a retake.
  * @param {Date} args.input.published_date - Scheduled publish date.
- * @param {string} args.input.user_id - ID of the user performing the update.
+ * @param {string} args.input.updated_by - ID of the user performing the update.
  *
  * @returns {Promise<Object>} The updated test document.
  * @throws {ApolloError} If ID is invalid, validation fails, or update operation fails.
  */
-async function UpdateTest(_, { _id, input }) {
+async function UpdateTest(_, { _id, updated_by, input }) {
   try {
     // *************** Check if the provided ID is a valid MongoDB ObjectId
     if (!_id || !Mongoose.Types.ObjectId.isValid(_id)) {
@@ -251,7 +250,6 @@ async function UpdateTest(_, { _id, input }) {
       test_status,
       for_retake,
       published_date,
-      user_id,
     } = input;
     // *************** Map input fields to database schema
     const testData = {
@@ -266,7 +264,7 @@ async function UpdateTest(_, { _id, input }) {
       test_status: test_status.toUpperCase(),
       for_retake: for_retake,
       published_date: published_date,
-      updated_by: user_id,
+      updated_by: updated_by,
     };
     // *************** Perform the update in the database and return the updated document
     const UpdatedTest = await TestModel.findByIdAndUpdate(
@@ -288,9 +286,8 @@ async function UpdateTest(_, { _id, input }) {
  * Soft deletes a test by setting its status to "DELETED" and recording the deletion metadata.
  *
  * @param {Object} _ - Unused parent resolver argument.
- * @param {Object} args - GraphQL arguments containing ID and user_id.
+ * @param {Object} args - GraphQL arguments containing ID.
  * @param {string} args.id - The ID of the test to delete.
- * @param {string} args.user_id - The ID of the user performing the deletion.
  *
  * @returns {Promise<string>} The ID of the deleted test.
  * @throws {ApolloError} If the ID is invalid, the test is not found, or deletion fails.

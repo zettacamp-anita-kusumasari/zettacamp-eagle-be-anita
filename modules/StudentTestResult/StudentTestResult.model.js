@@ -14,11 +14,6 @@ const StudentTestResultSchema = new Mongoose.Schema(
       type: Mongoose.Schema.Types.ObjectId,
       ref: "Test",
     },
-    // A list of ID referencing the User documents related to this Student Test Result
-    user_id: {
-      type: Mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
     // Student Test Result's marks
     marks: [
       {

@@ -9,11 +9,6 @@ const TestSchema = new Mongoose.Schema(
       type: Mongoose.Schema.Types.ObjectId,
       ref: "Subject",
     },
-    // Reference to the User this test belongs to
-    user_id: {
-      type: Mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
     // Name of the test for identification
     name: {
       type: String,

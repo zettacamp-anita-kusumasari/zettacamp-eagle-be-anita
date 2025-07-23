@@ -15,7 +15,6 @@ const ValidStatus = ["ACTIVE", "DELETED"];
  * @param {string|number} input.coefficient - Coefficient used for weighting.
  * @param {string} input.subject_code - Unique code for the subject.
  * @param {string} input.subject_status - Status of the subject ('ACTIVE' or 'DELETED').
- * @param {string} input.user_id - ID of the user performing the action.
  * @throws {ApolloError} - If any field is invalid or missing.
  */
 function ValidateSubjectInput(input) {
@@ -27,7 +26,6 @@ function ValidateSubjectInput(input) {
     coefficient,
     subject_code,
     subject_status,
-    user_id,
   } = input;
   // *************** Validate that name is provided and not an empty string
   if (!name || Validator.isEmpty(name)) {
@@ -67,12 +65,6 @@ function ValidateSubjectInput(input) {
       "BAD_USER_INPUT",
       { field: "subject_status" }
     );
-  }
-  // *************** Validate that user_id is provided and not an empty string
-  if (!user_id || Validator.isEmpty(user_id)) {
-    throw new ApolloError("User id is required.", "BAD_USER_INPUT", {
-      field: "user_id",
-    });
   }
 }
 

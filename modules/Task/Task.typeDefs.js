@@ -19,7 +19,6 @@ const typeDefs = gql`
   type Task {
     _id: ID!
     test_id: Test
-    user_id: ID
     student_id: Student
     task_type: TaskType!
     task_status: TaskStatus!

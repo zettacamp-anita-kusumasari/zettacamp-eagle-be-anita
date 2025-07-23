@@ -82,11 +82,12 @@ async function GetOneSubject(_, { _id }) {
  *
  * @param {Object} _ - Unused resolver parameter (parent object).
  * @param {Object} args - Arguments passed to the mutation.
+ * @param {string} args.created_by - The ID of the user performing the create.
  * @param {Object} args.input - Input object containing subject fields.
  * @returns {Promise<Object>} - The created subject document.
  * @throws {ApolloError} - If validation fails or subject creation encounters an error.
  */
-async function CreateSubject(_, { input }) {
+async function CreateSubject(_, { created_by, input }) {
   try {
     // *************** Validate the input using exported function ValidateSubjectInput
     ValidateSubjectInput(input);
@@ -98,7 +99,6 @@ async function CreateSubject(_, { input }) {
       coefficient,
       subject_code,
       subject_status,
-      user_id,
     } = input;
     // *************** Map input fields to database schema
     const subjectData = {
@@ -108,7 +108,7 @@ async function CreateSubject(_, { input }) {
       coefficient: coefficient,
       subject_code: subject_code,
       subject_status: subject_status.toUpperCase(),
-      created_by: user_id,
+      created_by: created_by,
     };
     // *************** Save the subject data to the database using Mongoose
     const CreatedSubject = await SubjectModel.create(subjectData);
@@ -135,11 +135,12 @@ async function CreateSubject(_, { input }) {
  * @param {Object} _ - Unused resolver parameter (parent object).
  * @param {Object} args - Arguments passed to the mutation.
  * @param {string} args.id - The ID of the subject to update.
+ * @param {string} args.updated_by - The ID of the user performing the update.
  * @param {Object} args.input - The input object containing updated subject fields.
  * @returns {Promise<Object|null>} - The updated subject document or null if not found.
  * @throws {ApolloError} - If validation fails or the update operation encounters an error.
  */
-async function UpdateSubject(_, { _id, input }) {
+async function UpdateSubject(_, { _id, updated_by, input }) {
   try {
     // *************** Check if the provided ID is a valid MongoDB ObjectId
     if (!_id || !Mongoose.Types.ObjectId.isValid(_id)) {
@@ -155,7 +156,6 @@ async function UpdateSubject(_, { _id, input }) {
       coefficient,
       subject_code,
       subject_status,
-      user_id,
     } = input;
     // *************** Map input fields to database schema
     const subjectData = {
@@ -165,7 +165,7 @@ async function UpdateSubject(_, { _id, input }) {
       coefficient: coefficient,
       subject_code: subject_code,
       subject_status: subject_status.toUpperCase(),
-      updated_by: user_id,
+      updated_by: updated_by,
     };
     // *************** Perform the update in the database and return the updated document
     const UpdatedSubject = await SubjectModel.findByIdAndUpdate(
@@ -191,7 +191,6 @@ async function UpdateSubject(_, { _id, input }) {
  * @param {Object} _ - Unused resolver parameter (parent object).
  * @param {Object} args - Arguments passed to the mutation.
  * @param {string} args.id - The ID of the subject to delete.
- * @param {string} args.user_id - The ID of the user performing the deletion.
  * @returns {Promise<string>} - The ID of the deleted subject.
  * @throws {ApolloError} - If validation fails or deletion cannot be completed.
  */

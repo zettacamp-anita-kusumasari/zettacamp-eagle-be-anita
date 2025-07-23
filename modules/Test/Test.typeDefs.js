@@ -18,7 +18,6 @@ const typeDefs = gql`
   type Test {
     _id: ID!
     subject_id: Subject
-    user_id: ID
     name: String!
     description: String!
     weight: Float!
@@ -60,7 +59,6 @@ const typeDefs = gql`
   }
 
   input CreateTestInput {
-    user_id: ID
     subject_id: ID
     name: String!
     description: String!
@@ -72,7 +70,6 @@ const typeDefs = gql`
   }
 
   input UpdateTestInput {
-    user_id: ID
     subject_id: ID
     name: String
     description: String
@@ -93,9 +90,9 @@ const typeDefs = gql`
   }
 
   type Mutation {
-    CreateTest(input: CreateTestInput!): Test!
+    CreateTest(created_by: ID!, input: CreateTestInput!): Test!
     PublishTest(_id: ID!): PublishTestPayload!
-    UpdateTest(_id: ID!, input: UpdateTestInput!): Test!
+    UpdateTest(_id: ID!, updated_by: ID!, input: UpdateTestInput!): Test!
     DeleteTest(_id: ID!): ID!
   }
 `;

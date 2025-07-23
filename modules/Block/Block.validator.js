@@ -1,7 +1,6 @@
 // *************** IMPORT LIBRARY ***************
 const { ApolloError } = require("apollo-server");
 const Validator = require("validator");
-const Mongoose = require("mongoose");
 
 // *************** GLOBAL VARIABLE ***************
 const ValidStatus = ["ACTIVE", "DELETED"];
@@ -19,7 +18,6 @@ const ValidAssessment = ["COMPETENCY", "SCORE"];
  * @param {string} input.block_status - The status of the block, must be one of 'ACTIVE' or 'DELETED'.
  * @param {string} input.block_type - The type of the block, must be one of 'REGULER', 'PROFESSIONAL', 'SOFT_SKILL', or 'RETAKE'.
  * @param {string} input.evaluation_assessment - The assessment method, must be one of 'COMPETENCY' or 'SCORE'.
- * @param {string} input.user_id - The ID of the user performing the action (required).
  *
  * @throws {ApolloError} If any validation rule is violated.
  */
@@ -33,7 +31,6 @@ function ValidateBlockInput(input) {
     block_status,
     block_type,
     evaluation_assessment,
-    user_id,
   } = input;
   // *************** Validate that name is provided and not an empty string
   if (!name || Validator.isEmpty(name)) {
@@ -76,10 +73,6 @@ function ValidateBlockInput(input) {
       "BAD_USER_INPUT",
       { field: "school_type" }
     );
-  }
-  // *************** Validate that user_id is a Valid ObjectId Mongoose
-  if (!user_id || !Mongoose.Types.ObjectId.isValid(user_id)) {
-    throw new ApolloError(`Invalid ID: ${user_id}`, "BAD_USER_INPUT");
   }
   // *************** Validate evaluation_assessment is it Upper Case
   const assessment = evaluation_assessment?.toUpperCase();

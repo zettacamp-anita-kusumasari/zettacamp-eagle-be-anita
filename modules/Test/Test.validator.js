@@ -10,7 +10,7 @@ const ValidStatus = ["NOT_PUBLISHED", "PUBLISHED", "DELETED"];
  * Validates the input object for creating or updating a Test entity.
  *
  * This function checks required fields such as `name`, `description`, `weight`, `notations`,
- * `test_status`, `for_retake`, `published_date`, and `user_id`. It throws an ApolloError
+ * `test_status`, `for_retake`, `published_date`. It throws an ApolloError
  * if any validation fails, providing appropriate error messages and field references.
  *
  * @param {Object} input - The input object containing fields to validate.
@@ -23,7 +23,6 @@ const ValidStatus = ["NOT_PUBLISHED", "PUBLISHED", "DELETED"];
  * @param {string} input.test_status - The status of the test ('PUBLISHED' or 'NOT_PUBLISHED', required).
  * @param {boolean} input.for_retake - Indicates if the test is for retake (required, must be boolean).
  * @param {string|Date} input.published_date - The published date of the test (required, must be a valid date).
- * @param {string} input.user_id - ID of the user creating or updating the test (required, non-empty string).
  *
  * @throws {ApolloError} - Throws error if any field fails validation, with code 'BAD_USER_INPUT' and field metadata.
  */
@@ -38,7 +37,6 @@ function ValidateTestInput(input) {
     test_status,
     for_retake,
     published_date,
-    user_id,
   } = input;
   // *************** Validate that name is provided and not an empty string
   if (!name || Validator.isEmpty(name)) {
@@ -129,12 +127,6 @@ function ValidateTestInput(input) {
       "BAD_USER_INPUT",
       { field: "published_date" }
     );
-  }
-  // *************** Validate that user_id is a valid MongoDB ObjectId
-  if (!user_id || !Mongoose.Types.ObjectId.isValid(user_id)) {
-    throw new ApolloError(`Invalid user_id: ${user_id}`, "BAD_USER_INPUT", {
-      field: "user_id",
-    });
   }
 }
 

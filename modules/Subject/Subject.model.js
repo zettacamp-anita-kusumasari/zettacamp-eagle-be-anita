@@ -32,11 +32,6 @@ const SubjectSchema = new Mongoose.Schema(
         ref: "Test",
       },
     ],
-    // A list of ID referencing the User documents related to this Subject
-    user_id: {
-      type: Mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
     // A short, unique code for internal or display use
     subject_code: {
       type: String,

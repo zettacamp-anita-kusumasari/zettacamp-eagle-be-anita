@@ -9,11 +9,6 @@ const TaskSchema = new Mongoose.Schema(
       type: Mongoose.Schema.Types.ObjectId,
       ref: "Test",
     },
-    // Reference to the user this task belongs to
-    user_id: {
-      type: Mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
     // reference to the student who took the test
     student_id: {
       type: Mongoose.Schema.Types.ObjectId,
