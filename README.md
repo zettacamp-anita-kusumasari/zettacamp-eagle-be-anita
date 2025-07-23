@@ -1,8 +1,1 @@
-The program and material has been include:
-1.1. Initial Backend Project Environment Setup
-1.2. Database Setup and Mongoose Model Definition
-1.3. Setup GraphQL Server with Express.js
-1.4. Implement CRUD Resolvers for User Model
-1.5. Implement CRUD Resolvers for Student Model
-1.6. Implement CRUD Resolvers for School Model
-1.7. Implement DataLoader for School-Student Relationship
+In this module, you will expand the application by implementing CRUD operations for syllabus data, which includes blocks, subjects, and tests. A block can contain multiple subjects, and a subject can have multiple tests. You will also implement a system for managing the test lifecycle using a separate Task collection. The test lifecycle involves creating tasks for publishing the test, assigning correctors, entering marks, and validating marks. Each test will have a set of notations. A notation represents a specific criterion or aspect of a student’s work on a test that is assigned a mark. For each notation, the teacher enters a mark. The total mark for the test is calculated by averaging the marks across all the notations.
