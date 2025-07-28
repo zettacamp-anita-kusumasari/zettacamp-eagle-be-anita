@@ -18,7 +18,7 @@ const UserModel = require('./User.model.js');
  */
 async function BatchUsers(ids) {
   // *************** Fetch users matching the given IDs
-  const users = await UserModel.find({ _id: { $in: ids } });
+  const users = await UserModel.find({ _id: { $in: ids } }).lean();
   // *************** Map user ID to school object
   const userMap = new Map();
   // *************** Store each user in the map with its ID as the key

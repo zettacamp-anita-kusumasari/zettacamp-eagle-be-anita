@@ -28,7 +28,6 @@ const userSchema = new Mongoose.Schema({
         email: {
             type: String,
             required: true,
-            unique: true
         },
     },
     // Role of the User

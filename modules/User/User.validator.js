@@ -54,8 +54,8 @@ function ValidateUserInput(input) {
     throw new ApolloError('Phone number is required.', 'BAD_USER_INPUT', { field: 'contact.phone_number' });
   }
   // *************** Validate email inside contact: required and must be a valid email
-  if (!contact.email || !Validator.isEmail(contact.email)) {
-    throw new ApolloError('Valid email is required.', 'BAD_USER_INPUT', { field: 'contact.email' });
+  if (!contact.email || Validator.isEmpty(contact.email)) {
+    throw new ApolloError('email is required.', 'BAD_USER_INPUT', { field: 'contact.email' });
   }
   // *************** Validate role: required and not empty
   if (!role || Validator.isEmpty(role)) {

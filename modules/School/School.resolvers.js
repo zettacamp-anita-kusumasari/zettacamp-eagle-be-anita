@@ -1,12 +1,12 @@
-// *************** IMPORT MODULE ***************
-const SchoolModel = require('./School.model');
-
 // *************** IMPORT LIBRARY ***************
-const { ApolloError } = require('apollo-server-express');
-const Mongoose = require('mongoose');
+const { ApolloError } = require("apollo-server-express");
+const Mongoose = require("mongoose");
+
+// *************** IMPORT MODULE ***************
+const SchoolModel = require("./School.model");
 
 // *************** IMPORT VALIDATOR ***************
-const { ValidateSchoolInput } = require('./School.validator');
+const { ValidateSchoolInput } = require("./School.validator");
 
 // *************** QUERY ***************
 /**
@@ -24,11 +24,16 @@ const { ValidateSchoolInput } = require('./School.validator');
 async function GetAllSchools() {
   try {
     // *************** Attempt to query the database using Mongoose. Only schools with 'ACTIVE' school_status will be returned
-    const activeSchools = await SchoolModel.find({ school_status: 'ACTIVE' });
+    const activeSchools = await SchoolModel.find({
+      school_status: "ACTIVE",
+    }).lean();
     return activeSchools;
   } catch (error) {
     // *************** If an error occurs during the query, throw an ApolloError
-    throw new ApolloError(`Failed to fetch schools: ${error.message}`, "INTERNAL_SERVER_ERROR");
+    throw new ApolloError(
+      `Failed to fetch schools: ${error.message}`,
+      "INTERNAL_SERVER_ERROR"
+    );
   }
 }
 
@@ -47,15 +52,18 @@ async function GetAllSchools() {
  * @returns {Promise<Object>} A promise that resolves to the school document if found.
  * @throws {ApolloError} If the ID is invalid, the school is not found, or a database error occurs.
  */
-async function GetOneSchool(_, { id }) {
+async function GetOneSchool(_, { _id }) {
   // *************** Check if the provided ID is a valid MongoDB ObjectId
-  if (!Mongoose.Types.ObjectId.isValid(id)) {
+  if (!Mongoose.Types.ObjectId.isValid(_id)) {
     // *************** If the ID is invalid, throw a BAD_USER_INPUT error
-    throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
+    throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
   }
   try {
     // *************** Query the database for a school with the given ID and status 'ACTIVE'
-    const school = await SchoolModel.findOne({ _id: id, school_status: 'ACTIVE' });
+    const school = await SchoolModel.findOne({
+      _id: _id,
+      school_status: "ACTIVE",
+    }).lean();
     // *************** If no matching school is found, throw a NOT_FOUND error
     if (!school) {
       throw new ApolloError("School not found", "NOT_FOUND");
@@ -64,7 +72,10 @@ async function GetOneSchool(_, { id }) {
     return school;
   } catch (error) {
     // *************** If an error occurs during the query, throw an ApolloError
-    throw new ApolloError(`Failed to fetch school: ${error.message}`, "INTERNAL_SERVER_ERROR");
+    throw new ApolloError(
+      `Failed to fetch school: ${error.message}`,
+      "INTERNAL_SERVER_ERROR"
+    );
   }
 }
 
@@ -83,7 +94,6 @@ async function GetOneSchool(_, { id }) {
  * @param {Object} args - Arguments object containing the school input.
  * @param {Object} args.input - The input object containing the new school data.
  * @param {string} args.input.name - The name of the school.
- * @param {string} args.input.email - The email of the school.
  * @param {Object} args.input.address - The address details of the school.
  * @param {string} args.input.address.street_name - Street name of the school.
  * @param {string} args.input.address.city - City where the school is located.
@@ -96,15 +106,9 @@ async function GetOneSchool(_, { id }) {
 async function CreateSchool(_, { input }) {
   try {
     // *************** Set the ID of the user who is creating the school
-    const userId = '6846e5769e5502fce150eb67';
+    const userId = "6846e5769e5502fce150eb67";
     // *************** Destructure the necessary fields from the input object
-    const {
-      legal_name,
-      commercial_name,
-      logo,
-      address,
-      school_status
-    } = input;
+    const { legal_name, commercial_name, logo, address, school_status } = input;
     // *************** Validate the input using exported function ValidateSchoolInput
     ValidateSchoolInput(input);
     // *************** (Map input fields to database schema) Construct a new school data object with properly structured fields
@@ -116,17 +120,21 @@ async function CreateSchool(_, { input }) {
         street_name: address.street_name,
         city: address.city,
         country: address.country,
-        zip_code: address.zip_code
+        zip_code: address.zip_code,
       },
       school_status: school_status.toUpperCase(),
-      created_by: userId
+      created_by: userId,
     };
     // *************** Save the school data to the database using Mongoose
     const toCreatedSchool = await SchoolModel.create(schoolData);
     return toCreatedSchool;
   } catch (error) {
     // *************** If an error occurs during the query, throw an ApolloError
-    throw new ApolloError('Failed to create school:', 'SCHOOL_CREATION_FAILED', {error: error.message});
+    throw new ApolloError(
+      "Failed to create school:",
+      "SCHOOL_CREATION_FAILED",
+      { error: error.message }
+    );
   }
 }
 
@@ -145,7 +153,6 @@ async function CreateSchool(_, { input }) {
  * @param {string} args.id - The ID of the school to update.
  * @param {Object} args.input - The input object containing updated school data.
  * @param {string} args.input.name - Updated name of the school.
- * @param {string} args.input.email - Updated email of the school.
  * @param {Object} args.input.address - Updated address details.
  * @param {string} args.input.address.street_name - Updated street name.
  * @param {string} args.input.address.city - Updated city.
@@ -155,23 +162,17 @@ async function CreateSchool(_, { input }) {
  * @returns {Promise<Object>} A promise that resolves to the updated school document.
  * @throws {ApolloError} If the ID is invalid, validation fails, or the update operation fails.
  */
-async function UpdateSchool(_, { id, input }) {
+async function UpdateSchool(_, { _id, input }) {
   // *************** Check if the provided ID is a valid MongoDB ObjectId.
-  if (!Mongoose.Types.ObjectId.isValid(id)) {
+  if (!Mongoose.Types.ObjectId.isValid(_id)) {
     // *************** If the ID is invalid, throw an ApolloError with a BAD_USER_INPUT code
-    throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
+    throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
   }
   try {
     // *************** Hardcoded user ID who performs the update
-    const userId = '6846e5769e5502fce150eb67';
+    const userId = "6846e5769e5502fce150eb67";
     // *************** Destructure necessary fields from the input object
-    const {
-      legal_name,
-      commercial_name,
-      logo,
-      address,
-      school_status
-    } = input;
+    const { legal_name, commercial_name, logo, address, school_status } = input;
     // *************** Validate the input using exported function ValidateSchoolInput
     ValidateSchoolInput(input);
     // *************** (Map input fields to database schema) Construct a new school data object to be used for update
@@ -183,17 +184,23 @@ async function UpdateSchool(_, { id, input }) {
         street_name: address.street_name,
         city: address.city,
         country: address.country,
-        zip_code: address.zip_code
+        zip_code: address.zip_code,
       },
       school_status: school_status.toUpperCase(),
-      updated_by: userId
+      updated_by: userId,
     };
     // *************** Perform the update in the database and return the updated document
-    const toUpdatedSchool = await SchoolModel.findOneAndUpdate({ _id: id }, schoolData, { new: true });
+    const toUpdatedSchool = await SchoolModel.findOneAndUpdate(
+      { _id: _id },
+      schoolData,
+      { new: true }
+    ).lean();
     return toUpdatedSchool;
   } catch (error) {
     // *************** If an error occurs during the update, throw an ApolloError with details
-    throw new ApolloError('Failed to update school:', 'SCHOOL_UPDATE_FAILED', {error: error.message});
+    throw new ApolloError("Failed to update school:", "SCHOOL_UPDATE_FAILED", {
+      error: error.message,
+    });
   }
 }
 
@@ -218,36 +225,35 @@ async function UpdateSchool(_, { id, input }) {
  * - The school is already inactive.
  * - An error occurs during the update process.
  */
-async function DeleteSchool(_, { id }) {
-  // *************** Check if the provided ID is a valid MongoDB ObjectId.
-  if (!Mongoose.Types.ObjectId.isValid(id)) {
-    // *************** If the ID is invalid, throw an ApolloError with a BAD_USER_INPUT code
-    throw new ApolloError(`Invalid ID: ${id}`, "BAD_USER_INPUT");
-  }
+async function DeleteSchool(_, { _id }) {
   try {
-    // *************** Find the school by ID and check its current status
-    const school = await SchoolModel.findById(id);
-    if (!school) {
-      // *************** If no school found with the ID, throw an error
-      throw new ApolloError("School not found", "NOT_FOUND");
+    // *************** Validate if the provided ID is a valid MongoDB ObjectId
+    if (!Mongoose.Types.ObjectId.isValid(_id)) {
+      throw new ApolloError(`Invalid ID: ${_id}`, "BAD_USER_INPUT");
     }
-    if (school.school_status !== 'ACTIVE') {
-      // *************** If the school is not ACTIVE, prevent deletion
-      throw new ApolloError("School is already inactive", "BAD_USER_INPUT");
+
+    // *************** Find and update the school (soft delete)
+    const deletedSchool = await SchoolModel.findOneAndUpdate(
+      { _id: _id, school_status: "ACTIVE" },
+      {
+        school_status: "INACTIVE",
+        deleted_at: new Date(),
+      },
+      { new: true }
+    ).lean();
+
+    // *************** If not found, throw error
+    if (!deletedSchool) {
+      throw new ApolloError("School not found or already deleted", "NOT_FOUND");
     }
-    // *************** Set the user ID who is performing the deletion
-    const userId = '6846e5769e5502fce150eb67';
-    const schoolData = {
-      school_status: 'INACTIVE',
-      deleted_by: userId,
-      deleted_at: Date.now()
-    };
-    // *************** Perform the update in the database and return the updated school document
-    const toUpdatedSchool = await SchoolModel.findOneAndUpdate({ _id: id }, schoolData);
-    return toUpdatedSchool;
+
+    return deletedSchool;
   } catch (error) {
-    // *************** If an error occurs during the update, throw an ApolloError with details
-    throw new ApolloError('Failed to delete school:', 'SCHOOL_DELETION_FAILED', {error: error.message});
+    throw new ApolloError(
+      "Failed to delete School",
+      "SCHOOL_DELETION_FAILED",
+      { error: error.message }
+    );
   }
 }
 
@@ -270,15 +276,16 @@ async function DeleteSchool(_, { id }) {
  * @returns {Promise<Array<Object>>} A promise that resolves to an array of student documents.
  * @throws {ApolloError} If loading students fails.
  */
-async function StudentLoader(parent, _, context) {
-  try {
-    // *************** Use the UserLoader DataLoader to load the user document based on parent.student ID
-    const toStudentList = await context.dataLoaders.StudentLoader.loadMany(parent.students);
-    return toStudentList;
-  } catch (error) {
-    // *************** If an error occurs during loading, throw an ApolloError with a custom error code and message
-    throw new ApolloError(`Failed to load students: ${error.message}`, 'STUDENT_FETCH_FAILED');
+async function student_ids(parent, _, context) {
+  // *************** Check if parent.student_ids exists
+  if (!parent.student_ids) {
+    // *************** If no student_ids is present in the parent object, return null
+    return [];
   }
+  // *************** Use the studentLoader to load many test documents by its ID
+  const toStudentList = await context.studentLoader.loadMany(parent.student_ids);
+  // *************** Return the loaded test documents
+  return toStudentList;
 }
 
 /**
@@ -298,14 +305,16 @@ async function StudentLoader(parent, _, context) {
  * @returns {Promise<Object|null>} A promise that resolves to the user document or null if not found.
  * @throws {ApolloError} If loading the user fails.
  */
-async function CreatedByLoader(parent, _, context) {
-  try {
+async function created_by(parent, _, context) {
+  if (parent.created_by) {
     // *************** Use the UserLoader DataLoader to load the user document based on parent.created_by ID
-    const toCreatedByUser = await context.dataLoaders.UserLoader.load(parent.created_by);
+    const toCreatedByUser = await context.dataLoaders.UserLoader.load(
+      parent.created_by
+    );
     return toCreatedByUser;
-  } catch (error) {
-    // *************** If an error occurs during loading, throw an ApolloError with a custom error code and message
-    throw new ApolloError(`Failed to load creator user: ${error.message}`, 'USER_FETCH_FAILED');
+  } else {
+    // *************** If 'deleted_by' is not present, return null (no user to load)
+    return null;
   }
 }
 
@@ -326,14 +335,16 @@ async function CreatedByLoader(parent, _, context) {
  * @returns {Promise<Object|null>} A promise that resolves to the user document or null if not found.
  * @throws {ApolloError} If loading the user fails.
  */
-async function UpdatedByLoader(parent, _, context) {
-  try {
+async function updated_by(parent, _, context) {
+  if (parent.updated_by) {
     // *************** Use the UserLoader DataLoader to load the user document based on parent.updated_by ID
-    const toUpdatedByUser = await context.dataLoaders.UserLoader.load(parent.updated_by);
+    const toUpdatedByUser = await context.dataLoaders.UserLoader.load(
+      parent.updated_by
+    );
     return toUpdatedByUser;
-  } catch (error) {
-    // *************** If an error occurs during loading, throw an ApolloError with a custom error code and message
-    throw new ApolloError(`Failed to load updater user: ${error.message}`, 'USER_FETCH_FAILED');
+  } else {
+    // *************** If 'deleted_by' is not present, return null (no user to load)
+    return null;
   }
 }
 
@@ -355,20 +366,17 @@ async function UpdatedByLoader(parent, _, context) {
  * @returns {Promise<Object|null>} A promise that resolves to the user document or null if `deleted_by` is not defined.
  * @throws {ApolloError} If an error occurs during the loading process.
  */
-async function DeletedByLoader(parent, _, context) {
-  try {
-    // *************** Check if the parent object contains the 'deleted_by' user ID
-    if (parent.deleted_by) {
-      // *************** If it exists, use UserLoader to load and return the user document by ID
-      const toDeletedByUser = await context.dataLoaders.UserLoader.load(parent.deleted_by);
-      return toDeletedByUser;
-    } else {
-      // *************** If 'deleted_by' is not present, return null (no user to load)
-      return null;
-    }
-  } catch (error) {
-    // *************** If an error occurs during loading, throw an ApolloError with a custom error code and message
-    throw new ApolloError(`Failed to load deleter user: ${error.message}`, 'USER_FETCH_FAILED');
+async function deleted_by(parent, _, context) {
+  // *************** Check if the parent object contains the 'deleted_by' user ID
+  if (parent.deleted_by) {
+    // *************** If it exists, use UserLoader to load and return the user document by ID
+    const toDeletedByUser = await context.dataLoaders.UserLoader.load(
+      parent.deleted_by
+    );
+    return toDeletedByUser;
+  } else {
+    // *************** If 'deleted_by' is not present, return null (no user to load)
+    return null;
   }
 }
 
@@ -376,17 +384,17 @@ async function DeletedByLoader(parent, _, context) {
 module.exports = {
   Query: {
     GetAllSchools,
-    GetOneSchool
+    GetOneSchool,
   },
   Mutation: {
     CreateSchool,
     UpdateSchool,
-    DeleteSchool
+    DeleteSchool,
   },
   School: {
-    students: StudentLoader,
-    created_by: CreatedByLoader,
-    updated_by: UpdatedByLoader,
-    deleted_by: DeletedByLoader
-  }
+    student_ids,
+    created_by,
+    updated_by,
+    deleted_by,
+  },
 };
