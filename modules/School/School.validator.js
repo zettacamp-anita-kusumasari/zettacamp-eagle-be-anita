@@ -37,7 +37,7 @@ function ValidateSchoolInput(input) {
     commercial_name,
     logo,
     address,
-    school_status
+    school_status,
   } = input;
   // *************** Validate that legal_name is provided and not an empty string
   if (!legal_name || Validator.isEmpty(legal_name)) {

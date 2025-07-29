@@ -1,12 +1,12 @@
-// *************** IMPORT MODULE ***************
-const UserModel = require('./User.model');
-
 // *************** IMPORT LIBRARY ***************
-const { ApolloError } = require('apollo-server');
-const Mongoose = require('mongoose');
+const { ApolloError } = require("apollo-server");
+const Mongoose = require("mongoose");
+
+// *************** IMPORT MODULE ***************
+const UserModel = require("./User.model");
 
 // *************** IMPORT VALIDATOR ***************
-const { ValidateUserInput } = require('./User.validator');
+const { ValidateUserInput } = require("./User.validator");
 
 // *************** QUERY ***************
 /**
@@ -23,11 +23,16 @@ const { ValidateUserInput } = require('./User.validator');
 async function GetAllUsers() {
   try {
     // *************** Query the UserModel to find all users whose status is 'ACTIVE'
-    const toActiveUsers = await UserModel.find({ user_status: 'ACTIVE' });
+    const toActiveUsers = await UserModel.find({
+      user_status: "ACTIVE",
+    }).lean();
     return toActiveUsers;
   } catch (error) {
     // *************** If an error occurs during the database query, throw an ApolloError
-    throw new ApolloError(`Failed to fetch users: ${error.message}`, "INTERNAL_SERVER_ERROR");
+    throw new ApolloError(
+      `Failed to fetch users: ${error.message}`,
+      "INTERNAL_SERVER_ERROR"
+    );
   }
 }
 
@@ -54,7 +59,10 @@ async function GetOneUser(_, { id }) {
   }
   try {
     // *************** Query the database for a user with the given ID and status 'ACTIVE'
-    const user = await UserModel.findOne({ _id: id, user_status: 'ACTIVE' });
+    const user = await UserModel.findOne({
+      _id: id,
+      user_status: "ACTIVE",
+    }).lean();
     // *************** If no matching user is found, throw an ApolloError with 'NOT_FOUND' code
     if (!user) {
       throw new ApolloError("User not found", "NOT_FOUND");
@@ -63,7 +71,10 @@ async function GetOneUser(_, { id }) {
     return user;
   } catch (error) {
     // *************** If an error occurs during the query, throw an ApolloError with details
-    throw new ApolloError(`Failed to fetch user: ${error.message}`, "INTERNAL_SERVER_ERROR");
+    throw new ApolloError(
+      `Failed to fetch user: ${error.message}`,
+      "INTERNAL_SERVER_ERROR"
+    );
   }
 }
 
@@ -85,7 +96,7 @@ async function GetOneUser(_, { id }) {
 async function CreateUser(_, { input }) {
   try {
     // *************** Hardcoded ID representing the user who is creating this entry
-    const creatorId = '6846e5769e5502fce150eb67';
+    const creatorId = "6846e5769e5502fce150eb67";
     // *************** Destructure necessary fields from the input object
     const {
       first_name,
@@ -94,7 +105,7 @@ async function CreateUser(_, { input }) {
       contact,
       role,
       user_status,
-      password
+      password,
     } = input;
     // *************** Validate the input fields using a custom validation function
     ValidateUserInput(input);
@@ -105,19 +116,21 @@ async function CreateUser(_, { input }) {
       photo_profile: photo_profile || null,
       contact: {
         phone_number: contact.phone_number,
-        email: contact.email
+        email: contact.email,
       },
       role: role,
       user_status: user_status.toUpperCase(),
       password: password,
-      created_by: creatorId
+      created_by: creatorId,
     };
     // *************** Create a new user document in the database
     const toCreatedUser = await UserModel.create(userData);
     return toCreatedUser;
   } catch (error) {
     // *************** Throw an ApolloError if any error occurs during creation
-    throw new ApolloError('Failed to create user.', 'USER_CREATION_FAILED', {error: error.message});
+    throw new ApolloError("Failed to create user.", "USER_CREATION_FAILED", {
+      error: error.message,
+    });
   }
 }
 
@@ -144,7 +157,7 @@ async function UpdateUser(_, { id, input }) {
   }
   try {
     // *************** Hardcoded updater ID to track who updated the data
-    const updaterId = '6846e5769e5502fce150eb67';
+    const updaterId = "6846e5769e5502fce150eb67";
     // *************** Destructure relevant fields from the input object
     const {
       first_name,
@@ -153,7 +166,7 @@ async function UpdateUser(_, { id, input }) {
       contact,
       role,
       user_status,
-      password
+      password,
     } = input;
     // *************** Validate the user input fields
     ValidateUserInput(input);
@@ -164,19 +177,25 @@ async function UpdateUser(_, { id, input }) {
       photo_profile: photo_profile || null,
       contact: {
         phone_number: contact.phone_number,
-        email: contact.email
+        email: contact.email,
       },
       role: role,
       user_status: user_status.toUpperCase(),
       password: password,
-      updated_by: updaterId
+      updated_by: updaterId,
     };
     // *************** Update the user document in the database and return the new version
-    const toUpdatedUser = await UserModel.findOneAndUpdate({ _id: id }, userData, { new: true });
+    const toUpdatedUser = await UserModel.findOneAndUpdate(
+      { _id: id },
+      userData,
+      { new: true }
+    ).lean();
     return toUpdatedUser;
   } catch (error) {
     // *************** Handle and throw any errors during the update operation
-    throw new ApolloError('Failed to update user.', 'USER_UPDATE_FAILED', {error: error.message});
+    throw new ApolloError("Failed to update user.", "USER_UPDATE_FAILED", {
+      error: error.message,
+    });
   }
 }
 
@@ -204,33 +223,59 @@ async function DeleteUser(_, { id }) {
   }
   try {
     // *************** Find the user document by the given ID
-    const user = await UserModel.findById(id);
+    const user = await UserModel.findById(id).lean();
     // *************** If the user does not exist, throw a NOT_FOUND error
     if (!user) {
       throw new ApolloError("User not found", "NOT_FOUND");
     }
     // *************** If the user is already inactive, prevent redundant deletion
-    if (user.user_status !== 'ACTIVE') {
+    if (user.user_status !== "ACTIVE") {
       throw new ApolloError("User is already inactive", "BAD_USER_INPUT");
     }
     // *************** Hardcoded ID representing the user who performs the deletion
-    const deleterId = '6846e5769e5502fce150eb67';
-    // *************** Perform update and return the modified user document 
+    const deleterId = "6846e5769e5502fce150eb67";
+    // *************** Perform update and return the modified user document
     const userData = {
-      user_status: 'INACTIVE',
+      user_status: "INACTIVE",
       deleted_by: deleterId,
-      deleted_at: Date.now()
+      deleted_at: Date.now(),
     };
     // *************** Update user document and return new doc
-    const toDeletedUser = await UserModel.findOneAndUpdate({ _id: id }, userData);
+    const toDeletedUser = await UserModel.findOneAndUpdate(
+      { _id: id },
+      userData
+    ).lean();
     return toDeletedUser;
   } catch (error) {
     // *************** Jika ada error saat proses, lempar ApolloError
-    throw new ApolloError('Failed to delete user.', 'USER_DELETION_FAILED', { error: error.message });
+    throw new ApolloError("Failed to delete user.", "USER_DELETION_FAILED", {
+      error: error.message,
+    });
   }
 }
 
 // *************** LOADER ***************
+/**
+ * Resolver to load one Block document in the User Model.
+ *
+ * @param {Object} parent - The parent object containing the `block_id` reference.
+ * @param {Object} _ - Unused arguments object in GraphQL resolver.
+ * @param {Object} context - The GraphQL context object containing DataLoaders.
+ * @param {DataLoader} context.dataLoaders.BlockLoader - DataLoader instance for batching Block queries.
+ * @returns {Promise<Object|null>} - A promise that resolves to the Block document or null if `block_id` is missing.
+ */
+async function block_id(parent, _, context) {
+  // *************** Check if parent.block_id exists
+  if (!parent.block_id) {
+    // *************** If no block_id is present in the parent object, return null
+    return null;
+  }
+  // *************** Use the BlockLoader to fetch block document by its ID
+  const toLoadedBlock = await context.blockLoader.load(parent.block_id);
+  // *************** Return the loaded block ducument
+  return toLoadedBlock;
+}
+
 /**
  * DataLoader resolver to fetch the user who created the current document.
  *
@@ -245,15 +290,12 @@ async function DeleteUser(_, { id }) {
  * @returns {Promise<Object>} - The user document who created the parent object.
  * @throws {ApolloError} - If the user cannot be fetched.
  */
-async function CreatedByLoader(parent, _, context) {
-  try {
-    // *************** Use the UserLoader DataLoader to fetch the user who created this record
-    const toCreatedByUser = await context.dataLoaders.UserLoader.load(parent.created_by);
-    return toCreatedByUser;
-  } catch (error) {
-    // *************** If any error occurs while fetching, throw an ApolloError
-    throw new ApolloError(`Failed to fetch creator: ${error.message}`, 'USER_FETCH_FAILED');
-  }
+async function created_by(parent, _, context) {
+  // *************** Use the UserLoader DataLoader to fetch the user who created this record
+  const toCreatedByUser = await context.dataLoaders.UserLoader.load(
+    parent.created_by
+  );
+  return toCreatedByUser;
 }
 
 /**
@@ -270,15 +312,12 @@ async function CreatedByLoader(parent, _, context) {
  * @returns {Promise<Object>} - Returns the user document who last updated the parent object.
  * @throws {ApolloError} - Throws if user fetching fails.
  */
-async function UpdatedByLoader(parent, _, context) {
-  try {
-    // *************** Use the UserLoader from context to fetch the user by ID in parent.updated_by
-    const toUpdatedByUser = await context.dataLoaders.UserLoader.load(parent.updated_by);
-    return toUpdatedByUser;
-  } catch (error) {
-    // *************** If fetching fails, throw an ApolloError with a custom error code and message
-    throw new ApolloError(`Failed to fetch updater: ${error.message}`, 'USER_FETCH_FAILED');
-  }
+async function updated_by(parent, _, context) {
+  // *************** Use the UserLoader from context to fetch the user by ID in parent.updated_by
+  const toUpdatedByUser = await context.dataLoaders.UserLoader.load(
+    parent.updated_by
+  );
+  return toUpdatedByUser;
 }
 
 /**
@@ -296,20 +335,17 @@ async function UpdatedByLoader(parent, _, context) {
  * @returns {Promise<Object|null>} - Returns the user document who deleted the parent, or null if not available.
  * @throws {ApolloError} - Throws an error if user fetching fails.
  */
-async function DeletedByLoader(parent, _, context) {
-  try {
-    // *************** Check if the parent object has a deleted_by field
-    if (parent.deleted_by) {
-      // *************** Load and return the user who deleted the data using DataLoader
-      const toDeletedByUser = await context.dataLoaders.UserLoader.load(parent.deleted_by);
-      return toDeletedByUser;
-    } else {
-      // *************** If deleted_by is not available, return null
-      return null;
-    }
-  } catch (error) {
-    // *************** If an error occurs during loading, throw an ApolloError with a specific code and message
-    throw new ApolloError(`Failed to fetch deleter: ${error.message}`, 'USER_FETCH_FAILED');
+async function deleted_by(parent, _, context) {
+  // *************** Check if the parent object has a deleted_by field
+  if (parent.deleted_by) {
+    // *************** Load and return the user who deleted the data using DataLoader
+    const toDeletedByUser = await context.dataLoaders.UserLoader.load(
+      parent.deleted_by
+    );
+    return toDeletedByUser;
+  } else {
+    // *************** If deleted_by is not available, return null
+    return null;
   }
 }
 
@@ -317,16 +353,16 @@ async function DeletedByLoader(parent, _, context) {
 module.exports = {
   Query: {
     GetAllUsers,
-    GetOneUser
+    GetOneUser,
   },
   Mutation: {
     CreateUser,
     UpdateUser,
-    DeleteUser
+    DeleteUser,
   },
   User: {
-    created_by: CreatedByLoader,
-    updated_by: UpdatedByLoader,
-    deleted_by: DeletedByLoader
-  }
+    created_by,
+    updated_by,
+    deleted_by,
+  },
 };

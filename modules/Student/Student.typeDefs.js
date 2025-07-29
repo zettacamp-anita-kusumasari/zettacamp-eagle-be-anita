@@ -1,4 +1,4 @@
-// *************** IMPORT CORE ***************
+// *************** IMPORT LIBRARY ***************
 const { gql } = require('apollo-server-express');
 
 const typeDefs = gql`
@@ -14,10 +14,6 @@ const typeDefs = gql`
     INACTIVE
   }
   
-  type Contact {
-    phone_number: String!
-    email: String!
-  }
   
   type Address {
     street_name: String!
@@ -27,16 +23,15 @@ const typeDefs = gql`
   }
   
   type Student {
-    id: ID!
+    _id: ID!
     first_name: String!
     last_name: String!
-    photo_profile: String
+    e_mail: String!
     student_birth: StudentBirth!
     student_status: StudentStatus!
-    contact: Contact!
     address: Address    
     school: School
-    school_id: ID
+    school_id: School
     created_by: User
     updated_by: User
     deleted_by: User
@@ -50,11 +45,6 @@ const typeDefs = gql`
     place_of_birth: String!
   }
 
-  input ContactInput {
-    phone_number: String!
-    email: String!
-  }
-
   input AddressInput {
     street_name: String!
     city: String!
@@ -63,34 +53,34 @@ const typeDefs = gql`
   }
 
   input CreateStudentInput {
+    school_id: ID
     first_name: String!
     last_name: String!
-    photo_profile: String
+    e_mail: String!
     student_birth: StudentBirthInput!
     student_status: StudentStatus!
-    contact: ContactInput!
     address: AddressInput
   }
 
   input UpdateStudentInput {
+    school_id: ID
     first_name: String!
     last_name: String!
-    photo_profile: String
+    e_mail: String!
     student_birth: StudentBirthInput!
     student_status: StudentStatus!
-    contact: ContactInput!
     address: AddressInput
   }
 
   type Query {
     GetAllStudents: [Student!]!
-    GetOneStudent(id: ID!): Student
+    GetOneStudent(_id: ID!): Student
   }
 
   type Mutation {
     CreateStudent(input: CreateStudentInput): Student
-    UpdateStudent(id: ID!, input: UpdateStudentInput): Student
-    DeleteStudent(id: ID!): Student
+    UpdateStudent(_id: ID!, input: UpdateStudentInput): Student
+    DeleteStudent(_id: ID!): Student
   }
 `;
 

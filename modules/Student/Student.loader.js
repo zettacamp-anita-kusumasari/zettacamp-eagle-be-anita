@@ -18,7 +18,7 @@ const StudentModel = require('./Student.model.js');
  */
 async function BatchStudents(ids) {
   // *************** Fetch students matching the given IDs
-  const students = await StudentModel.find({ _id: { $in: ids } });
+  const students = await StudentModel.find({ _id: { $in: ids } }).lean();
   // *************** Map student ID to school object
   const studentMap = new Map();
   // *************** Store each student in the map with its ID as the key

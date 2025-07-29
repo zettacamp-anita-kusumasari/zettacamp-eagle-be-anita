@@ -6,18 +6,18 @@ const Resolvers = require('./core/resolvers.js');
 const TypeDefs = require('./core/typeDefs.js');
 
 // *************** IMPORT LIBRARY ***************
-const express = require('express');
-const dotenv = require('dotenv');
+const Express = require('express');
+const Dotenv = require('dotenv');
 const { ApolloServer } = require('apollo-server-express');
 
 // *************** LOADER ***************
 const Loaders = require('./core/loaders.js');
 
 // *************** Initialize the Express application
-const index = express();
+const index = Express();
 
 // *************** Load environment variables from .env file into process.env
-dotenv.config();
+Dotenv.config();
 
 // *************** Get the MONGODB_URI (Uniform Resource Identifier) value from Environment
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -29,22 +29,13 @@ const PORT = process.env.PORT || 4000;
 ConnectDB();
 
 /**
- * Asynchronously starts an Apollo Server instance and integrates it with the Express application.
- *
- * This function initializes the Apollo Server with the defined GraphQL type definitions and resolvers
- * for schools, students, and users. It also sets up the context with DataLoaders for batching and caching
- * database requests efficiently.
- *
- * The `context` provides:
- * - `userLoader`: A DataLoader for batching user data requests.
- * - `schoolLoader`: A DataLoader for batching school data requests.
- * - `studentLoader`: A DataLoader for batching student data requests.
+ * Starts the Apollo Server with provided type definitions, resolvers, and context (including DataLoaders).
  *
  * @async
- * @function startApolloServer
- * @returns {Promise<void>} A promise that resolves once the Apollo Server is successfully started.
+ * @function StartApolloServer
+ * @returns {Promise<void>} A promise that resolves when the Apollo Server has started successfully.
  */
-async function startApolloServer() {
+async function StartApolloServer() {
   // ****************** Create a new Apollo Server instance with type definitions, resolvers, and context
   const server = new ApolloServer({
     typeDefs: TypeDefs,
@@ -65,4 +56,4 @@ async function startApolloServer() {
 }
 
 // *************** Call the function to launch server
-startApolloServer();
+StartApolloServer();

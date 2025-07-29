@@ -1,15 +1,15 @@
 // *************** IMPORT LIBRARY ***************
-const DataLoader = require('dataloader');
+const DataLoader = require("dataloader");
 
 // *************** IMPORT MODULE ***************
-const SchoolModel = require('./School.model.js');
+const SchoolModel = require("./School.model.js");
 
 /**
  * Batch loads a list of schools based on an array of school IDs.
- * 
+ *
  * This function retrieves schools from the database whose `_id` matches any in the `ids` array
  * and returns them in the same order as the input IDs.
- * 
+ *
  * @async
  * @function
  * @param {Array<string>} ids - An array of MongoDB ObjectId strings representing school IDs to be fetched.
@@ -18,7 +18,7 @@ const SchoolModel = require('./School.model.js');
  */
 async function BatchSchools(ids) {
   // *************** Fetch schools matching the given IDs
-  const schools = await SchoolModel.find({ _id: { $in: ids } });
+  const schools = await SchoolModel.find({ _id: { $in: ids } }).lean();
   // *************** Map school ID to school object
   const schoolMap = new Map();
   // *************** Store each school in the map with its ID as the key
@@ -26,7 +26,7 @@ async function BatchSchools(ids) {
     schoolMap.set(String(school._id), school);
   }
   // *************** Return schools in the same order as input IDs
-  const toOrderedSchools = ids.map(id => schoolMap.get(String(id)));
+  const toOrderedSchools = ids.map((id) => schoolMap.get(String(id)));
   return toOrderedSchools;
 }
 

@@ -1,6 +1,7 @@
 // *************** IMPORT LIBRARY ***************
 const { ApolloError } = require('apollo-server');
 const Validator = require('validator');
+const Mongoose = require("mongoose");
 
 // *************** Valid status for school_status
 const ValidStatus = ['ACTIVE', 'INACTIVE'];
@@ -24,7 +25,6 @@ const ValidStatus = ['ACTIVE', 'INACTIVE'];
  * @param {string} input.student_status - Student status (must be one of the allowed `ValidStatus` values).
  * @param {Object} input.contact - Object containing contact information.
  * @param {string} input.contact.phone_number - Required phone number (non-empty).
- * @param {string} input.contact.email - Required email address (must be a valid email).
  * @param {Object} [input.address] - Optional address object containing location details.
  * @param {string} [input.address.street_name] - Street name (if provided, must not be empty).
  * @param {string} [input.address.city] - City (if provided, must not be empty).
@@ -39,10 +39,9 @@ function ValidateStudentInput(input) {
   const {
     first_name,
     last_name,
-    photo_profile,
+    e_mail,
     student_birth,
     student_status,
-    contact,
     address,
     school_id
   } = input;
@@ -56,8 +55,8 @@ function ValidateStudentInput(input) {
     throw new ApolloError('Last name is required.', 'BAD_USER_INPUT', { field: 'last_name' });
   }
   // *************** Validate photo_profile: if present, must be a valid URL
-  if (photo_profile && !Validator.isURL(photo_profile)) {
-    throw new ApolloError('Photo profile must be a valid URL.', 'BAD_USER_INPUT', { field: 'photo_profile' });
+  if (!e_mail || Validator.isEmpty(e_mail)) {
+    throw new ApolloError('e_mail is required.', 'BAD_USER_INPUT', { field: 'e_mail' });
   }
   // *************** Validate student_birth: must be an object
   if (!student_birth || typeof student_birth !== 'object') {
@@ -74,18 +73,6 @@ function ValidateStudentInput(input) {
   // *************** Validate student_status: must be one of the allowed values
   if (!student_status || !ValidStatus.includes(student_status.toUpperCase())) {
     throw new ApolloError(`Student status must be one of: ${ValidStatus.join(', ')}`, 'BAD_USER_INPUT', { field: 'student_status' });
-  }
-  // *************** Validate contact: must be an object and contain valid fields
-  if (!contact || typeof contact !== 'object') {
-    throw new ApolloError('Contact information is required.', 'BAD_USER_INPUT', { field: 'contact' });
-  }
-  // *************** Validate contact.phone_number: must be present and not empty
-  if (!contact.phone_number || Validator.isEmpty(contact.phone_number)) {
-    throw new ApolloError('Phone number is required.', 'BAD_USER_INPUT', { field: 'contact.phone_number' });
-  }
-  // *************** Validate contact.email: must be present and in valid email format
-  if (!contact.email || !Validator.isEmail(contact.email)) {
-    throw new ApolloError('Valid email is required.', 'BAD_USER_INPUT', { field: 'contact.email' });
   }
   // *************** Validate address: must be an object with complete fields
   if (!address || typeof address !== 'object') {
@@ -106,6 +93,10 @@ function ValidateStudentInput(input) {
   // *************** Validate address.zip_code: must be present and not empty
   if (!address.zip_code || Validator.isEmpty(address.zip_code)) {
     throw new ApolloError('Zip code is required.', 'BAD_USER_INPUT', { field: 'address.zip_code' });
+  }
+  // *************** Validate that block_id is a Valid ObjectId Mongoose
+  if (!Mongoose.Types.ObjectId.isValid(school_id)) {
+    throw new ApolloError(`Invalid ID: ${school_id}`, "BAD_USER_INPUT");
   }
 }
 
